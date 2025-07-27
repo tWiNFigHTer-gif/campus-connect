@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Connect - 2nd Floor Navigation</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        
+        .header {
+            background: white;
+            padding: 10px 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .controls {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 220px;
+            z-index: 1000;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+        }
+        
+        .controls.collapsed {
+            transform: translateX(calc(100% - 40px));
+        }
+        
+        .controls-toggle {
+            position: absolute;
+            left: -35px;
+            top: 10px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+            padding: 8px 5px;
+            cursor: pointer;
+            box-shadow: -2px 0 4px rgba(0,0,0,0.1);
+            font-size: 12px;
+            writing-mode: vertical-lr;
+            text-orientation: mixed;
+        }
+        
+        .map-container {
+            margin-top: 80px;
+            background: white;
+            min-height: calc(100vh - 80px);
+            overflow: auto;
+            position: relative;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .controls {
+                position: fixed;
+                bottom: 0;
+                top: auto;
+                left: 0;
+                right: 0;
+                width: auto;
+                border-radius: 12px 12px 0 0;
+                max-height: 60vh;
+                transform: translateY(calc(100% - 60px));
+            }
+            
+            .controls.expanded {
+                transform: translateY(0);
+            }
+            
+            .controls-toggle {
+                position: absolute;
+                left: 50%;
+                top: -35px;
+                transform: translateX(-50%);
+                border-radius: 4px 4px 0 0;
+                writing-mode: initial;
+                text-orientation: initial;
+                padding: 5px 15px;
+                box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+            }
+            
+            .map-container {
+                margin-top: 70px;
+                margin-bottom: 60px;
+                min-height: calc(100vh - 130px);
+            }
+            
+            .header {
+                height: 50px;
+            }
+            
+            .header h1 {
+                font-size: 16px;
+            }
+        }
+        
+        .map-svg {
+            width: 100%;
+            height: auto;
+            min-height: 100vh;
+            cursor: grab;
+            display: block;
+        }
+        
+        .map-svg:active {
+            cursor: grabbing;
+        }
+        
+        select, button {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .path-line {
+            stroke: #ff4444;
+            stroke-width: 8;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0.8;
+        }
+        
+        .node {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .node:hover {
+            opacity: 0.8;
+            transform: scale(1.1);
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            font-size: 18px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Campus Connect - 2nd Floor Navigation</h1>
+        <div id="status">Loading...</div>
+    </div>
+    
+    <div class="controls" id="controls">
+        <div class="controls-toggle" id="controlsToggle">☰</div>
+        <h3>Navigation</h3>
+        <label>From:</label>
+        <select id="fromLocation">
+            <option value="">Select starting point</option>
+        </select>
+        
+        <label>To:</label>
+        <select id="toLocation">
+            <option value="">Select destination</option>
+        </select>
+        
+        <button id="findPath">Find Route</button>
+        <button id="clearPath">Clear Route</button>
+        
+        <div style="margin-top: 15px; font-size: 11px; color: #666;">
+            <div id="nodeCount">Nodes: 0</div>
+            <div id="connectionInfo">Connections: 0</div>
+        </div>
+    </div>
+    
+    <div class="map-container">
+        <div id="loading" class="loading">Loading campus map...</div>
+        <div id="svg-container" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Global variables
+        let campusNodes = [];
+        let campusGraph = {};
+        let currentPath = [];
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Starting Campus Connect...');
+            setupResponsiveControls();
+            await loadApplication();
+        });
+        
+        function setupResponsiveControls() {
+            const controls = document.getElementById('controls');
+            const toggle = document.getElementById('controlsToggle');
+            
+            toggle.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    // Mobile: toggle expanded/collapsed from bottom
+                    controls.classList.toggle('expanded');
+                    toggle.textContent = controls.classList.contains('expanded') ? '×' : '☰';
+                } else {
+                    // Desktop: toggle slide in/out from right
+                    controls.classList.toggle('collapsed');
+                    toggle.textContent = controls.classList.contains('collapsed') ? '☰' : '×';
+                }
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                controls.classList.remove('collapsed', 'expanded');
+                toggle.textContent = '☰';
+            });
+        }
+        
+        async function loadApplication() {
+            const loading = document.getElementById('loading');
+            const container = document.getElementById('svg-container');
+            const status = document.getElementById('status');
+            
+            try {
+                // Step 1: Load SVG
+                console.log('📂 Loading SVG...');
+                status.textContent = 'Loading map...';
+                const svgResponse = await fetch('2nd floor (1) replaced.svg');
+                if (!svgResponse.ok) throw new Error('Failed to load SVG');
+                const svgContent = await svgResponse.text();
+                
+                // Step 2: Load graph data
+                console.log('📂 Loading graph data...');
+                status.textContent = 'Loading navigation data...';
+                const graphResponse = await fetch('pathfinding_graph.json');
+                if (!graphResponse.ok) throw new Error('Failed to load graph data');
+                const graphData = await graphResponse.json();
+                
+                // Step 3: Setup the interface
+                console.log('🎨 Setting up interface...');
+                status.textContent = 'Ready';
+                
+                // Insert SVG
+                container.innerHTML = svgContent;
+                const svg = container.querySelector('svg');
+                if (svg) {
+                    svg.setAttribute('class', 'map-svg');
+                    
+                    // Make SVG responsive and zoomable
+                    svg.style.maxWidth = 'none';
+                    svg.style.maxHeight = 'none';
+                    
+                    // Add overlay for nodes and paths
+                    const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                    overlay.id = 'overlay';
+                    svg.appendChild(overlay);
+                    
+                    // Add zoom controls
+                    addZoomControls(container);
+                }
+                
+                // Store graph data
+                campusNodes = graphData.nodes || [];
+                campusGraph = graphData.graph || {};
+                
+                // Create visual nodes
+                createNodes();
+                
+                // Setup controls
+                setupControls();
+                
+                // Show the map
+                loading.style.display = 'none';
+                container.style.display = 'block';
+                
+                console.log('✅ Application loaded successfully');
+                updateStats();
+                
+            } catch (error) {
+                console.error('❌ Error loading application:', error);
+                status.textContent = 'Error loading';
+                loading.innerHTML = `
+                    <div style="color: red;">
+                        <h3>Error Loading Campus Connect</h3>
+                        <p>${error.message}</p>
+                        <p>Please check that all files are present and try again.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function createNodes() {
+            const overlay = document.getElementById('overlay');
+            if (!overlay) return;
+            
+            // Clear existing nodes
+            overlay.innerHTML = '';
+            
+            // Create path layer
+            const pathLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            pathLayer.id = 'path-layer';
+            overlay.appendChild(pathLayer);
+            
+            // Create nodes layer
+            const nodesLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            nodesLayer.id = 'nodes-layer';
+            overlay.appendChild(nodesLayer);
+            
+            campusNodes.forEach(node => {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', node.x);
+                circle.setAttribute('cy', node.y);
+                circle.setAttribute('r', getNodeRadius(node));
+                circle.setAttribute('fill', getNodeColor(node));
+                circle.setAttribute('stroke', '#ffffff');
+                circle.setAttribute('stroke-width', '3');
+                circle.setAttribute('class', 'node');
+                circle.setAttribute('data-id', node.id);
+                circle.setAttribute('data-label', node.label);
+                
+                // Add click handler
+                circle.addEventListener('click', () => selectNode(node));
+                
+                nodesLayer.appendChild(circle);
+            });
+        }
+        
+        function getNodeRadius(node) {
+            if (node.type === 'junction') return 20;
+            if (node.type === 'corridor') return 16;
+            return 14;
+        }
+        
+        function getNodeColor(node) {
+            switch (node.type) {
+                case 'junction': return '#FFD43B'; // Yellow for central hub
+                case 'corridor': return '#51CF66'; // Green for corridors
+                case 'office': return '#10B981';
+                case 'lab': return '#3B82F6';
+                case 'classroom': return '#8B5CF6';
+                default: return '#339AF0'; // Blue for regular nodes
+            }
+        }
+        
+        function setupControls() {
+            const fromSelect = document.getElementById('fromLocation');
+            const toSelect = document.getElementById('toLocation');
+            const findButton = document.getElementById('findPath');
+            const clearButton = document.getElementById('clearPath');
+            
+            // Populate dropdowns
+            campusNodes.forEach(node => {
+                const option1 = new Option(node.label, node.id);
+                const option2 = new Option(node.label, node.id);
+                fromSelect.appendChild(option1);
+                toSelect.appendChild(option2);
+            });
+            
+            // Event handlers
+            findButton.addEventListener('click', findPath);
+            clearButton.addEventListener('click', clearPath);
+        }
+        
+        function selectNode(node) {
+            const fromSelect = document.getElementById('fromLocation');
+            const toSelect = document.getElementById('toLocation');
+            
+            if (!fromSelect.value) {
+                fromSelect.value = node.id;
+            } else if (!toSelect.value) {
+                toSelect.value = node.id;
+                findPath(); // Auto-find path when both nodes selected
+            } else {
+                // Reset and start new selection
+                fromSelect.value = node.id;
+                toSelect.value = '';
+                clearPath();
+            }
+        }
+        
+        function findPath() {
+            const fromId = document.getElementById('fromLocation').value;
+            const toId = document.getElementById('toLocation').value;
+            
+            if (!fromId || !toId) {
+                alert('Please select both starting point and destination');
+                return;
+            }
+            
+            if (fromId === toId) {
+                alert('Starting point and destination cannot be the same');
+                return;
+            }
+            
+            console.log('🔍 Finding path from', fromId, 'to', toId);
+            
+            const path = dijkstraPath(campusGraph, fromId, toId);
+            if (path && path.length > 0) {
+                drawPath(path);
+                currentPath = path;
+                console.log('✅ Path found:', path);
+            } else {
+                alert('No path found between selected locations');
+                console.log('❌ No path found');
+            }
+        }
+        
+        function dijkstraPath(graph, start, end) {
+            const distances = {};
+            const previous = {};
+            const unvisited = new Set();
+            
+            // Initialize
+            for (const node in graph) {
+                distances[node] = Infinity;
+                previous[node] = null;
+                unvisited.add(node);
+            }
+            distances[start] = 0;
+            
+            while (unvisited.size > 0) {
+                // Find unvisited node with minimum distance
+                let current = null;
+                let minDistance = Infinity;
+                for (const node of unvisited) {
+                    if (distances[node] < minDistance) {
+                        minDistance = distances[node];
+                        current = node;
+                    }
+                }
+                
+                if (current === null || current === end) break;
+                
+                unvisited.delete(current);
+                
+                // Check neighbors
+                for (const neighbor in graph[current] || {}) {
+                    if (!unvisited.has(neighbor)) continue;
+                    
+                    const newDistance = distances[current] + graph[current][neighbor];
+                    if (newDistance < distances[neighbor]) {
+                        distances[neighbor] = newDistance;
+                        previous[neighbor] = current;
+                    }
+                }
+            }
+            
+            // Reconstruct path
+            const path = [];
+            let current = end;
+            while (current !== null) {
+                path.unshift(current);
+                current = previous[current];
+            }
+            
+            return path.length > 1 ? path : null;
+        }
+        
+        function drawPath(path) {
+            clearPath();
+            
+            const pathLayer = document.getElementById('path-layer');
+            if (!pathLayer || path.length < 2) return;
+            
+            // Create path line
+            const pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+            
+            const points = path.map(nodeId => {
+                const node = campusNodes.find(n => n.id === nodeId);
+                return node ? `${node.x},${node.y}` : '';
+            }).filter(point => point).join(' ');
+            
+            pathElement.setAttribute('points', points);
+            pathElement.setAttribute('class', 'path-line');
+            pathLayer.appendChild(pathElement);
+            
+            // Highlight start and end nodes
+            highlightNode(path[0], '#00ff00'); // Green for start
+            highlightNode(path[path.length - 1], '#ff0000'); // Red for end
+        }
+        
+        function highlightNode(nodeId, color) {
+            const nodeElement = document.querySelector(`[data-id="${nodeId}"]`);
+            if (nodeElement) {
+                nodeElement.style.stroke = color;
+                nodeElement.style.strokeWidth = '5';
+            }
+        }
+        
+        function clearPath() {
+            const pathLayer = document.getElementById('path-layer');
+            if (pathLayer) {
+                pathLayer.innerHTML = '';
+            }
+            
+            // Reset node highlighting
+            document.querySelectorAll('.node').forEach(node => {
+                node.style.stroke = '#ffffff';
+                node.style.strokeWidth = '3';
+            });
+            
+            currentPath = [];
+        }
+        
+        function updateStats() {
+            document.getElementById('nodeCount').textContent = `Nodes: ${campusNodes.length}`;
+            const connectionCount = Object.values(campusGraph).reduce((sum, neighbors) => sum + Object.keys(neighbors).length, 0);
+            document.getElementById('connectionInfo').textContent = `Connections: ${connectionCount}`;
+        }
+        
+        function addZoomControls(container) {
+            const zoomControls = document.createElement('div');
+            zoomControls.innerHTML = `
+                <div style="position: fixed; bottom: 20px; left: 20px; z-index: 1000; background: white; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); display: flex; flex-direction: column;">
+                    <button id="zoomIn" style="width: 40px; height: 40px; border: none; background: white; cursor: pointer; font-size: 18px; border-bottom: 1px solid #ddd;">+</button>
+                    <button id="zoomOut" style="width: 40px; height: 40px; border: none; background: white; cursor: pointer; font-size: 18px;">−</button>
+                </div>
+            `;
+            document.body.appendChild(zoomControls);
+            
+            const svg = container.querySelector('svg');
+            let scale = 1;
+            
+            document.getElementById('zoomIn').addEventListener('click', () => {
+                scale = Math.min(scale * 1.2, 3);
+                svg.style.transform = `scale(${scale})`;
+                svg.style.transformOrigin = 'center center';
+            });
+            
+            document.getElementById('zoomOut').addEventListener('click', () => {
+                scale = Math.max(scale / 1.2, 0.5);
+                svg.style.transform = `scale(${scale})`;
+                svg.style.transformOrigin = 'center center';
+            });
+        }
+    </script>
+</body>
+</html>

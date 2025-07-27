@@ -1,330 +1,298 @@
 #!/usr/bin/env python3
 """
-Enhanced red curve extraction with room identification for campus pathfinding
+Extracts navigation nodes from an SVG floor plan, builds a weighted graph,
+and finds the shortest path using Dijkstra's algorithm.
 """
-import re
 import json
 import math
+import re
+import sys
+import heapq
+import xml.etree.ElementTree as ET
 
-def extract_red_curves_enhanced(svg_file_path):
-    """Extract all red curve paths from SVG with enhanced room detection"""
+def extract_red_curves_from_svg(svg_file_path):
+    """
+    Extracts all paths with a red stroke from an SVG file using an XML parser.
+    """
+    print(f"INFO: Parsing SVG file: {svg_file_path}")
     red_curves = []
-    
-    with open(svg_file_path, 'r', encoding='utf-8') as file:
-        content = file.read()
-    
-    # Find all paths with red stroke
-    red_path_pattern = r'<path d="([^"]+)" stroke="#FF0000"[^>]*>'
-    matches = re.findall(red_path_pattern, content)
-    
-    print(f"Found {len(matches)} red curve paths")
-    
-    # Also extract room information from the SVG
-    room_areas = extract_room_areas(content)
-    
-    for i, path_data in enumerate(matches):
-        coords = extract_coordinates_from_path(path_data)
-        if coords:
-            # Identify the room/area for this curve
-            room_info = identify_room_for_coordinates(coords[0], room_areas)
-            
-            red_curves.append({
-                'id': f'red_curve_{i+1}',
-                'path_data': path_data,
-                'coordinates': coords,
-                'room_info': room_info
-            })
-    
-    return red_curves
+    try:
+        # Register the SVG namespace to properly find elements
+        namespaces = {'svg': 'http://www.w3.org/2000/svg'}
+        tree = ET.parse(svg_file_path)
+        root = tree.getroot()
 
-def extract_room_areas(svg_content):
-    """Extract colored room areas to help identify locations"""
-    room_areas = []
-    
-    # Look for filled rectangles and paths that might represent rooms
-    # Different colors might represent different room types
-    room_colors = {
-        '#FFD6D4': 'classroom',
-        '#FAF8CB': 'office', 
-        '#CFD7F4': 'lab',
-        '#DEF0D3': 'facility',
-        '#FFE5E5': 'common_area'
-    }
-    
-    for color, room_type in room_colors.items():
-        pattern = rf'<(?:rect|path)[^>]*fill="{re.escape(color)}"[^>]*>'
-        matches = re.findall(pattern, svg_content)
-        
-        for match in matches:
-            # Extract coordinates from the match
-            coords = extract_area_coordinates(match)
-            if coords:
-                room_areas.append({
-                    'type': room_type,
-                    'color': color,
-                    'bounds': coords
-                })
-    
-    print(f"Found {len(room_areas)} room areas")
-    return room_areas
-
-def extract_area_coordinates(element_str):
-    """Extract bounding coordinates from rect or path elements"""
-    coords = {}
-    
-    # For rectangles
-    x_match = re.search(r'x="([0-9.]+)"', element_str)
-    y_match = re.search(r'y="([0-9.]+)"', element_str)
-    width_match = re.search(r'width="([0-9.]+)"', element_str)
-    height_match = re.search(r'height="([0-9.]+)"', element_str)
-    
-    if x_match and y_match and width_match and height_match:
-        x = float(x_match.group(1))
-        y = float(y_match.group(1))
-        width = float(width_match.group(1))
-        height = float(height_match.group(1))
-        
-        return {
-            'x_min': x,
-            'y_min': y,
-            'x_max': x + width,
-            'y_max': y + height,
-            'center_x': x + width/2,
-            'center_y': y + height/2
-        }
-    
-    # For paths, extract min/max coordinates
-    path_match = re.search(r'd="([^"]+)"', element_str)
-    if path_match:
-        path_data = path_match.group(1)
-        coords_in_path = extract_coordinates_from_path(path_data)
-        
-        if coords_in_path:
-            x_coords = [c['x'] for c in coords_in_path]
-            y_coords = [c['y'] for c in coords_in_path]
+        # Find all path elements with a red stroke
+        # Note: Stroke color can be in 'style' attribute or as a direct attribute.
+        for i, path in enumerate(root.findall('.//svg:path', namespaces)):
+            style = path.get('style', '')
+            stroke = path.get('stroke', '')
             
-            return {
-                'x_min': min(x_coords),
-                'y_min': min(y_coords),
-                'x_max': max(x_coords),
-                'y_max': max(y_coords),
-                'center_x': sum(x_coords) / len(x_coords),
-                'center_y': sum(y_coords) / len(y_coords)
-            }
-    
-    return None
-
-def identify_room_for_coordinates(coord, room_areas):
-    """Identify which room a coordinate belongs to"""
-    x, y = coord['x'], coord['y']
-    
-    # Find the closest room area
-    closest_room = None
-    min_distance = float('inf')
-    
-    for room in room_areas:
-        bounds = room['bounds']
-        
-        # Check if point is inside the room
-        if (bounds['x_min'] <= x <= bounds['x_max'] and 
-            bounds['y_min'] <= y <= bounds['y_max']):
-            return {
-                'room_type': room['type'],
-                'position': 'inside',
-                'distance': 0
-            }
-        
-        # Calculate distance to room center
-        dx = x - bounds['center_x']
-        dy = y - bounds['center_y']
-        distance = math.sqrt(dx*dx + dy*dy)
-        
-        if distance < min_distance:
-            min_distance = distance
-            closest_room = room
-    
-    if closest_room:
-        return {
-            'room_type': closest_room['type'],
-            'position': 'near',
-            'distance': min_distance
-        }
-    
-    return {
-        'room_type': 'corridor',
-        'position': 'unknown',
-        'distance': 0
-    }
-
-def extract_coordinates_from_path(path_data):
-    """Extract coordinate pairs from SVG path data"""
-    coordinates = []
-    
-    # Pattern to match Move (M) and Line (L) commands with coordinates
-    coord_pattern = r'[ML]\s*([0-9.]+)\s+([0-9.]+)'
-    matches = re.findall(coord_pattern, path_data)
-    
-    for x, y in matches:
-        coordinates.append({
-            'x': float(x),
-            'y': float(y)
-        })
-    
-    return coordinates
-
-def generate_enhanced_pathfinding_nodes(red_curves):
-    """Generate pathfinding nodes with enhanced labels"""
-    nodes = []
-    room_counters = {}
-    
-    for curve in red_curves:
-        if curve['coordinates']:
-            coord = curve['coordinates'][0]
-            room_info = curve['room_info']
-            
-            # Generate meaningful label based on room info
-            room_type = room_info['room_type']
-            
-            if room_type not in room_counters:
-                room_counters[room_type] = 0
-            room_counters[room_type] += 1
-            
-            # Create descriptive label
-            if room_type == 'classroom':
-                label = f"Classroom Area {room_counters[room_type]}"
-            elif room_type == 'office':
-                label = f"Office {room_counters[room_type]}"
-            elif room_type == 'lab':
-                label = f"Lab {room_counters[room_type]}"
-            elif room_type == 'facility':
-                label = f"Facility {room_counters[room_type]}"
-            elif room_type == 'corridor':
-                label = f"Corridor Point {room_counters[room_type]}"
-            else:
-                label = f"{room_type.title()} {room_counters[room_type]}"
-            
-            # Create node
-            node = {
-                'id': curve['id'],
-                'x': coord['x'],
-                'y': coord['y'],
-                'type': room_type,
-                'label': label,
-                'room_info': room_info,
-                'connections': []
-            }
-            nodes.append(node)
-    
-    return nodes
-
-def calculate_enhanced_connections(nodes, max_distance=200):
-    """Calculate connections with different max distances based on room types"""
-    for i, node in enumerate(nodes):
-        for j, other_node in enumerate(nodes):
-            if i != j:
-                # Calculate distance
-                dx = node['x'] - other_node['x']
-                dy = node['y'] - other_node['y']
-                distance = math.sqrt(dx*dx + dy*dy)
+            if 'stroke:#ff0000' in style.lower() or stroke.lower() == '#ff0000':
+                path_data = path.get('d')
+                if not path_data:
+                    continue
                 
-                # Adjust max distance based on room types
-                current_max = max_distance
-                if node['type'] == 'corridor' or other_node['type'] == 'corridor':
-                    current_max = max_distance * 1.5  # Corridors connect further
-                elif node['type'] == other_node['type']:
-                    current_max = max_distance * 0.8  # Same room type, closer connections
-                
-                if distance <= current_max:
-                    node['connections'].append({
-                        'to': other_node['id'],
-                        'distance': distance,
-                        'connection_type': get_connection_type(node, other_node)
+                # Extract the first coordinate as the node's position
+                coords_match = re.search(r'M\s*([0-9.]+)\s*,?\s*([0-9.]+)', path_data)
+                if coords_match:
+                    x = float(coords_match.group(1))
+                    y = float(coords_match.group(2))
+                    
+                    red_curves.append({
+                        'id': f'red_curve_{i+1}',
+                        'coordinates': [{'x': x, 'y': y}],
+                        # Placeholder for room_info; can be enhanced later
+                        'room_info': {'room_type': 'unknown'}
                     })
 
-def get_connection_type(node1, node2):
-    """Determine the type of connection between two nodes"""
-    if node1['type'] == node2['type']:
-        return 'same_area'
-    elif 'corridor' in [node1['type'], node2['type']]:
-        return 'corridor_access'
-    else:
-        return 'inter_area'
+        print(f"INFO: Found {len(red_curves)} red curve paths in the SVG.")
+        return {'red_curves': red_curves}
 
-def main():
-    svg_file = 'z:/campus connect/3rd_floor.svg'
+    except FileNotFoundError:
+        print(f"ERROR: SVG file not found at '{svg_file_path}'")
+        return None
+    except ET.ParseError:
+        print(f"ERROR: Failed to parse the SVG file. It may be malformed.")
+        return None
+
+def process_and_consolidate_nodes(red_curves_data):
+    """
+    Consolidates very close nodes (like those at a doorway) into a single node.
+    """
+    raw_nodes = red_curves_data.get('red_curves', [])
+    if not raw_nodes:
+        return []
+
+    print("INFO: Consolidating nearby nodes...")
+    consolidated_nodes = []
+    processed_indices = set()
+    # *** MODIFIED: Increased radius to better consolidate node clusters. ***
+    doorway_radius = 100.0
+
+    for i, node1 in enumerate(raw_nodes):
+        if i in processed_indices:
+            continue
+
+        cluster = [node1]
+        processed_indices.add(i)
+
+        for j, node2 in enumerate(raw_nodes):
+            if j not in processed_indices:
+                coord1 = node1['coordinates'][0]
+                coord2 = node2['coordinates'][0]
+                distance = math.hypot(coord1['x'] - coord2['x'], coord1['y'] - coord2['y'])
+                
+                if distance <= doorway_radius:
+                    cluster.append(node2)
+                    processed_indices.add(j)
+        
+        # Average the coordinates of the cluster to create a single central node
+        avg_x = sum(n['coordinates'][0]['x'] for n in cluster) / len(cluster)
+        avg_y = sum(n['coordinates'][0]['y'] for n in cluster) / len(cluster)
+        
+        consolidated_nodes.append({
+            'id': f"node_{len(consolidated_nodes)}",
+            'label': f"Point {len(consolidated_nodes)}", # Generic label
+            'x': round(avg_x, 2),
+            'y': round(avg_y, 2),
+            'type': cluster[0]['room_info']['room_type'],
+            'cluster_size': len(cluster)
+        })
     
-    # Extract red curves with enhanced room detection
-    red_curves = extract_red_curves_enhanced(svg_file)
+    print(f"INFO: Consolidated {len(raw_nodes)} raw points into {len(consolidated_nodes)} nodes.")
+    return consolidated_nodes
+
+def create_weighted_graph(nodes):
+    """
+    Creates a weighted graph where edge weights are the physical distances between nodes.
+    Connects nodes based on a connection radius.
+    """
+    # First, add strategic intermediate nodes in corridors to improve connectivity
+    enhanced_nodes = add_corridor_nodes(nodes)
     
-    # Generate enhanced nodes
-    nodes = generate_enhanced_pathfinding_nodes(red_curves)
+    graph = {node['id']: {} for node in enhanced_nodes}
+    connection_radius = 1400.0  # Balanced radius for neighboring connections with corridor nodes
+
+    for i in range(len(enhanced_nodes)):
+        for j in range(i + 1, len(enhanced_nodes)):
+            node1 = enhanced_nodes[i]
+            node2 = enhanced_nodes[j]
+            distance = math.hypot(node1['x'] - node2['x'], node1['y'] - node2['y'])
+
+            if distance <= connection_radius:
+                # Add bidirectional weighted edge
+                graph[node1['id']][node2['id']] = distance
+                graph[node2['id']][node1['id']] = distance
     
-    # Calculate enhanced connections
-    calculate_enhanced_connections(nodes)
+    return graph, enhanced_nodes
+
+def add_corridor_nodes(nodes):
+    """
+    Add strategic intermediate nodes in corridors and stairways to improve pathfinding connectivity.
+    Also filters out nodes that appear to be outside the main floor plan layout.
+    """
+    print("INFO: Adding corridor and stairway nodes for better connectivity...")
     
-    # Add key facility nodes based on common campus locations
-    facility_nodes = [
-        {'id': 'main_entrance', 'x': 1500, 'y': 2600, 'type': 'entrance', 'label': 'Main Entrance', 'connections': []},
-        {'id': 'library', 'x': 1200, 'y': 2200, 'type': 'library', 'label': 'Library', 'connections': []},
-        {'id': 'cafeteria', 'x': 900, 'y': 2400, 'type': 'cafeteria', 'label': 'Cafeteria', 'connections': []},
-        {'id': 'admin_office', 'x': 2800, 'y': 1000, 'type': 'office', 'label': 'Administration', 'connections': []},
-        {'id': 'computer_lab', 'x': 2900, 'y': 800, 'type': 'lab', 'label': 'Computer Lab', 'connections': []},
-        {'id': 'restrooms', 'x': 1700, 'y': 1800, 'type': 'facility', 'label': 'Restrooms', 'connections': []}
+    # Filter nodes to keep only those within the main building layout
+    # Based on analysis, the main layout appears to be roughly between x: 2000-6000, y: 1200-5200
+    filtered_nodes = []
+    for node in nodes:
+        x, y = node['x'], node['y']
+        # Keep nodes within the main building area
+        if 2000 <= x <= 6000 and 1200 <= y <= 5200:
+            filtered_nodes.append(node)
+        else:
+            print(f"INFO: Filtered out node outside layout: {node['id']} at ({x:.0f}, {y:.0f})")
+    
+    print(f"INFO: Kept {len(filtered_nodes)} nodes within building layout (filtered {len(nodes) - len(filtered_nodes)})")
+    enhanced_nodes = filtered_nodes.copy()
+    corridor_nodes = []
+    
+    # Define strategic corridor positions based on the floor plan layout
+    corridor_positions = [
+        # Main horizontal corridor nodes
+        {'x': 4000, 'y': 2000, 'label': 'Corridor A', 'type': 'corridor'},
+        {'x': 4500, 'y': 2500, 'label': 'Corridor B', 'type': 'corridor'},
+        {'x': 3500, 'y': 3000, 'label': 'Corridor C', 'type': 'corridor'},
+        
+        # Vertical corridor connectors
+        {'x': 3000, 'y': 2500, 'label': 'Corridor D', 'type': 'corridor'},
+        {'x': 5000, 'y': 2000, 'label': 'Corridor E', 'type': 'corridor'},
+        
+        # Strategic mid-building node (similar to str1mid.png pattern)
+        {'x': 3800, 'y': 2800, 'label': 'Central Hub', 'type': 'junction'},
     ]
     
-    # Connect facility nodes to nearby navigation nodes
-    for facility in facility_nodes:
-        for node in nodes:
-            dx = facility['x'] - node['x']
-            dy = facility['y'] - node['y']
-            distance = math.sqrt(dx*dx + dy*dy)
+    # Use only corridor positions (removed stairway positions)
+    all_special_positions = corridor_positions
+    
+    # Add nodes if they don't conflict with existing nodes
+    for i, special in enumerate(all_special_positions):
+        # Check if this position is too close to existing nodes
+        too_close = False
+        min_distance = 300  # Allow closer spacing for strategic nodes like Central Hub
+        
+        for existing_node in enhanced_nodes:
+            distance = math.hypot(special['x'] - existing_node['x'], 
+                                special['y'] - existing_node['y'])
+            if distance < min_distance:
+                too_close = True
+                break
+        
+        if not too_close:
+            node_type = special.get('type', 'corridor')
+            existing_count = len([n for n in corridor_nodes if n['type'] == node_type])
+            prefix = 'stair' if node_type == 'stairway' else 'corridor'
             
-            if distance <= 300:  # Connect to nodes within 300 units
-                facility['connections'].append({
-                    'to': node['id'],
-                    'distance': distance,
-                    'connection_type': 'facility_access'
-                })
-                
-                node['connections'].append({
-                    'to': facility['id'],
-                    'distance': distance,
-                    'connection_type': 'facility_access'
-                })
+            special_node = {
+                'id': f"{prefix}_{existing_count}",
+                'label': special['label'],
+                'x': special['x'],
+                'y': special['y'],
+                'type': node_type,
+                'cluster_size': 1
+            }
+            corridor_nodes.append(special_node)
     
-    nodes.extend(facility_nodes)
+    enhanced_nodes.extend(corridor_nodes)
     
-    # Generate statistics
-    total_connections = sum(len(node['connections']) for node in nodes)
-    room_type_counts = {}
-    for node in nodes:
-        room_type = node['type']
-        room_type_counts[room_type] = room_type_counts.get(room_type, 0) + 1
+    # Count different types
+    stairway_count = len([n for n in corridor_nodes if n['type'] == 'stairway'])
+    corridor_count = len([n for n in corridor_nodes if n['type'] == 'corridor'])
     
-    # Save results
-    results = {
-        'red_curves': red_curves,
-        'pathfinding_nodes': nodes,
-        'statistics': {
-            'total_nodes': len(nodes),
-            'total_connections': total_connections,
-            'average_connections_per_node': total_connections / len(nodes) if nodes else 0,
-            'room_type_distribution': room_type_counts
-        }
-    }
+    print(f"INFO: Added {corridor_count} corridor nodes and {stairway_count} stairway nodes")
+    print(f"INFO: Total nodes: {len(enhanced_nodes)} (filtered original: {len(filtered_nodes)})")
     
-    with open('z:/campus connect/enhanced_red_curves_data.json', 'w') as f:
-        json.dump(results, f, indent=2)
+    return enhanced_nodes
+
+def dijkstra_shortest_path(graph, start_node, end_node):
+    """
+    Dijkstra's algorithm to find the shortest path in a weighted graph.
+    """
+    distances = {node: float('inf') for node in graph}
+    distances[start_node] = 0
+    previous_nodes = {node: None for node in graph}
     
-    print(f"\nEnhanced extraction complete!")
-    print(f"Total nodes: {len(nodes)}")
-    print(f"Total connections: {total_connections}")
-    print(f"Average connections per node: {total_connections / len(nodes):.1f}")
-    print(f"\nRoom type distribution:")
-    for room_type, count in room_type_counts.items():
-        print(f"  {room_type}: {count}")
-    
-    print("Results saved to enhanced_red_curves_data.json")
+    # Priority queue stores tuples of (distance, node_id)
+    pq = [(0, start_node)]
+
+    while pq:
+        current_distance, current_node = heapq.heappop(pq)
+
+        if current_distance > distances[current_node]:
+            continue
+
+        if current_node == end_node:
+            break
+
+        for neighbor, weight in graph[current_node].items():
+            distance = current_distance + weight
+            if distance < distances[neighbor]:
+                distances[neighbor] = distance
+                previous_nodes[neighbor] = current_node
+                heapq.heappush(pq, (distance, neighbor))
+
+    # Reconstruct path
+    path = []
+    current = end_node
+    while current is not None:
+        path.insert(0, current)
+        current = previous_nodes[current]
+        
+    if path and path[0] == start_node:
+        return path
+    else:
+        return None # No path found
+
+def main():
+    """Main execution block."""
+    if len(sys.argv) < 3:
+        print("Usage:")
+        print("  To extract and build graph: python your_script.py extract <input.svg> [output.json]")
+        print("  To find a path: python your_script.py findpath <graph.json> <start_node_id> <end_node_id>")
+        sys.exit(1)
+
+    command = sys.argv[1]
+
+    if command == "extract":
+        input_svg = sys.argv[2]
+        output_json = sys.argv[3] if len(sys.argv) > 3 else "pathfinding_graph.json"
+        
+        red_curves_data = extract_red_curves_from_svg(input_svg)
+        if not red_curves_data:
+            sys.exit(1)
+            
+        nodes = process_and_consolidate_nodes(red_curves_data)
+        graph, enhanced_nodes = create_weighted_graph(nodes)
+        
+        output_data = {'nodes': enhanced_nodes, 'graph': graph}
+        with open(output_json, 'w') as f:
+            json.dump(output_data, f, indent=2)
+        print(f"\n✅ Graph data successfully saved to '{output_json}'")
+
+    elif command == "findpath":
+        if len(sys.argv) != 5:
+            print("Usage: python your_script.py findpath <graph.json> <start_node_id> <end_node_id>")
+            sys.exit(1)
+        
+        graph_file = sys.argv[2]
+        start_id = sys.argv[3]
+        end_id = sys.argv[4]
+        
+        try:
+            with open(graph_file, 'r') as f:
+                data = json.load(f)
+            
+            path = dijkstra_shortest_path(data['graph'], start_id, end_id)
+            
+            if path:
+                print(f"\n✅ Shortest path found from {start_id} to {end_id}:")
+                print(" -> ".join(path))
+            else:
+                print(f"\n❌ No path found between {start_id} and {end_id}.")
+        except FileNotFoundError:
+            print(f"ERROR: Graph file not found at '{graph_file}'")
 
 if __name__ == "__main__":
     main()
