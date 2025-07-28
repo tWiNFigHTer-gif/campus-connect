@@ -162,12 +162,26 @@
         
         .node {
             cursor: pointer;
-            transition: all 0.2s ease;
+            /* Removed transition and hover effects to prevent glitching */
         }
         
-        .node:hover {
-            opacity: 0.8;
-            transform: scale(1.1);
+        .node.highlighted {
+            stroke-width: 5;
+            stroke: #ffff00;
+        }
+        
+        .node-label {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 1000;
+            white-space: nowrap;
+            display: none;
         }
         
         .loading {
@@ -210,11 +224,33 @@
     </div>
     
     <div class="map-container">
-        <div id="loading" class="loading">Loading campus map...</div>
+        <div id="loading" class="loading">
+            <div>Loading campus map...</div>
+            <div id="error-display" style="color: red; margin-top: 10px; display: none;"></div>
+        </div>
         <div id="svg-container" style="display: none;"></div>
+        <div id="node-label" class="node-label"></div>
     </div>
 
     <script>
+        // Add comprehensive error handling
+        window.addEventListener('error', function(e) {
+            console.error('Global Error:', e.error || e.message);
+            const errorDiv = document.getElementById('error-display');
+            if (errorDiv) {
+                errorDiv.style.display = 'block';
+                errorDiv.innerHTML = `JavaScript Error: ${e.message || 'Unknown error'}<br>Check console for details`;
+            }
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Unhandled Promise Rejection:', e.reason);
+            const errorDiv = document.getElementById('error-display');
+            if (errorDiv) {
+                errorDiv.style.display = 'block';
+                errorDiv.innerHTML = `Promise Error: ${e.reason}<br>Check console for details`;
+            }
+        });
         // Global variables
         let campusNodes = [];
         let campusGraph = {};
@@ -266,7 +302,8 @@
                 // Step 2: Load graph data
                 console.log('📂 Loading graph data...');
                 status.textContent = 'Loading navigation data...';
-                const graphResponse = await fetch('pathfinding_graph.json');
+                const timestamp = Date.now(); // Strong cache buster
+                const graphResponse = await fetch(`pathfinding_graph.json?v=${timestamp}&nocache=${Math.random()}`);
                 if (!graphResponse.ok) throw new Error('Failed to load graph data');
                 const graphData = await graphResponse.json();
                 
@@ -297,6 +334,10 @@
                 campusNodes = graphData.nodes || [];
                 campusGraph = graphData.graph || {};
                 
+                console.log('📊 Loaded nodes:', campusNodes.length);
+                console.log('📊 First few nodes:', campusNodes.slice(0, 3));
+                console.log('📊 Node coordinates sample:', campusNodes.map(n => `${n.label}: (${n.x}, ${n.y})`).slice(0, 5));
+                
                 // Create visual nodes
                 createNodes();
                 
@@ -314,10 +355,26 @@
                 console.error('❌ Error loading application:', error);
                 status.textContent = 'Error loading';
                 loading.innerHTML = `
-                    <div style="color: red;">
-                        <h3>Error Loading Campus Connect</h3>
-                        <p>${error.message}</p>
-                        <p>Please check that all files are present and try again.</p>
+                    <div style="color: red; padding: 20px; text-align: center;">
+                        <h3>❌ Error Loading Campus Connect</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>Please check:</p>
+                        <ul style="text-align: left; display: inline-block;">
+                            <li>Server is running on port 8082</li>
+                            <li>Files exist: pathfinding_graph.json, 2nd floor (1) replaced.svg</li>
+                            <li>Browser console for detailed error messages</li>
+                        </ul>
+                        <p><a href="test-files.html">Test file loading</a></p>
+                    </div>
+                `;
+                
+                // Show basic fallback
+                container.style.display = 'block';
+                container.innerHTML = `
+                    <div style="padding: 20px; text-align: center; background: #f0f0f0;">
+                        <h2>Campus Connect Fallback Mode</h2>
+                        <p>The interactive map failed to load, but the basic interface is available.</p>
+                        <p>Server URL: <a href="http://localhost:8082/">http://localhost:8082/</a></p>
                     </div>
                 `;
             }
@@ -352,8 +409,32 @@
                 circle.setAttribute('data-id', node.id);
                 circle.setAttribute('data-label', node.label);
                 
-                // Add click handler
+                // Add click handler and stable hover feedback
                 circle.addEventListener('click', () => selectNode(node));
+                
+                // Add stable hover effects with labels
+                circle.addEventListener('mouseenter', function(e) {
+                    // Visual feedback
+                    this.style.strokeWidth = '5';
+                    this.style.stroke = '#ffff00';
+                    
+                    // Show label
+                    showNodeLabel(node, e);
+                });
+                
+                circle.addEventListener('mouseleave', function() {
+                    // Reset visual feedback
+                    this.style.strokeWidth = '3';
+                    this.style.stroke = '#ffffff';
+                    
+                    // Hide label
+                    hideNodeLabel();
+                });
+                
+                // Update label position on mouse move
+                circle.addEventListener('mousemove', function(e) {
+                    updateLabelPosition(e);
+                });
                 
                 nodesLayer.appendChild(circle);
             });
@@ -537,9 +618,29 @@
         }
         
         function updateStats() {
-            document.getElementById('nodeCount').textContent = `Nodes: ${campusNodes.length}`;
+            const nodeCount = document.getElementById('nodeCount');
+            const connectionInfo = document.getElementById('connectionInfo');
+            
+            nodeCount.textContent = `Nodes: ${campusNodes.length}`;
             const connectionCount = Object.values(campusGraph).reduce((sum, neighbors) => sum + Object.keys(neighbors).length, 0);
-            document.getElementById('connectionInfo').textContent = `Connections: ${connectionCount}`;
+            connectionInfo.textContent = `Connections: ${connectionCount}`;
+            
+            // Add debug info to check if new coordinates loaded
+            if (campusNodes.length > 0) {
+                const firstNode = campusNodes[0];
+                const debugInfo = document.createElement('div');
+                debugInfo.style.fontSize = '10px';
+                debugInfo.style.color = '#999';
+                debugInfo.style.marginTop = '10px';
+                debugInfo.innerHTML = `Debug: ${firstNode.label} at (${firstNode.x}, ${firstNode.y})`;
+                
+                // Remove old debug info
+                const oldDebug = document.querySelector('.debug-info');
+                if (oldDebug) oldDebug.remove();
+                
+                debugInfo.className = 'debug-info';
+                document.querySelector('.controls').appendChild(debugInfo);
+            }
         }
         
         function addZoomControls(container) {
@@ -566,6 +667,38 @@
                 svg.style.transform = `scale(${scale})`;
                 svg.style.transformOrigin = 'center center';
             });
+        }
+        
+        // Node label functions
+        function showNodeLabel(node, event) {
+            const label = document.getElementById('node-label');
+            if (label) {
+                label.textContent = `${node.label} (${Math.round(node.x)}, ${Math.round(node.y)})`;
+                label.style.display = 'block';
+                updateLabelPosition(event);
+            }
+        }
+        
+        function hideNodeLabel() {
+            const label = document.getElementById('node-label');
+            if (label) {
+                label.style.display = 'none';
+            }
+        }
+        
+        function updateLabelPosition(event) {
+            const label = document.getElementById('node-label');
+            if (label && label.style.display !== 'none') {
+                const container = document.querySelector('.map-container');
+                const containerRect = container.getBoundingClientRect();
+                
+                // Position label relative to the map container
+                const x = event.clientX - containerRect.left + 10;
+                const y = event.clientY - containerRect.top - 30;
+                
+                label.style.left = x + 'px';
+                label.style.top = y + 'px';
+            }
         }
     </script>
 </body>

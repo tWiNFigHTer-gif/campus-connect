@@ -56,6 +56,45 @@ def extract_red_curves_from_svg(svg_file_path):
         print(f"ERROR: Failed to parse the SVG file. It may be malformed.")
         return None
 
+def create_nodes_from_coordinates():
+    """
+    Create nodes from provided coordinates (fill #6C1B1C from example SVG)
+    These coordinates are already in the correct SVG coordinate system (8830x6238)
+    """
+    predefined_nodes = [
+        {'x': 4095.5, 'y': 2190, 'label': 'Node 1', 'type': 'unknown'},
+        {'x': 2620.5, 'y': 4942.5, 'label': 'Node 2', 'type': 'unknown'},
+        {'x': 3363, 'y': 4860, 'label': 'Node 3', 'type': 'unknown'},
+        {'x': 3412, 'y': 4652.7, 'label': 'Node 4', 'type': 'unknown'},
+        {'x': 3392.6, 'y': 4121, 'label': 'Node 5', 'type': 'unknown'},
+        {'x': 3359.5, 'y': 4043, 'label': 'Node 6', 'type': 'unknown'},
+        {'x': 2288.8, 'y': 3917, 'label': 'Node 7', 'type': 'unknown'},
+        {'x': 2206, 'y': 3994, 'label': 'Node 8', 'type': 'unknown'},
+        {'x': 2156.5, 'y': 4857, 'label': 'Node 9', 'type': 'unknown'},
+        {'x': 2763.5, 'y': 3221, 'label': 'Node 10', 'type': 'unknown'},
+        {'x': 3603.4, 'y': 2619.5, 'label': 'Node 11', 'type': 'unknown'},
+        {'x': 4559.5, 'y': 1693, 'label': 'Node 12', 'type': 'unknown'},
+        {'x': 5009.5, 'y': 1365, 'label': 'Node 13', 'type': 'unknown'},
+        {'x': 5557.5, 'y': 1365, 'label': 'Node 14', 'type': 'unknown'},
+        {'x': 5633.5, 'y': 1256, 'label': 'Node 15', 'type': 'unknown'},
+        {'x': 5744, 'y': 1252, 'label': 'Node 16', 'type': 'unknown'},
+        {'x': 5743, 'y': 1369.5, 'label': 'Node 17', 'type': 'unknown'},
+        {'x': 5678, 'y': 1462.5, 'label': 'Node 18', 'type': 'unknown'},
+        {'x': 5674.4, 'y': 2469.5, 'label': 'Node 19', 'type': 'unknown'},
+        {'x': 5660.5, 'y': 2574, 'label': 'Node 20', 'type': 'unknown'},
+        {'x': 5557.5, 'y': 2593, 'label': 'Node 21', 'type': 'unknown'},
+        {'x': 4996.5, 'y': 2598.5, 'label': 'Node 22', 'type': 'unknown'},
+        {'x': 4554.5, 'y': 2255, 'label': 'Node 23', 'type': 'unknown'},
+    ]
+    
+    # Add IDs to the nodes
+    for i, node in enumerate(predefined_nodes):
+        node['id'] = f'node_{i}'
+        node['cluster_size'] = 1
+    
+    print(f"INFO: Created {len(predefined_nodes)} nodes from provided coordinates")
+    return predefined_nodes
+
 def process_and_consolidate_nodes(red_curves_data):
     """
     Consolidates very close nodes (like those at a doorway) into a single node.
@@ -151,17 +190,7 @@ def add_corridor_nodes(nodes):
     
     # Define strategic corridor positions based on the floor plan layout
     corridor_positions = [
-        # Main horizontal corridor nodes
-        {'x': 4000, 'y': 2000, 'label': 'Corridor A', 'type': 'corridor'},
-        {'x': 4500, 'y': 2500, 'label': 'Corridor B', 'type': 'corridor'},
-        {'x': 3500, 'y': 3000, 'label': 'Corridor C', 'type': 'corridor'},
-        
-        # Vertical corridor connectors
-        {'x': 3000, 'y': 2500, 'label': 'Corridor D', 'type': 'corridor'},
-        {'x': 5000, 'y': 2000, 'label': 'Corridor E', 'type': 'corridor'},
-        
-        # Strategic mid-building node (similar to str1mid.png pattern)
-        {'x': 3800, 'y': 2800, 'label': 'Central Hub', 'type': 'junction'},
+        # All corridor nodes removed - using only the 23 original nodes
     ]
     
     # Use only corridor positions (removed stairway positions)
@@ -259,11 +288,9 @@ def main():
         input_svg = sys.argv[2]
         output_json = sys.argv[3] if len(sys.argv) > 3 else "pathfinding_graph.json"
         
-        red_curves_data = extract_red_curves_from_svg(input_svg)
-        if not red_curves_data:
-            sys.exit(1)
-            
-        nodes = process_and_consolidate_nodes(red_curves_data)
+        # Use predefined coordinates instead of extracting from SVG
+        print("INFO: Using predefined node coordinates from example SVG")
+        nodes = create_nodes_from_coordinates()
         graph, enhanced_nodes = create_weighted_graph(nodes)
         
         output_data = {'nodes': enhanced_nodes, 'graph': graph}
