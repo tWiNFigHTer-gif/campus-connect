@@ -509,7 +509,7 @@
             
             console.log('🔍 Finding path from', fromId, 'to', toId);
             
-            const path = dijkstraPath(campusGraph, fromId, toId);
+            const path = astarPath(campusGraph, campusNodes, fromId, toId);
             if (path && path.length > 0) {
                 drawPath(path);
                 currentPath = path;
@@ -520,42 +520,89 @@
             }
         }
         
-        function dijkstraPath(graph, start, end) {
-            const distances = {};
+        function getNodeCoordinates(nodes, nodeId) {
+            for (const node of nodes) {
+                if (node.id === nodeId) {
+                    return { x: node.x, y: node.y };
+                }
+            }
+            return null;
+        }
+        
+        function heuristicDistance(coord1, coord2) {
+            const dx = coord2.x - coord1.x;
+            const dy = coord2.y - coord1.y;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+        
+        function astarPath(graph, nodes, start, end) {
+            // Get coordinates for heuristic calculation
+            const endCoords = getNodeCoordinates(nodes, end);
+            const startCoords = getNodeCoordinates(nodes, start);
+            
+            if (!endCoords || !startCoords) {
+                console.error('Could not find coordinates for start or end node');
+                return null;
+            }
+            
+            const gScore = {};
+            const fScore = {};
             const previous = {};
-            const unvisited = new Set();
+            const openSet = new Set();
+            const closedSet = new Set();
             
             // Initialize
             for (const node in graph) {
-                distances[node] = Infinity;
+                gScore[node] = Infinity;
+                fScore[node] = Infinity;
                 previous[node] = null;
-                unvisited.add(node);
             }
-            distances[start] = 0;
             
-            while (unvisited.size > 0) {
-                // Find unvisited node with minimum distance
+            gScore[start] = 0;
+            fScore[start] = heuristicDistance(startCoords, endCoords);
+            openSet.add(start);
+            
+            while (openSet.size > 0) {
+                // Find node in openSet with lowest fScore
                 let current = null;
-                let minDistance = Infinity;
-                for (const node of unvisited) {
-                    if (distances[node] < minDistance) {
-                        minDistance = distances[node];
+                let minFScore = Infinity;
+                for (const node of openSet) {
+                    if (fScore[node] < minFScore) {
+                        minFScore = fScore[node];
                         current = node;
                     }
                 }
                 
-                if (current === null || current === end) break;
+                if (current === null) break;
                 
-                unvisited.delete(current);
+                // Check if we've reached the goal
+                if (current === end) {
+                    break;
+                }
+                
+                openSet.delete(current);
+                closedSet.add(current);
                 
                 // Check neighbors
                 for (const neighbor in graph[current] || {}) {
-                    if (!unvisited.has(neighbor)) continue;
+                    if (closedSet.has(neighbor)) continue;
                     
-                    const newDistance = distances[current] + graph[current][neighbor];
-                    if (newDistance < distances[neighbor]) {
-                        distances[neighbor] = newDistance;
-                        previous[neighbor] = current;
+                    const tentativeGScore = gScore[current] + graph[current][neighbor];
+                    
+                    if (!openSet.has(neighbor)) {
+                        openSet.add(neighbor);
+                    } else if (tentativeGScore >= gScore[neighbor]) {
+                        continue;
+                    }
+                    
+                    // This path is the best until now
+                    previous[neighbor] = current;
+                    gScore[neighbor] = tentativeGScore;
+                    
+                    const neighborCoords = getNodeCoordinates(nodes, neighbor);
+                    if (neighborCoords) {
+                        const hScore = heuristicDistance(neighborCoords, endCoords);
+                        fScore[neighbor] = gScore[neighbor] + hScore;
                     }
                 }
             }
@@ -568,7 +615,7 @@
                 current = previous[current];
             }
             
-            return path.length > 1 ? path : null;
+            return path.length > 1 && path[0] === start ? path : null;
         }
         
         function drawPath(path) {

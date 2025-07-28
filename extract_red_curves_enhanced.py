@@ -235,32 +235,90 @@ def add_corridor_nodes(nodes):
     
     return enhanced_nodes
 
-def dijkstra_shortest_path(graph, start_node, end_node):
+def get_node_coordinates(nodes_list, node_id):
     """
-    Dijkstra's algorithm to find the shortest path in a weighted graph.
+    Helper function to get coordinates of a node by its ID.
     """
-    distances = {node: float('inf') for node in graph}
-    distances[start_node] = 0
+    for node in nodes_list:
+        if node['id'] == node_id:
+            return node['x'], node['y']
+    return None, None
+
+def heuristic_distance(node1_coords, node2_coords):
+    """
+    Calculate the Euclidean distance heuristic between two nodes.
+    This is admissible (never overestimates) for pathfinding.
+    """
+    x1, y1 = node1_coords
+    x2, y2 = node2_coords
+    return math.hypot(x2 - x1, y2 - y1)
+
+def astar_shortest_path(graph, nodes_list, start_node, end_node):
+    """
+    A* algorithm to find the shortest path in a weighted graph.
+    More efficient than Dijkstra's as it uses a heuristic to guide the search.
+    """
+    import time
+    start_time = time.time()
+    nodes_explored = 0
+    
+    # Get coordinates for heuristic calculation
+    end_coords = get_node_coordinates(nodes_list, end_node)
+    if end_coords[0] is None:
+        print(f"ERROR: Could not find coordinates for end node: {end_node}")
+        return None
+    
+    # Initialize data structures
+    g_score = {node: float('inf') for node in graph}  # Cost from start to node
+    f_score = {node: float('inf') for node in graph}  # g_score + heuristic
     previous_nodes = {node: None for node in graph}
     
-    # Priority queue stores tuples of (distance, node_id)
-    pq = [(0, start_node)]
+    g_score[start_node] = 0
+    start_coords = get_node_coordinates(nodes_list, start_node)
+    if start_coords[0] is None:
+        print(f"ERROR: Could not find coordinates for start node: {start_node}")
+        return None
+    
+    f_score[start_node] = heuristic_distance(start_coords, end_coords)
+    
+    # Priority queue stores tuples of (f_score, node_id)
+    open_set = [(f_score[start_node], start_node)]
+    closed_set = set()
 
-    while pq:
-        current_distance, current_node = heapq.heappop(pq)
-
-        if current_distance > distances[current_node]:
+    while open_set:
+        current_f, current_node = heapq.heappop(open_set)
+        nodes_explored += 1
+        
+        # Skip if we've already processed this node
+        if current_node in closed_set:
             continue
+            
+        # Add to closed set
+        closed_set.add(current_node)
 
+        # Check if we've reached the goal
         if current_node == end_node:
             break
 
-        for neighbor, weight in graph[current_node].items():
-            distance = current_distance + weight
-            if distance < distances[neighbor]:
-                distances[neighbor] = distance
+        # Explore neighbors
+        for neighbor, edge_weight in graph[current_node].items():
+            if neighbor in closed_set:
+                continue
+                
+            # Calculate tentative g_score
+            tentative_g = g_score[current_node] + edge_weight
+            
+            # If this path to neighbor is better than any previous one
+            if tentative_g < g_score[neighbor]:
                 previous_nodes[neighbor] = current_node
-                heapq.heappush(pq, (distance, neighbor))
+                g_score[neighbor] = tentative_g
+                
+                # Calculate heuristic for neighbor
+                neighbor_coords = get_node_coordinates(nodes_list, neighbor)
+                if neighbor_coords[0] is not None:
+                    h_score = heuristic_distance(neighbor_coords, end_coords)
+                    f_score[neighbor] = g_score[neighbor] + h_score
+                    heapq.heappush(open_set, (f_score[neighbor], neighbor))
 
     # Reconstruct path
     path = []
@@ -268,11 +326,15 @@ def dijkstra_shortest_path(graph, start_node, end_node):
     while current is not None:
         path.insert(0, current)
         current = previous_nodes[current]
-        
+    
+    end_time = time.time()
+    execution_time = (end_time - start_time) * 1000  # Convert to milliseconds
+    
     if path and path[0] == start_node:
+        print(f"INFO: A* explored {nodes_explored} nodes in {execution_time:.2f}ms")
         return path
     else:
-        return None # No path found
+        return None  # No path found
 
 def main():
     """Main execution block."""
@@ -311,10 +373,10 @@ def main():
             with open(graph_file, 'r') as f:
                 data = json.load(f)
             
-            path = dijkstra_shortest_path(data['graph'], start_id, end_id)
+            path = astar_shortest_path(data['graph'], data['nodes'], start_id, end_id)
             
             if path:
-                print(f"\n✅ Shortest path found from {start_id} to {end_id}:")
+                print(f"\n✅ Shortest path found from {start_id} to {end_id} using A* algorithm:")
                 print(" -> ".join(path))
             else:
                 print(f"\n❌ No path found between {start_id} and {end_id}.")
