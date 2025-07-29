@@ -151,7 +151,7 @@ def create_weighted_graph(nodes):
     enhanced_nodes = add_corridor_nodes(nodes)
     
     graph = {node['id']: {} for node in enhanced_nodes}
-    connection_radius = 1400.0  # Balanced radius for neighboring connections with corridor nodes
+    connection_radius = 2000.0  # Increased radius for better connectivity between all nodes
 
     for i in range(len(enhanced_nodes)):
         for j in range(i + 1, len(enhanced_nodes)):
