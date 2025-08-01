@@ -303,7 +303,7 @@
                 console.log('📂 Loading graph data...');
                 status.textContent = 'Loading navigation data...';
                 const timestamp = Date.now(); // Strong cache buster
-                const graphResponse = await fetch(`pathfinding_graph.json?v=${timestamp}&nocache=${Math.random()}`);
+                const graphResponse = await fetch(`pathfinding_graph_structural.json?v=${timestamp}&nocache=${Math.random()}`);
                 if (!graphResponse.ok) throw new Error('Failed to load graph data');
                 const graphData = await graphResponse.json();
                 
@@ -361,7 +361,7 @@
                         <p>Please check:</p>
                         <ul style="text-align: left; display: inline-block;">
                             <li>Server is running on port 8082</li>
-                            <li>Files exist: pathfinding_graph.json, 2nd-floor-map.svg</li>
+                            <li>Files exist: pathfinding_graph_structural.json, 2nd-floor-map.svg</li>
                             <li>Browser console for detailed error messages</li>
                         </ul>
                         <p><a href="test-files.html">Test file loading</a></p>
@@ -441,19 +441,22 @@
         }
         
         function getNodeRadius(node) {
-            if (node.type === 'junction') return 20;
-            if (node.type === 'corridor') return 16;
-            return 14;
+            switch (node.type) {
+                case 'intersection': return 25; // Larger for intersection hubs
+                case 'class': return 18; // Medium for class destinations
+                case 'stairway': return 20; // Medium-large for stairways
+                case 'invisible': return 12; // Smaller for corridor waypoints
+                default: return 14;
+            }
         }
         
         function getNodeColor(node) {
             switch (node.type) {
-                case 'junction': return '#FFD43B'; // Yellow for central hub
-                case 'corridor': return '#51CF66'; // Green for corridors
-                case 'office': return '#10B981';
-                case 'lab': return '#3B82F6';
-                case 'classroom': return '#8B5CF6';
-                default: return '#339AF0'; // Blue for regular nodes
+                case 'class': return '#DC2626'; // Red for class nodes (#6C1B1C equivalent)
+                case 'intersection': return '#7C3AED'; // Purple for intersection nodes (#3500C6 equivalent)
+                case 'invisible': return '#10B981'; // Green for invisible corridor nodes (#33CA60 equivalent)
+                case 'stairway': return '#F59E0B'; // Yellow for stairway nodes (#FFAE00 equivalent)
+                default: return '#339AF0'; // Blue fallback
             }
         }
         
@@ -463,13 +466,17 @@
             const findButton = document.getElementById('findPath');
             const clearButton = document.getElementById('clearPath');
             
-            // Populate dropdowns
-            campusNodes.forEach(node => {
+            // Populate dropdowns with only searchable nodes (class and stairway nodes)
+            const searchableNodes = campusNodes.filter(node => node.searchable === true);
+            
+            searchableNodes.forEach(node => {
                 const option1 = new Option(node.label, node.id);
                 const option2 = new Option(node.label, node.id);
                 fromSelect.appendChild(option1);
                 toSelect.appendChild(option2);
             });
+            
+            console.log(`📋 Added ${searchableNodes.length} searchable locations to dropdowns`);
             
             // Event handlers
             findButton.addEventListener('click', findPath);
@@ -646,6 +653,9 @@
             if (nodeElement) {
                 nodeElement.style.stroke = color;
                 nodeElement.style.strokeWidth = '5';
+                nodeElement.classList.add('highlighted');
+            } else {
+                console.warn(`Could not find node element for highlighting: ${nodeId}`);
             }
         }
         
@@ -655,10 +665,11 @@
                 pathLayer.innerHTML = '';
             }
             
-            // Reset node highlighting
+            // Reset node highlighting - remove all highlighted classes and reset styles
             document.querySelectorAll('.node').forEach(node => {
                 node.style.stroke = '#ffffff';
                 node.style.strokeWidth = '3';
+                node.classList.remove('highlighted');
             });
             
             currentPath = [];

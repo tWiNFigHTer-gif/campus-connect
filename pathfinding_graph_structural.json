@@ -1,0 +1,462 @@
+{
+  "nodes": [
+    {
+      "id": "class_1",
+      "x": 2620.5,
+      "y": 4942.5,
+      "label": "Classroom 1",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "class_2",
+      "x": 3377.5,
+      "y": 4862.0,
+      "label": "Classroom 2",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "class_3",
+      "x": 3375.5,
+      "y": 4128.0,
+      "label": "Classroom 3",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "class_4",
+      "x": 3356.5,
+      "y": 4045.0,
+      "label": "Classroom 4",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "class_5",
+      "x": 2287.5,
+      "y": 3928.0,
+      "label": "Classroom 5",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "class_6",
+      "x": 2211.5,
+      "y": 3999.0,
+      "label": "Classroom 6",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "class_7",
+      "x": 2138.0,
+      "y": 4857.0,
+      "label": "Classroom 7",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "class_8",
+      "x": 3602.5,
+      "y": 2628.0,
+      "label": "Classroom 8",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "class_9",
+      "x": 5744.5,
+      "y": 1245.0,
+      "label": "Classroom 9",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "class_10",
+      "x": 5744.5,
+      "y": 1359.0,
+      "label": "Classroom 10",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "class_11",
+      "x": 5658.5,
+      "y": 1462.0,
+      "label": "Classroom 11",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "class_12",
+      "x": 5658.5,
+      "y": 2469.0,
+      "label": "Classroom 12",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "class_13",
+      "x": 5546.5,
+      "y": 2573.0,
+      "label": "Classroom 13",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "class_14",
+      "x": 4991.5,
+      "y": 2573.0,
+      "label": "Classroom 14",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "class_15",
+      "x": 3376.5,
+      "y": 4664.0,
+      "label": "Classroom 15",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "class_16",
+      "x": 4547.5,
+      "y": 1689.0,
+      "label": "Classroom 16",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "class_17",
+      "x": 4989.5,
+      "y": 1352.0,
+      "label": "Classroom 17",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "class_18",
+      "x": 5550.5,
+      "y": 1352.0,
+      "label": "Classroom 18",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "class_19",
+      "x": 5658.5,
+      "y": 2573.0,
+      "label": "Classroom 19",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "class_20",
+      "x": 4552.5,
+      "y": 2240.0,
+      "label": "Classroom 20",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "intersection_1",
+      "x": 2130.0,
+      "y": 4746.5,
+      "label": "Main Hub 1",
+      "type": "intersection",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "intersection_2",
+      "x": 5658.5,
+      "y": 1352.0,
+      "label": "Main Hub 2",
+      "type": "intersection",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "intersection_3",
+      "x": 4278.0,
+      "y": 1961.5,
+      "label": "Main Hub 3",
+      "type": "intersection",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "intersection_4",
+      "x": 2764.0,
+      "y": 3457.5,
+      "label": "Main Hub 4",
+      "type": "intersection",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "invisible_1",
+      "x": 2905.1,
+      "y": 4944.5,
+      "label": "Corridor Point 1",
+      "type": "invisible",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "invisible_2",
+      "x": 2389.8,
+      "y": 4859.0,
+      "label": "Corridor Point 2",
+      "type": "invisible",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "invisible_3",
+      "x": 3129.0,
+      "y": 4858.5,
+      "label": "Corridor Point 3",
+      "type": "invisible",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "invisible_4",
+      "x": 4883.0,
+      "y": 2574.5,
+      "label": "Corridor Point 4",
+      "type": "invisible",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "invisible_5",
+      "x": 4897.0,
+      "y": 1353.5,
+      "label": "Corridor Point 5",
+      "type": "invisible",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "invisible_6",
+      "x": 2131.0,
+      "y": 4082.5,
+      "label": "Corridor Point 6",
+      "type": "invisible",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "stairway_1",
+      "x": 5662.0,
+      "y": 1245.5,
+      "label": "Stairway A",
+      "type": "stairway",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "stairway_2",
+      "x": 1956.5,
+      "y": 4748.0,
+      "label": "Stairway B",
+      "type": "stairway",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "stairway_3",
+      "x": 4071.5,
+      "y": 2165.0,
+      "label": "Stairway C",
+      "type": "stairway",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "stairway_4",
+      "x": 2763.5,
+      "y": 3221.0,
+      "label": "Stairway D",
+      "type": "stairway",
+      "searchable": true,
+      "cluster_size": 1
+    }
+  ],
+  "graph": {
+    "class_1": {
+      "invisible_1": 284.60702732012777,
+      "invisible_2": 245.34616361378042
+    },
+    "class_2": {
+      "invisible_3": 248.52464666507424,
+      "class_3": 734.0027247905828
+    },
+    "class_3": {
+      "class_4": 85.14693182963201,
+      "class_15": 536.0009328350092,
+      "class_2": 734.0027247905828
+    },
+    "class_4": {
+      "intersection_4": 834.3934923044402,
+      "class_3": 85.14693182963201,
+      "class_15": 619.3230174957168
+    },
+    "class_5": {
+      "class_6": 104.00480758118829,
+      "intersection_4": 669.643561904391
+    },
+    "class_6": {
+      "intersection_4": 773.6139217982055,
+      "invisible_6": 115.98491281196878,
+      "class_5": 104.00480758118829
+    },
+    "class_7": {
+      "intersection_1": 110.7892142764809,
+      "invisible_2": 251.80794268648495,
+      "invisible_6": 774.5316326658325
+    },
+    "class_8": {
+      "intersection_3": 948.9586397730936,
+      "intersection_4": 1179.4712798538164
+    },
+    "class_9": {
+      "class_10": 114.0,
+      "intersection_2": 137.27709204379295
+    },
+    "class_10": {
+      "class_11": 134.18271125595876,
+      "intersection_2": 86.28441342444185,
+      "class_9": 114.0
+    },
+    "class_11": {
+      "class_10": 134.18271125595876,
+      "intersection_2": 110.0
+    },
+    "class_12": {
+      "class_19": 104.0
+    },
+    "class_13": {
+      "invisible_4": 663.5016955517144
+    },
+    "class_14": {
+      "invisible_4": 108.51036816820778
+    },
+    "class_15": {
+      "class_3": 536.0009328350092,
+      "class_4": 619.3230174957168
+    },
+    "class_16": {
+      "intersection_3": 383.2577461709026,
+      "invisible_5": 484.46929727279934
+    },
+    "class_17": {
+      "invisible_5": 92.51216136270949
+    },
+    "class_18": {
+      "invisible_5": 653.50172149735
+    },
+    "class_19": {
+      "invisible_4": 775.5014506756257,
+      "class_12": 104.0
+    },
+    "class_20": {
+      "invisible_4": 470.2345159598559,
+      "intersection_3": 391.04027925521945
+    },
+    "intersection_1": {
+      "stairway_2": 173.5064840286956,
+      "class_7": 110.7892142764809,
+      "invisible_6": 664.0007530116212
+    },
+    "intersection_2": {
+      "stairway_1": 106.55749621683123,
+      "invisible_5": 761.5014773459077,
+      "class_11": 110.0,
+      "class_10": 86.28441342444185,
+      "class_9": 137.27709204379295
+    },
+    "intersection_3": {
+      "intersection_4": 2128.429467941092,
+      "stairway_3": 289.9215411106943,
+      "class_8": 948.9586397730936,
+      "class_16": 383.2577461709026,
+      "invisible_4": 861.274636802919,
+      "class_20": 391.04027925521945
+    },
+    "intersection_4": {
+      "intersection_3": 2128.429467941092,
+      "stairway_4": 236.5005285406356,
+      "class_8": 1179.4712798538164,
+      "class_4": 834.3934923044402,
+      "class_6": 773.6139217982055,
+      "class_5": 669.643561904391
+    },
+    "invisible_1": {
+      "class_1": 284.60702732012777,
+      "invisible_3": 239.84830622708188
+    },
+    "invisible_2": {
+      "class_1": 245.34616361378042,
+      "class_7": 251.80794268648495
+    },
+    "invisible_3": {
+      "invisible_1": 239.84830622708188,
+      "class_2": 248.52464666507424
+    },
+    "invisible_4": {
+      "class_13": 663.5016955517144,
+      "class_14": 108.51036816820778,
+      "class_19": 775.5014506756257,
+      "class_20": 470.2345159598559,
+      "intersection_3": 861.274636802919
+    },
+    "invisible_5": {
+      "class_16": 484.46929727279934,
+      "class_17": 92.51216136270949,
+      "class_18": 653.50172149735,
+      "intersection_2": 761.5014773459077
+    },
+    "invisible_6": {
+      "class_6": 115.98491281196878,
+      "intersection_1": 664.0007530116212,
+      "class_7": 774.5316326658325
+    },
+    "stairway_1": {
+      "intersection_2": 106.55749621683123
+    },
+    "stairway_2": {
+      "intersection_1": 173.5064840286956
+    },
+    "stairway_3": {
+      "intersection_3": 289.9215411106943
+    },
+    "stairway_4": {
+      "intersection_4": 236.5005285406356
+    }
+  }
+}
