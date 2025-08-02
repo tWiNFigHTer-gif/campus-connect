@@ -7,7 +7,7 @@ body{
     background-color: #F5F5F5 ;
     font-family: Arial, sans-serif;
     margin: 0px;
-    height: 750px;
+    min-height: 750px;
     
 }
 
