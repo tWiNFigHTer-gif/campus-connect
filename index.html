@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=close" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +11,25 @@
 <body>
     <div class="top-section">
         <p class="head">CampusConnect</p>
-        <button class="menu"><img src="images/menu.png"></button>
+        <nav>
+            <ul class="sidebar">
+                <li onclick=hideSidebar()><a href="#"><img src="images/close.png" class="close"></a></li>
+                <li><a href="#">Floor 1</a></li>
+                <li><a href="#">Floor 2</a></li>
+                <li><a href="#">Floor 3</a></li>
+                <li><a href="#">Floor 4</a></li>
+            </ul>
+            <ul>
+                <li class="hideonMobile"><a href="#">Floor 1</a></li>
+                <li class="hideonMobile"><a href="#">Floor 2</a></li>
+                <li class="hideonMobile"><a href="#">Floor 3</a></li>
+                <li class="hideonMobile"><a href="#">Floor 4</a></li>
+                <li  onclick=showSidebar()><a href="#"><img src="images/menu.png" class="menu" ></a></li>
+                
+            </ul>
+        </nav>
+        
+        
     </div>
 
     <div class="search-bar">
@@ -43,7 +62,18 @@
             </div>
         </div>
     </div>
+    <script>
+        function showSidebar(){
+            const sidebar=document.querySelector('.sidebar')
+            sidebar.style.display='flex'
+        }
 
+        function hideSidebar(){
+            const sidebar=document.querySelector('.sidebar')
+            sidebar.style.display='none'
+
+        }
+    </script>
 
 </body>
 </html>

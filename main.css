@@ -1,8 +1,13 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
 body{
     background-color: #F5F5F5 ;
     font-family: Arial, sans-serif;
     margin: 0px;
-    height: 800px;
+    height: 750px;
     
 }
 
@@ -18,16 +23,69 @@ body{
     width: 25px;
 }
 
+nav ul{
+     width: 100%;
+     display: flex;
+     list-style: none;
+     justify-content: flex-end;
+     align-items: center;
+}
+
+nav li{
+    height: 50px;
+
+}
+
+nav a{
+    height: 100%;
+    padding: 0 30px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    color: black;
+}
+
+nav a:hover{
+    background-color: #f0f0f0;
+}
+
+.sidebar{
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: 250px;
+    z-index: 999;
+    background-color: #f0f0f0;
+    box-shadow: -10px 0 10px rgba(0,0,0,0.2);
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.sidebar li{
+    width: 100%;
+
+}
+
+.sidebar a{
+    width: 100%;
+}
+
 .head{
     font-size: 18px;
     color: black;
     font-weight: 600;
 }
 
+.sidebar img{
+    height: 20px;
+}
 
 .menu{
-    border: none;
-    background-color: #F5F5F5;
+    margin-right: -50px;
+    display: none;
     height: 30px;
     width: 30px;
     cursor: pointer;
@@ -151,6 +209,7 @@ body{
 }
 
 .label-1,.label-2,.label-3{
+    margin-top: 10px;
     color: rgba(0, 0, 0, 0.7);
     font-weight: 500;
     font-size: 15px;
@@ -164,10 +223,20 @@ body{
 }
 
 .label-3{
-    margin-left: 7px;
+    margin-left: 6px;
 }
 
 .buttons a{
     text-decoration: none;
     color: rgba(0, 0, 0, 0.7);;
 }
+
+@media(max-width:800px){
+    .hideonMobile{
+        display: none;
+    }
+    .menu{
+        display: block;
+    }
+}
+
