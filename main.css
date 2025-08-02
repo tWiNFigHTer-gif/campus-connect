@@ -1,0 +1,173 @@
+body{
+    background-color: #F5F5F5 ;
+    font-family: Arial, sans-serif;
+    margin: 0px;
+    height: 800px;
+    
+}
+
+.top-section{
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 15px;
+}
+
+.top-section img{
+    height: 15px;
+    width: 25px;
+}
+
+.head{
+    font-size: 18px;
+    color: black;
+    font-weight: 600;
+}
+
+
+.menu{
+    border: none;
+    background-color: #F5F5F5;
+    height: 30px;
+    width: 30px;
+    cursor: pointer;
+}
+
+.menu:active{
+     opacity: 0.8;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.search-bar{
+    
+    display: flex;
+    width: max-content;
+    align-items: center;
+    padding: 14px;
+    border-radius: 30px;
+    background-color: #FFFFFF;
+    margin-left: 15px;
+    box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+    transition: box-shadow 0.25s;
+    
+
+
+}
+
+.search-bar:focus-within{
+    box-shadow: 0 0 2px rgba(0,0,0,0.75);
+}
+
+.search-field{
+    font-size: 16px;
+    font-family: sans-serif;
+    color: #333333;
+    margin-left: 14px;
+    outline: none;
+    border: none;
+    background: transparent;
+    display: flex;
+    width: 296px;
+    
+}
+
+
+
+
+.search{
+    color: #6C757D;
+}
+
+.map{
+    margin-top: 35px;
+    width: 100%;
+    aspect-ratio: 16/13;
+    overflow: hidden;
+  border-radius: 8px;
+}
+
+.map img{
+    
+    height: 100%;
+    width: 100%;
+    
+}
+
+.line{
+    margin-top: 20px;
+    height: 0.6px;
+    background-color: rgb(211, 211, 211);
+}
+.explore{
+    margin-top: 35px;
+}
+
+.heading{
+    text-align: center;
+    font-size: 23px;
+    font-weight: bold;
+}
+
+.buttons{
+    display: flex;
+    margin-top: 40px;
+    gap: 10px;
+    padding: 10px 15px;
+    justify-content: space-evenly;
+}
+
+.buttons button{
+    background-color: #007BFF;
+    border-radius: 100px;
+    border: none;
+    width: 70px;
+    height: 55px;
+    box-shadow: 3px 5px 9px rgba(0,0,0,0.2);
+    transition: opacity 0.85s;
+    cursor: pointer;
+    
+    
+}
+
+.buttons button:hover{
+    opacity: 0.8;
+}
+
+.buttons button:active{
+    opacity: 0.8;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.buttons img{
+    width: 25px;
+    height: 25px;
+    align-items: center;
+}
+
+.group-1,.group-2,.group-3{
+    display: flex;
+    flex-direction: column;
+    
+}
+
+.label-1,.label-2,.label-3{
+    color: rgba(0, 0, 0, 0.7);
+    font-weight: 500;
+    font-size: 15px;
+    
+}
+.label-1{
+    margin-left: 16px;
+}
+.label-2{
+    margin-left: -3px;
+}
+
+.label-3{
+    margin-left: 7px;
+}
+
+.buttons a{
+    text-decoration: none;
+    color: rgba(0, 0, 0, 0.7);;
+}
