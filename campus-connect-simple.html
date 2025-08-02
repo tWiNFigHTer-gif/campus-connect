@@ -193,6 +193,30 @@
             font-size: 18px;
             color: #666;
         }
+
+        /* Animation styles for enhanced path definition */
+        @keyframes pathFadeIn {
+            from { opacity: 0; stroke-dasharray: 1000; stroke-dashoffset: 1000; }
+            to { opacity: 1; stroke-dasharray: none; stroke-dashoffset: 0; }
+        }
+        
+        @keyframes dashAnimation {
+            from { stroke-dashoffset: 0; }
+            to { stroke-dashoffset: 12; }
+        }
+        
+        @keyframes iconPulse {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+        
+        .assistant-navigation-icon {
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+        
+        .path-visualization {
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+        }
     </style>
 </head>
 <body>
@@ -342,8 +366,6 @@
                 campusGraph = graphData.graph || {};
                 
                 console.log('📊 Loaded nodes:', campusNodes.length);
-                console.log('📊 First few nodes:', campusNodes.slice(0, 3));
-                console.log('📊 Node coordinates sample:', campusNodes.map(n => `${n.label}: (${n.x}, ${n.y})`).slice(0, 5));
                 
                 // Create visual nodes
                 createNodes();
@@ -355,7 +377,6 @@
                 loading.style.display = 'none';
                 container.style.display = 'block';
                 
-                console.log('✅ Application loaded successfully');
                 updateStats();
                 
             } catch (error) {
@@ -483,8 +504,6 @@
                 toSelect.appendChild(option2);
             });
             
-            console.log(`📋 Added ${searchableNodes.length} searchable locations to dropdowns`);
-            
             // Event handlers
             findButton.addEventListener('click', findPath);
             clearButton.addEventListener('click', clearPath);
@@ -521,16 +540,37 @@
                 return;
             }
             
-            console.log('🔍 Finding path from', fromId, 'to', toId);
-            
             const path = astarPath(campusGraph, campusNodes, fromId, toId);
             if (path && path.length > 0) {
-                drawPath(path);
+                // Use enhanced animation system
+                const pathNodes = path.map(nodeId => {
+                    const node = campusNodes.find(n => n.id === nodeId);
+                    return node ? { id: nodeId, x: node.x, y: node.y, label: node.label } : null;
+                }).filter(node => node !== null);
+                
+                if (pathNodes.length > 0) {
+                    // Clear previous paths
+                    clearPath();
+                    
+                    // Start enhanced animation sequence
+                    pathAnimationEnhancer.createPathVisualization(pathNodes);
+                    
+                    // Add final path animation with delay
+                    setTimeout(() => {
+                        pathAnimationEnhancer.createQuickPathAnimation(pathNodes);
+                    }, 400);
+                    
+                    // Update status with enhanced info
+                    const status = document.getElementById('status');
+                    status.textContent = `Enhanced Route: ${pathNodes.length - 1} steps`;
+                } else {
+                    // Fallback to regular path drawing
+                    drawPath(path);
+                }
+                
                 currentPath = path;
-                console.log('✅ Path found:', path);
             } else {
                 alert('No path found between selected locations');
-                console.log('❌ No path found');
             }
         }
         
@@ -685,23 +725,6 @@
             nodeCount.textContent = `Nodes: ${campusNodes.length}`;
             const connectionCount = Object.values(campusGraph).reduce((sum, neighbors) => sum + Object.keys(neighbors).length, 0);
             connectionInfo.textContent = `Connections: ${connectionCount}`;
-            
-            // Add debug info to check if new coordinates loaded
-            if (campusNodes.length > 0) {
-                const firstNode = campusNodes[0];
-                const debugInfo = document.createElement('div');
-                debugInfo.style.fontSize = '10px';
-                debugInfo.style.color = '#999';
-                debugInfo.style.marginTop = '10px';
-                debugInfo.innerHTML = `Debug: ${firstNode.label} at (${firstNode.x}, ${firstNode.y})`;
-                
-                // Remove old debug info
-                const oldDebug = document.querySelector('.debug-info');
-                if (oldDebug) oldDebug.remove();
-                
-                debugInfo.className = 'debug-info';
-                document.querySelector('.controls').appendChild(debugInfo);
-            }
         }
         
         function addZoomControls(container) {
@@ -761,6 +784,504 @@
                 label.style.top = y + 'px';
             }
         }
+
+        // World-Class Interactive Path Animation System
+        class PathAnimationEnhancer {
+            constructor() {
+                this.pathDefiningMode = false;
+                this.currentPath = [];
+                
+                // ANIMATION PARAMETERS - Optimized for visibility and performance
+                this.animationDuration = 600; // Ultra-fast path definition (600ms)
+                this.iconAnimationSpeed = 300; // Icon movement speed (300ms)
+                this.rotationDuration = 400; // Smooth rotation timing (400ms)
+                this.pathRevealSpeed = 150; // Path reveal animation (150ms)
+                
+                // Animation components
+                this.assistantIcon = null;
+                this.pathVisualizationLine = null;
+                this.pathDefiningNodes = [];
+                this.animatedPathElement = null;
+                this.iconRotationTimer = null;
+                
+                this.setupEnhancedPathDefining();
+            }
+
+            // 1. ULTRA-FAST PATH DEFINITION - Minimized animation time for clear visibility
+            createQuickPathAnimation(pathNodes) {
+                this.clearPathVisualization();
+                
+                if (pathNodes.length < 2) return;
+
+                // Create optimized smooth path with minimal timing
+                const pathString = this.generateSmoothPath(pathNodes);
+                const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                
+                // Path styling optimized for visibility
+                pathElement.setAttribute("d", pathString);
+                pathElement.setAttribute("stroke", "#007bff");
+                pathElement.setAttribute("stroke-width", "5");
+                pathElement.setAttribute("fill", "none");
+                pathElement.setAttribute("opacity", "0");
+                pathElement.setAttribute("class", "quick-path-animation");
+                pathElement.setAttribute("stroke-linecap", "round");
+                pathElement.setAttribute("stroke-linejoin", "round");
+                
+                // Ultra-fast reveal animation - optimized for immediate visibility
+                const totalLength = pathElement.getTotalLength ? pathElement.getTotalLength() : 1000;
+                pathElement.style.strokeDasharray = totalLength;
+                pathElement.style.strokeDashoffset = totalLength;
+                pathElement.style.opacity = "1";
+                
+                // Immediate path reveal with smooth drawing effect
+                pathElement.style.animation = `pathReveal ${this.pathRevealSpeed}ms ease-out forwards`;
+                
+                const svgContainer = document.getElementById('overlay') || document.querySelector('svg');
+                if (svgContainer) {
+                    svgContainer.appendChild(pathElement);
+                    this.animatedPathElement = pathElement;
+                }
+                
+                return pathElement;
+            }
+
+            // 2. Path Definition Visualization - Dashed line representation
+            createPathVisualization(nodes) {
+                this.clearPathVisualization();
+                
+                if (nodes.length < 2) return;
+
+                this.pathVisualizationLine = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+                const points = nodes.map(node => `${node.x},${node.y}`).join(' ');
+                
+                this.pathVisualizationLine.setAttribute("points", points);
+                this.pathVisualizationLine.setAttribute("stroke", "#ff6b6b");
+                this.pathVisualizationLine.setAttribute("stroke-width", "3");
+                this.pathVisualizationLine.setAttribute("stroke-dasharray", "8,4");
+                this.pathVisualizationLine.setAttribute("fill", "none");
+                this.pathVisualizationLine.setAttribute("opacity", "0.9");
+                this.pathVisualizationLine.setAttribute("class", "path-visualization");
+                
+                // Animated dashing effect
+                this.pathVisualizationLine.style.animation = "dashAnimation 1.5s linear infinite";
+                
+                const svgContainer = document.getElementById('overlay') || document.querySelector('svg');
+                if (svgContainer) {
+                    svgContainer.appendChild(this.pathVisualizationLine);
+                }
+                
+                // 3. Add Assistant Navigation Icon
+                this.createAssistantIcon(nodes);
+            }
+
+            // 3. Assistant Navigation Icon at the head of the path - Using SVG file
+            async createAssistantIcon(nodes) {
+                if (nodes.length < 2) return;
+                
+                const headNode = nodes[nodes.length - 1];
+                const prevNode = nodes[nodes.length - 2];
+                
+                try {
+                    // Load the SVG icon from file
+                    const iconResponse = await fetch('assistant-navigation-icon.svg');
+                    if (!iconResponse.ok) {
+                        console.warn('Could not load assistant-navigation-icon.svg, using fallback');
+                        this.createFallbackIcon(nodes);
+                        return;
+                    }
+                    
+                    const iconSvgText = await iconResponse.text();
+                    const parser = new DOMParser();
+                    const iconDoc = parser.parseFromString(iconSvgText, 'image/svg+xml');
+                    const iconSvg = iconDoc.documentElement;
+                    
+                    // Create icon group container
+                    this.assistantIcon = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                    this.assistantIcon.setAttribute("class", "assistant-navigation-icon");
+                    
+                    // Import the SVG content
+                    const importedIcon = document.importNode(iconSvg, true);
+                    
+                    // Scale and position the icon
+                    importedIcon.setAttribute("width", "24");
+                    importedIcon.setAttribute("height", "24");
+                    importedIcon.setAttribute("x", "-12");
+                    importedIcon.setAttribute("y", "-12");
+                    
+                    // Convert SVG to group elements for better control
+                    const iconGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                    iconGroup.setAttribute("transform", "scale(1)");
+                    
+                    // Copy all child elements from the loaded SVG
+                    Array.from(importedIcon.children).forEach(child => {
+                        const clonedChild = child.cloneNode(true);
+                        iconGroup.appendChild(clonedChild);
+                    });
+                    
+                    this.assistantIcon.appendChild(iconGroup);
+                    
+                    // Position icon at head of path
+                    this.assistantIcon.setAttribute("transform", `translate(${headNode.x}, ${headNode.y})`);
+                    
+                    // 4. Rotate icon toward the direction of movement
+                    this.rotateIconTowardPath(prevNode, headNode);
+                    
+                    // Add pulsing animation with enhanced effects
+                    this.assistantIcon.style.animation = "iconPulse 2s ease-in-out infinite";
+                    
+                    // Get the SVG container (either overlay or main SVG)
+                    const svgContainer = document.getElementById('overlay') || document.querySelector('svg');
+                    if (svgContainer) {
+                        svgContainer.appendChild(this.assistantIcon);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error loading assistant navigation icon:', error);
+                    this.createFallbackIcon(nodes);
+                }
+            }
+            
+            // Fallback icon creation method
+            createFallbackIcon(nodes) {
+                if (nodes.length < 2) return;
+                
+                const headNode = nodes[nodes.length - 1];
+                const prevNode = nodes[nodes.length - 2];
+                
+                // Create icon group
+                this.assistantIcon = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                this.assistantIcon.setAttribute("class", "assistant-navigation-icon fallback");
+                
+                // Navigation arrow icon (fallback)
+                const arrow = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+                arrow.setAttribute("points", "-8,-6 8,0 -8,6 -4,0");
+                arrow.setAttribute("fill", "#28a745");
+                arrow.setAttribute("stroke", "#ffffff");
+                arrow.setAttribute("stroke-width", "2");
+                
+                // Icon background circle
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                circle.setAttribute("r", "12");
+                circle.setAttribute("fill", "#ffffff");
+                circle.setAttribute("stroke", "#28a745");
+                circle.setAttribute("stroke-width", "2");
+                circle.setAttribute("opacity", "0.9");
+                
+                this.assistantIcon.appendChild(circle);
+                this.assistantIcon.appendChild(arrow);
+                
+                // Position icon at head of path
+                this.assistantIcon.setAttribute("transform", `translate(${headNode.x}, ${headNode.y})`);
+                
+                // 4. Rotate icon toward the direction of movement
+                this.rotateIconTowardPath(prevNode, headNode);
+                
+                // Add pulsing animation
+                this.assistantIcon.style.animation = "iconPulse 2s ease-in-out infinite";
+                
+                const svgContainer = document.getElementById('overlay') || document.querySelector('svg');
+                if (svgContainer) {
+                    svgContainer.appendChild(this.assistantIcon);
+                }
+            }
+
+            // 4. ADVANCED ROTATION SYSTEM - Icon rotation with destination targeting
+            rotateIconTowardPath(fromNode, toNode) {
+                if (!this.assistantIcon || !fromNode || !toNode) return;
+                
+                // Calculate precise angle between nodes for optimal direction indication
+                const deltaX = toNode.x - fromNode.x;
+                const deltaY = toNode.y - fromNode.y;
+                const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+                
+                // Clear any existing rotation timer
+                if (this.iconRotationTimer) {
+                    clearTimeout(this.iconRotationTimer);
+                }
+                
+                // Apply smooth rotation with enhanced easing
+                const currentTransform = this.assistantIcon.getAttribute("transform");
+                const baseTransform = currentTransform.replace(/rotate\([^)]*\)/g, '').trim();
+                const newTransform = `${baseTransform} rotate(${angle})`;
+                
+                this.assistantIcon.setAttribute("transform", newTransform);
+                this.assistantIcon.style.transition = `transform ${this.rotationDuration}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
+                
+                // Add destination-reached rotation effect
+                this.iconRotationTimer = setTimeout(() => {
+                    this.rotateToNearestRedCurve(toNode);
+                }, this.iconAnimationSpeed);
+            }
+
+            // DESTINATION ROTATION - Rotate icon toward nearest red curve when reaching final destination
+            rotateToNearestRedCurve(destinationNode) {
+                if (!this.assistantIcon || !destinationNode) return;
+                
+                // Find nearest red curve/path elements in the SVG
+                const redCurves = this.findNearestRedCurves(destinationNode);
+                
+                if (redCurves.length > 0) {
+                    const nearestCurve = redCurves[0];
+                    const curveDirection = this.calculateCurveDirection(nearestCurve, destinationNode);
+                    
+                    // Apply final rotation toward the red curve
+                    const currentTransform = this.assistantIcon.getAttribute("transform");
+                    const baseTransform = currentTransform.replace(/rotate\([^)]*\)/g, '').trim();
+                    const finalTransform = `${baseTransform} rotate(${curveDirection})`;
+                    
+                    // Smooth rotation to red curve with enhanced animation
+                    this.assistantIcon.style.transition = `transform ${this.rotationDuration}ms cubic-bezier(0.68, -0.55, 0.265, 1.55)`;
+                    this.assistantIcon.setAttribute("transform", finalTransform);
+                    
+                    // Add visual feedback for destination reached
+                    this.addDestinationReachedEffect();
+                }
+            }
+
+            // HELPER: Find nearest red curves in the SVG
+            findNearestRedCurves(node) {
+                const svgContainer = document.getElementById('overlay') || document.querySelector('svg');
+                if (!svgContainer) return [];
+                
+                // Look for red path elements (representing curves/routes)
+                const redElements = svgContainer.querySelectorAll('path[stroke*="red"], path[stroke*="#ff"], polyline[stroke*="red"], polyline[stroke*="#ff"]');
+                const curves = Array.from(redElements);
+                
+                // Calculate distances and sort by proximity
+                return curves.map(curve => {
+                    const distance = this.calculateDistanceToElement(node, curve);
+                    return { element: curve, distance };
+                }).sort((a, b) => a.distance - b.distance);
+            }
+
+            // HELPER: Calculate direction angle toward curve
+            calculateCurveDirection(curve, fromNode) {
+                const bbox = curve.element.getBBox();
+                const curveCenterX = bbox.x + bbox.width / 2;
+                const curveCenterY = bbox.y + bbox.height / 2;
+                
+                const deltaX = curveCenterX - fromNode.x;
+                const deltaY = curveCenterY - fromNode.y;
+                
+                return Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+            }
+
+            // HELPER: Calculate distance between node and SVG element
+            calculateDistanceToElement(node, element) {
+                const bbox = element.getBBox();
+                const elementCenterX = bbox.x + bbox.width / 2;
+                const elementCenterY = bbox.y + bbox.height / 2;
+                
+                const deltaX = elementCenterX - node.x;
+                const deltaY = elementCenterY - node.y;
+                
+                return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            }
+
+            // VISUAL FEEDBACK: Add effect when destination is reached
+            addDestinationReachedEffect() {
+                if (!this.assistantIcon) return;
+                
+                // Create pulsing glow effect
+                const glowCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                glowCircle.setAttribute("r", "20");
+                glowCircle.setAttribute("fill", "none");
+                glowCircle.setAttribute("stroke", "#28a745");
+                glowCircle.setAttribute("stroke-width", "3");
+                glowCircle.setAttribute("opacity", "0.7");
+                glowCircle.setAttribute("class", "destination-glow");
+                
+                // Add glow animation
+                glowCircle.style.animation = "destinationGlow 1s ease-out forwards";
+                
+                this.assistantIcon.appendChild(glowCircle);
+                
+                // Remove glow after animation
+                setTimeout(() => {
+                    if (glowCircle.parentNode) {
+                        glowCircle.remove();
+                    }
+                }, 1000);
+            }
+
+            // Generate smooth path string for SVG
+            generateSmoothPath(nodes) {
+                if (nodes.length < 2) return "";
+                
+                let pathString = `M ${nodes[0].x} ${nodes[0].y}`;
+                
+                for (let i = 1; i < nodes.length; i++) {
+                    if (i === 1) {
+                        pathString += ` L ${nodes[i].x} ${nodes[i].y}`;
+                    } else {
+                        // Use quadratic curves for smoother paths
+                        const prevNode = nodes[i - 1];
+                        const currentNode = nodes[i];
+                        const controlX = (prevNode.x + currentNode.x) / 2;
+                        const controlY = (prevNode.y + currentNode.y) / 2;
+                        pathString += ` Q ${controlX} ${controlY} ${currentNode.x} ${currentNode.y}`;
+                    }
+                }
+                
+                return pathString;
+            }
+
+            // Clear existing path visualizations
+            clearPathVisualization() {
+                // Remove path visualization line
+                if (this.pathVisualizationLine) {
+                    this.pathVisualizationLine.remove();
+                    this.pathVisualizationLine = null;
+                }
+                
+                // Remove assistant icon
+                if (this.assistantIcon) {
+                    this.assistantIcon.remove();
+                    this.assistantIcon = null;
+                }
+                
+                // Remove any existing quick path animations
+                const svgContainer = document.getElementById('overlay') || document.querySelector('svg');
+                if (svgContainer) {
+                    const existingPaths = svgContainer.querySelectorAll('.quick-path-animation, .path-visualization');
+                    existingPaths.forEach(path => path.remove());
+                }
+            }
+
+            // Setup enhanced path defining system with optimized animations
+            setupEnhancedPathDefining() {
+                // Add CSS animations with precise timing controls
+                const style = document.createElement('style');
+                style.textContent = `
+                    /* ULTRA-FAST PATH REVEAL ANIMATION - Optimized for immediate visibility */
+                    @keyframes pathReveal {
+                        0% { 
+                            stroke-dashoffset: var(--path-length, 1000); 
+                            opacity: 0.3; 
+                        }
+                        50% { 
+                            opacity: 0.8; 
+                        }
+                        100% { 
+                            stroke-dashoffset: 0; 
+                            opacity: 1; 
+                            stroke-dasharray: none; 
+                        }
+                    }
+                    
+                    /* ENHANCED PATH FADE-IN with stroke animation */
+                    @keyframes pathFadeIn {
+                        from { 
+                            opacity: 0; 
+                            stroke-dasharray: 1000; 
+                            stroke-dashoffset: 1000; 
+                        }
+                        to { 
+                            opacity: 1; 
+                            stroke-dasharray: none; 
+                            stroke-dashoffset: 0; 
+                        }
+                    }
+                    
+                    /* SMOOTH DASHED LINE ANIMATION for path visualization */
+                    @keyframes dashAnimation {
+                        from { stroke-dashoffset: 0; }
+                        to { stroke-dashoffset: 12; }
+                    }
+                    
+                    /* ENHANCED ICON PULSE with breathing effect */
+                    @keyframes iconPulse {
+                        0%, 100% { 
+                            transform: scale(1); 
+                            opacity: 0.9; 
+                            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); 
+                        }
+                        50% { 
+                            transform: scale(1.1); 
+                            opacity: 1; 
+                            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); 
+                        }
+                    }
+                    
+                    /* DESTINATION REACHED GLOW EFFECT */
+                    @keyframes destinationGlow {
+                        0% { 
+                            r: 12; 
+                            opacity: 0.7; 
+                            stroke-width: 3; 
+                        }
+                        50% { 
+                            r: 25; 
+                            opacity: 1; 
+                            stroke-width: 2; 
+                        }
+                        100% { 
+                            r: 30; 
+                            opacity: 0; 
+                            stroke-width: 1; 
+                        }
+                    }
+                    
+                    /* ROTATION BOUNCE EFFECT for smooth icon transitions */
+                    @keyframes rotationBounce {
+                        0% { transform: rotate(0deg) scale(1); }
+                        50% { transform: rotate(180deg) scale(1.1); }
+                        100% { transform: rotate(360deg) scale(1); }
+                    }
+                    
+                    /* ENHANCED STYLING for navigation components */
+                    .assistant-navigation-icon {
+                        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+                        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                    }
+                    
+                    .path-visualization {
+                        filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+                        transition: opacity 0.2s ease-in-out;
+                    }
+                    
+                    /* QUICK PATH ANIMATION with optimized performance */
+                    .quick-path-animation {
+                        animation-fill-mode: forwards;
+                        will-change: stroke-dashoffset, opacity;
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                // Log animation setup completion
+                console.log('Enhanced Path Animation System initialized');
+            }
+
+        }
+
+        // Initialize the enhanced path animation system
+        const pathAnimationEnhancer = new PathAnimationEnhancer();
+
+        // Add demo button functionality
+        function addDemoButton() {
+            const demoButton = document.createElement('button');
+            demoButton.textContent = 'Demo Enhanced Path Animation';
+            demoButton.style.cssText = `
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                padding: 10px 15px;
+                background: #28a745;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+                z-index: 1000;
+            `;
+            demoButton.onclick = demonstrateEnhancedPathDefining;
+            document.body.appendChild(demoButton);
+        }
+
+        // Initialize demo when page loads
+        window.addEventListener('load', () => {
+            setTimeout(addDemoButton, 1000);
+        });
     </script>
 </body>
 </html>
