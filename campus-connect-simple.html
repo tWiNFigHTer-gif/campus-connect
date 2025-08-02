@@ -303,8 +303,15 @@
                 console.log('📂 Loading graph data...');
                 status.textContent = 'Loading navigation data...';
                 const timestamp = Date.now(); // Strong cache buster
-                const graphResponse = await fetch(`pathfinding_graph_structural.json?v=${timestamp}&nocache=${Math.random()}`);
-                if (!graphResponse.ok) throw new Error('Failed to load graph data');
+                const randomSuffix = Math.random().toString(36).substring(7);
+                const graphResponse = await fetch(`pathfinding_graph_structural.json?t=${timestamp}&r=${randomSuffix}`, {
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+                if (!graphResponse.ok) throw new Error(`Failed to load graph data: ${graphResponse.status} ${graphResponse.statusText}`);
                 const graphData = await graphResponse.json();
                 
                 // Step 3: Setup the interface
@@ -653,9 +660,6 @@
             if (nodeElement) {
                 nodeElement.style.stroke = color;
                 nodeElement.style.strokeWidth = '5';
-                nodeElement.classList.add('highlighted');
-            } else {
-                console.warn(`Could not find node element for highlighting: ${nodeId}`);
             }
         }
         
@@ -665,11 +669,10 @@
                 pathLayer.innerHTML = '';
             }
             
-            // Reset node highlighting - remove all highlighted classes and reset styles
+            // Reset node highlighting
             document.querySelectorAll('.node').forEach(node => {
                 node.style.stroke = '#ffffff';
                 node.style.strokeWidth = '3';
-                node.classList.remove('highlighted');
             });
             
             currentPath = [];
