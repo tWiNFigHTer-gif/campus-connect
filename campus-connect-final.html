@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Connect - 2nd Floor Navigation (Final)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #app {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+        
+        #status {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+        
+        main {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #svg-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .map-svg {
+            width: 80vw;
+            height: 60vh;
+            max-width: 1200px;
+            max-height: 800px;
+            min-width: 600px;
+            min-height: 400px;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            background: white;
+            position: relative;
+            cursor: grab;
+        }
+        
+        .map-svg:active {
+            cursor: grabbing;
+        }
+        
+        .svg-content {
+            width: 100%;
+            height: 100%;
+            transition: transform 0.1s ease;
+            transform-origin: center center;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        
+        /* Controls Panel */
+        #controls {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 200;
+            min-width: 280px;
+            max-height: 80vh;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        
+        #controlsToggle {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            z-index: 201;
+            display: none;
+        }
+        
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        label {
+            display: block;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        select, button {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        
+        select:focus, button:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        button:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+        
+        #clearPath {
+            background: #e74c3c;
+        }
+        
+        #clearPath:hover {
+            background: #c0392b;
+        }
+        
+        /* Zoom Controls - Google Maps Style */
+        .zoom-controls {
+            position: fixed;
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            overflow: hidden;
+            z-index: 200;
+            border: 1px solid #e0e6ed;
+        }
+        
+        .zoom-btn {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .zoom-btn:hover {
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        .zoom-btn:active {
+            background: #e0e0e0;
+        }
+        
+        .zoom-btn:not(:last-child) {
+            border-bottom: 1px solid #e0e6ed;
+        }
+        
+        .zoom-btn#zoomReset {
+            font-size: 16px;
+        }
+        
+        /* SVG Styles */
+        .node {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .node:hover {
+            filter: brightness(1.2);
+        }
+        
+        .node.unused {
+            stroke: #ff6b6b !important;
+            stroke-width: 6 !important;
+            fill: #ff6b6b !important;
+            opacity: 0.8 !important;
+        }
+        
+        .path-line {
+            fill: none;
+            stroke: #3498db;
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0.8;
+            filter: drop-shadow(0 0 10px rgba(52, 152, 219, 0.5));
+        }
+        
+        .traveling-icon-group {
+            filter: drop-shadow(0 0 15px rgba(255, 107, 53, 0.7));
+        }
+        
+        /* Node Label */
+        .node-label {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            pointer-events: none;
+            z-index: 1000;
+            white-space: nowrap;
+            transform: translate(-50%, -100%);
+            margin-top: -10px;
+        }
+        
+        .node-label::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            border: 5px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.9);
+            transform: translateX(-50%);
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+        
+        .start-node-pulse {
+            animation: pulse 1s infinite;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 1.4rem;
+            }
+            
+            .map-svg {
+                width: 95vw;
+                height: 50vh;
+                min-width: 320px;
+                min-height: 300px;
+            }
+            
+            #controls {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                top: auto;
+                transform: none;
+                border-radius: 20px 20px 0 0;
+                min-width: auto;
+                max-height: 60vh;
+                transition: transform 0.3s ease;
+                transform: translateY(calc(100% - 60px));
+            }
+            
+            #controls.expanded {
+                transform: translateY(0);
+            }
+            
+            #controlsToggle {
+                display: block;
+                position: fixed;
+                top: auto;
+                bottom: 20px;
+                right: 20px;
+                transform: none;
+            }
+            
+            .zoom-controls {
+                top: auto;
+                bottom: 100px;
+                left: 10px;
+                transform: none;
+            }
+            
+            .zoom-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
+        }
+        
+        #error-display {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #e74c3c;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+            z-index: 1001;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+        <div id="loadingText">Loading Campus Connect...</div>
+    </div>
+    
+    <div id="error-display"></div>
+    
+    <div id="app">
+        <header>
+            <h1>🏫 Campus Connect - 2nd Floor Navigation</h1>
+            <div id="status">Loading...</div>
+        </header>
+        
+        <main>
+            <div id="svg-container">
+                <!-- SVG will be loaded here -->
+            </div>
+            
+            <div class="zoom-controls">
+                <button class="zoom-btn" id="zoomIn">+</button>
+                <button class="zoom-btn" id="zoomOut">−</button>
+                <button class="zoom-btn" id="zoomReset">⌂</button>
+            </div>
+        </main>
+    </div>
+    
+    <button id="controlsToggle">☰</button>
+    
+    <div id="controls">
+        <div class="control-group">
+            <label for="fromLocation">📍 Starting Point</label>
+            <select id="fromLocation">
+                <option value="">Select starting point...</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label for="toLocation">🎯 Destination</label>
+            <select id="toLocation">
+                <option value="">Select destination...</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <button id="findPath">🗺️ Find Route</button>
+            <button id="clearPath">🧹 Clear Route</button>
+        </div>
+        
+        <div class="control-group">
+            <label>📊 Navigation Stats</label>
+            <div id="stats" style="font-size: 0.8rem; color: #7f8c8d; line-height: 1.4;">
+                <div>Total Nodes: <span id="nodeCount">0</span></div>
+                <div>Connections: <span id="connectionCount">0</span></div>
+                <div>Coverage: <span id="coverage">0%</span></div>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <label>🔧 Node Management</label>
+            <button id="toggleNodeInfo" style="background: #9b59b6; margin-bottom: 0.5rem;">Show Node Info</button>
+            <button id="highlightUnusedNodes" style="background: #e67e22; margin-bottom: 0.5rem;">Highlight Unused</button>
+            <div id="nodeInfo" style="display: none; font-size: 0.7rem; color: #7f8c8d; max-height: 150px; overflow-y: auto; background: #f8f9fa; padding: 8px; border-radius: 4px; margin-top: 8px;">
+                <div>Node information will appear here...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add comprehensive error handling
+        window.addEventListener('error', function(e) {
+            console.error('Global Error:', e.error || e.message);
+            const errorDiv = document.getElementById('error-display');
+            if (errorDiv) {
+                errorDiv.style.display = 'block';
+                errorDiv.innerHTML = `JavaScript Error: ${e.message || 'Unknown error'}<br>Check console for details`;
+            }
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Unhandled Promise Rejection:', e.reason);
+            const errorDiv = document.getElementById('error-display');
+            if (errorDiv) {
+                errorDiv.style.display = 'block';
+                errorDiv.innerHTML = `Promise Error: ${e.reason}<br>Check console for details`;
+            }
+        });
+        // Global variables
+        let campusNodes = [];
+        let campusGraph = {};
+        let currentPath = [];
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Starting Campus Connect with Final SVG...');
+            setupResponsiveControls();
+            await loadApplication();
+        });
+        
+        function setupResponsiveControls() {
+            const controls = document.getElementById('controls');
+            const toggle = document.getElementById('controlsToggle');
+            
+            toggle.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    // Mobile: toggle expanded/collapsed from bottom
+                    controls.classList.toggle('expanded');
+                    toggle.textContent = controls.classList.contains('expanded') ? '×' : '☰';
+                } else {
+                    // Desktop: toggle slide in/out from right
+                    controls.classList.toggle('collapsed');
+                    toggle.textContent = controls.classList.contains('collapsed') ? '☰' : '×';
+                }
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                controls.classList.remove('collapsed', 'expanded');
+                toggle.textContent = '☰';
+            });
+        }
+        
+        async function loadApplication() {
+            const loading = document.getElementById('loading');
+            const container = document.getElementById('svg-container');
+            const status = document.getElementById('status');
+            
+            try {
+                // Step 1: Load New SVG
+                console.log('📂 Loading new final SVG...');
+                status.textContent = 'Loading final map...';
+                const svgResponse = await fetch('2nd floor final.svg');
+                if (!svgResponse.ok) throw new Error('Failed to load final SVG');
+                const svgContent = await svgResponse.text();
+                
+                // Step 2: Load and Transform graph data
+                console.log('📂 Loading and transforming graph data...');
+                status.textContent = 'Loading and transforming navigation data...';
+                const timestamp = Date.now(); // Strong cache buster
+                const randomSuffix = Math.random().toString(36).substring(7);
+                const graphResponse = await fetch(`pathfinding_graph_structural.json?t=${timestamp}&r=${randomSuffix}`, {
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+                if (!graphResponse.ok) throw new Error(`Failed to load graph data: ${graphResponse.status} ${graphResponse.statusText}`);
+                const originalGraphData = await graphResponse.json();
+                
+                // Step 3: Transform coordinates for the new SVG
+                console.log('🔄 Transforming coordinates for rotated SVG...');
+                status.textContent = 'Transforming coordinates...';
+                const transformedGraphData = transformCoordinatesForRotatedSVG(originalGraphData);
+                
+                // Step 4: Setup the interface
+                console.log('🎨 Setting up interface...');
+                status.textContent = 'Ready';
+                
+                // Insert SVG
+                container.innerHTML = svgContent;
+                const svg = container.querySelector('svg');
+                if (svg) {
+                    svg.setAttribute('class', 'map-svg');
+                    
+                    // Create a wrapper div for the SVG content that will handle transforms
+                    const svgWrapper = document.createElement('div');
+                    svgWrapper.className = 'svg-content';
+                    
+                    // Move SVG inside the wrapper
+                    container.removeChild(svg);
+                    svgWrapper.appendChild(svg);
+                    container.appendChild(svgWrapper);
+                    
+                    // Set SVG to fill the wrapper
+                    svg.style.width = '100%';
+                    svg.style.height = '100%';
+                    svg.style.display = 'block';
+                    
+                    // Add interactive zones
+                    addInteractiveZones(svg);
+                    
+                    // Add overlay for nodes and paths
+                    const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                    overlay.id = 'overlay';
+                    svg.appendChild(overlay);
+                    
+                    // Add zoom controls
+                    addZoomControls(svgWrapper);
+                }
+                
+                // Store transformed graph data
+                campusNodes = transformedGraphData.nodes || [];
+                campusGraph = transformedGraphData.graph || {};
+                
+                console.log('📊 Loaded transformed nodes:', campusNodes.length);
+                console.log('🔄 Coordinate transformation applied for rotated SVG');
+                
+                // Create visual nodes
+                createNodes();
+                
+                // Setup controls
+                setupControls();
+                
+                // Show the map
+                loading.style.display = 'none';
+                container.style.display = 'block';
+                
+                updateStats();
+                
+            } catch (error) {
+                console.error('❌ Error loading application:', error);
+                status.textContent = 'Error loading';
+                loading.innerHTML = `
+                    <div style="color: red; padding: 20px; text-align: center;">
+                        <h3>❌ Error Loading Campus Connect Final</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>Please check:</p>
+                        <ul style="text-align: left; display: inline-block;">
+                            <li>Server is running on port 8000</li>
+                            <li>Files exist: pathfinding_graph_structural.json, 2nd floor final.svg</li>
+                            <li>Browser console for detailed error messages</li>
+                        </ul>
+                    </div>
+                `;
+                
+                // Show basic fallback
+                container.style.display = 'block';
+                container.innerHTML = `
+                    <div style="padding: 20px; text-align: center; background: #f0f0f0;">
+                        <h2>Campus Connect Final Fallback Mode</h2>
+                        <p>The interactive map failed to load, but the basic interface is available.</p>
+                        <p>Server URL: <a href="http://localhost:8000/">http://localhost:8000/</a></p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Transform coordinates for the rotated SVG
+        function transformCoordinatesForRotatedSVG(originalData) {
+            console.log('🔄 Starting coordinate transformation...');
+            const SVG_WIDTH = 8830;
+            const SVG_HEIGHT = 6238;
+            
+            // The new SVG has transform="matrix(-1 0 0 -1 8830 6238)" which:
+            // 1. Flips horizontally: x_new = SVG_WIDTH - x_old
+            // 2. Flips vertically: y_new = SVG_HEIGHT - y_old
+            // This is effectively a 180-degree rotation
+            
+            const transformedData = {
+                nodes: [],
+                graph: {}
+            };
+            
+            // Transform nodes
+            if (originalData.nodes) {
+                transformedData.nodes = originalData.nodes.map(node => {
+                    const transformedNode = {
+                        ...node,
+                        x: SVG_WIDTH - node.x,
+                        y: SVG_HEIGHT - node.y
+                    };
+                    
+                    console.log(`🔄 Node ${node.id}: (${node.x}, ${node.y}) → (${transformedNode.x}, ${transformedNode.y})`);
+                    return transformedNode;
+                });
+            }
+            
+            // Copy graph structure (connections remain the same, only coordinates change)
+            if (originalData.graph) {
+                transformedData.graph = { ...originalData.graph };
+            }
+            
+            console.log('✅ Coordinate transformation completed');
+            console.log(`📊 Transformed ${transformedData.nodes.length} nodes`);
+            
+            return transformedData;
+        }
+        
+        function createNodes() {
+            const overlay = document.getElementById('overlay');
+            if (!overlay) return;
+            
+            // Clear existing nodes
+            overlay.innerHTML = '';
+            
+            // Create path layer
+            const pathLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            pathLayer.id = 'path-layer';
+            overlay.appendChild(pathLayer);
+            
+            // Create nodes layer
+            const nodesLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            nodesLayer.id = 'nodes-layer';
+            overlay.appendChild(nodesLayer);
+            
+            campusNodes.forEach(node => {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', node.x);
+                circle.setAttribute('cy', node.y);
+                circle.setAttribute('r', getNodeRadius(node));
+                circle.setAttribute('fill', getNodeColor(node));
+                circle.setAttribute('stroke', '#ffffff');
+                circle.setAttribute('stroke-width', '3');
+                circle.setAttribute('class', 'node');
+                circle.setAttribute('data-id', node.id);
+                circle.setAttribute('data-label', node.label);
+                
+                // Special styling for data nodes - make them visible for reference
+                if (node.type === 'data_node') {
+                    circle.setAttribute('fill', '#9C27B0'); // Purple color for data nodes
+                    circle.setAttribute('stroke', '#E1BEE7'); // Light purple border
+                    circle.setAttribute('r', '8'); // Smaller size
+                    circle.setAttribute('opacity', '0.8'); // Semi-transparent
+                    circle.setAttribute('class', 'node data-node'); // Special class
+                }
+                
+                // Add click handler and stable hover feedback
+                circle.addEventListener('click', () => selectNode(node));
+                
+                // Add stable hover effects with labels
+                circle.addEventListener('mouseenter', function(e) {
+                    // Visual feedback
+                    this.style.strokeWidth = '5';
+                    this.style.stroke = '#ffff00';
+                    
+                    // Show label
+                    showNodeLabel(node, e);
+                });
+                
+                circle.addEventListener('mouseleave', function() {
+                    // Reset visual feedback
+                    this.style.strokeWidth = '3';
+                    this.style.stroke = '#ffffff';
+                    
+                    // Hide label
+                    hideNodeLabel();
+                });
+                
+                // Update label position on mouse move
+                circle.addEventListener('mousemove', function(e) {
+                    updateLabelPosition(e);
+                });
+                
+                nodesLayer.appendChild(circle);
+            });
+        }
+        
+        function getNodeRadius(node) {
+            switch (node.type) {
+                case 'intersection': return 25; // Larger for intersection hubs
+                case 'class': return 18; // Medium for class destinations
+                case 'stairway': return 20; // Medium-large for stairways
+                case 'invisible': return 12; // Smaller for corridor waypoints
+                default: return 14;
+            }
+        }
+        
+        function getNodeColor(node) {
+            switch (node.type) {
+                case 'class': return '#DC2626'; // Red for class nodes
+                case 'intersection': return '#7C3AED'; // Purple for intersection nodes
+                case 'invisible': return '#10B981'; // Green for invisible corridor nodes
+                case 'stairway': return '#F59E0B'; // Yellow for stairway nodes
+                case 'data_node': return '#9C27B0'; // Purple for data nodes
+                case 'red_curve_location': return '#EF4444'; // Red for red curve locations
+                default: return '#339AF0'; // Blue fallback
+            }
+        }
+        
+        function setupControls() {
+            const fromSelect = document.getElementById('fromLocation');
+            const toSelect = document.getElementById('toLocation');
+            const findButton = document.getElementById('findPath');
+            const clearButton = document.getElementById('clearPath');
+            
+            // Populate dropdowns with only searchable nodes (class and stairway nodes)
+            const searchableNodes = campusNodes.filter(node => node.searchable === true);
+            
+            searchableNodes.forEach(node => {
+                const option1 = new Option(node.label, node.id);
+                const option2 = new Option(node.label, node.id);
+                fromSelect.appendChild(option1);
+                toSelect.appendChild(option2);
+            });
+            
+            // Event handlers
+            findButton.addEventListener('click', findPath);
+            clearButton.addEventListener('click', clearPath);
+            
+            // Node management handlers
+            document.getElementById('toggleNodeInfo').addEventListener('click', toggleNodeInfo);
+            document.getElementById('highlightUnusedNodes').addEventListener('click', highlightUnusedNodes);
+        }
+        
+        function toggleNodeInfo() {
+            const nodeInfo = document.getElementById('nodeInfo');
+            const button = document.getElementById('toggleNodeInfo');
+            
+            if (nodeInfo.style.display === 'none') {
+                // Show node information
+                nodeInfo.style.display = 'block';
+                button.textContent = 'Hide Node Info';
+                updateNodeInfo();
+            } else {
+                // Hide node information
+                nodeInfo.style.display = 'none';
+                button.textContent = 'Show Node Info';
+            }
+        }
+        
+        function updateNodeInfo() {
+            const nodeInfo = document.getElementById('nodeInfo');
+            
+            // Analyze nodes
+            const nodesByType = {};
+            const searchableNodes = [];
+            const nonSearchableNodes = [];
+            
+            campusNodes.forEach(node => {
+                // Group by type
+                if (!nodesByType[node.type]) {
+                    nodesByType[node.type] = [];
+                }
+                nodesByType[node.type].push(node);
+                
+                // Group by searchability
+                if (node.searchable === true) {
+                    searchableNodes.push(node);
+                } else {
+                    nonSearchableNodes.push(node);
+                }
+            });
+            
+            let infoHTML = '<div style="margin-bottom: 10px;"><strong>Node Analysis:</strong></div>';
+            
+            // Node types breakdown
+            infoHTML += '<div style="margin-bottom: 8px;"><strong>By Type:</strong></div>';
+            for (const [type, nodes] of Object.entries(nodesByType)) {
+                infoHTML += `<div>${type}: ${nodes.length} nodes</div>`;
+            }
+            
+            infoHTML += '<div style="margin: 8px 0;"><strong>Searchability:</strong></div>';
+            infoHTML += `<div>Searchable: ${searchableNodes.length} nodes</div>`;
+            infoHTML += `<div>Non-searchable: ${nonSearchableNodes.length} nodes</div>`;
+            
+            // Show potentially unused nodes
+            const unusedNodes = nonSearchableNodes.filter(node => 
+                node.type !== 'invisible' && 
+                node.type !== 'intersection' && 
+                node.type !== 'data_node'
+            );
+            
+            if (unusedNodes.length > 0) {
+                infoHTML += '<div style="margin: 8px 0; color: #e67e22;"><strong>Potentially Unused:</strong></div>';
+                unusedNodes.forEach(node => {
+                    infoHTML += `<div style="font-size: 0.6rem;">• ${node.id} (${node.type}) - ${node.label || 'No label'}</div>`;
+                });
+            }
+            
+            nodeInfo.innerHTML = infoHTML;
+        }
+        
+        function highlightUnusedNodes() {
+            // Reset all node styles first
+            document.querySelectorAll('.node').forEach(node => {
+                node.style.stroke = '#ffffff';
+                node.style.strokeWidth = '3';
+            });
+            
+            // Find and highlight potentially unused nodes
+            const unusedNodes = campusNodes.filter(node => 
+                node.searchable !== true && 
+                node.type !== 'invisible' && 
+                node.type !== 'intersection' && 
+                node.type !== 'data_node'
+            );
+            
+            console.log('🔍 Highlighting potentially unused nodes:', unusedNodes);
+            
+            unusedNodes.forEach(node => {
+                const nodeElement = document.querySelector(`[data-id="${node.id}"]`);
+                if (nodeElement) {
+                    nodeElement.style.stroke = '#ff6b6b';
+                    nodeElement.style.strokeWidth = '6';
+                    nodeElement.style.fill = '#ff6b6b';
+                    nodeElement.style.opacity = '0.8';
+                }
+            });
+            
+            // Update status
+            const status = document.getElementById('status');
+            status.textContent = `Highlighted ${unusedNodes.length} potentially unused nodes in red`;
+            
+            // Show alert with node IDs
+            if (unusedNodes.length > 0) {
+                const nodeIds = unusedNodes.map(node => node.id).join(', ');
+                alert(`Found ${unusedNodes.length} potentially unused nodes:\n\n${nodeIds}\n\nThese are highlighted in red on the map.`);
+            } else {
+                alert('No potentially unused nodes found!');
+            }
+        }
+        
+        function selectNode(node) {
+            const fromSelect = document.getElementById('fromLocation');
+            const toSelect = document.getElementById('toLocation');
+            
+            if (!fromSelect.value) {
+                fromSelect.value = node.id;
+            } else if (!toSelect.value) {
+                toSelect.value = node.id;
+                findPath(); // Auto-find path when both nodes selected
+            } else {
+                // Reset and start new selection
+                fromSelect.value = node.id;
+                toSelect.value = '';
+                clearPath();
+            }
+        }
+        
+        function findPath() {
+            const fromId = document.getElementById('fromLocation').value;
+            const toId = document.getElementById('toLocation').value;
+            
+            if (!fromId || !toId) {
+                alert('Please select both starting point and destination');
+                return;
+            }
+            
+            if (fromId === toId) {
+                alert('Starting point and destination cannot be the same');
+                return;
+            }
+            
+            const path = astarPath(campusGraph, campusNodes, fromId, toId);
+            if (path && path.length > 0) {
+                console.log('🛤️ Path found:', path);
+                
+                // Use simple, reliable path drawing
+                drawPath(path);
+                currentPath = path;
+                
+                // Update status
+                const startNode = campusNodes.find(n => n.id === fromId);
+                const endNode = campusNodes.find(n => n.id === toId);
+                const status = document.getElementById('status');
+                status.textContent = `Route: ${startNode?.label || fromId} → ${endNode?.label || toId} (${path.length - 1} steps)`;
+            } else {
+                console.error('❌ No path found');
+                alert('No path found between selected locations');
+            }
+        }
+        
+        function getNodeCoordinates(nodes, nodeId) {
+            for (const node of nodes) {
+                if (node.id === nodeId) {
+                    return { x: node.x, y: node.y };
+                }
+            }
+            return null;
+        }
+        
+        function heuristicDistance(coord1, coord2) {
+            const dx = coord2.x - coord1.x;
+            const dy = coord2.y - coord1.y;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+        
+        function astarPath(graph, nodes, start, end) {
+            // Get coordinates for heuristic calculation
+            const endCoords = getNodeCoordinates(nodes, end);
+            const startCoords = getNodeCoordinates(nodes, start);
+            
+            if (!endCoords || !startCoords) {
+                console.error('Could not find coordinates for start or end node');
+                return null;
+            }
+            
+            const gScore = {};
+            const fScore = {};
+            const previous = {};
+            const openSet = new Set();
+            const closedSet = new Set();
+            
+            // Initialize
+            for (const node in graph) {
+                gScore[node] = Infinity;
+                fScore[node] = Infinity;
+                previous[node] = null;
+            }
+            
+            gScore[start] = 0;
+            fScore[start] = heuristicDistance(startCoords, endCoords);
+            openSet.add(start);
+            
+            while (openSet.size > 0) {
+                // Find node in openSet with lowest fScore
+                let current = null;
+                let minFScore = Infinity;
+                for (const node of openSet) {
+                    if (fScore[node] < minFScore) {
+                        minFScore = fScore[node];
+                        current = node;
+                    }
+                }
+                
+                if (current === null) break;
+                
+                // Check if we've reached the goal
+                if (current === end) {
+                    break;
+                }
+                
+                openSet.delete(current);
+                closedSet.add(current);
+                
+                // Check neighbors
+                for (const neighbor in graph[current] || {}) {
+                    if (closedSet.has(neighbor)) continue;
+                    
+                    const tentativeGScore = gScore[current] + graph[current][neighbor];
+                    
+                    if (!openSet.has(neighbor)) {
+                        openSet.add(neighbor);
+                    } else if (tentativeGScore >= gScore[neighbor]) {
+                        continue;
+                    }
+                    
+                    // This path is the best until now
+                    previous[neighbor] = current;
+                    gScore[neighbor] = tentativeGScore;
+                    
+                    const neighborCoords = getNodeCoordinates(nodes, neighbor);
+                    if (neighborCoords) {
+                        const hScore = heuristicDistance(neighborCoords, endCoords);
+                        fScore[neighbor] = gScore[neighbor] + hScore;
+                    }
+                }
+            }
+            
+            // Reconstruct path
+            const path = [];
+            let current = end;
+            while (current !== null) {
+                path.unshift(current);
+                current = previous[current];
+            }
+            
+            return path.length > 1 && path[0] === start ? path : null;
+        }
+        
+        function drawPath(path) {
+            clearPath();
+            
+            const pathLayer = document.getElementById('path-layer');
+            if (!pathLayer || path.length < 2) return;
+            
+            console.log('🚂 Starting train-style path drawing with leading icon...');
+            
+            // Create path line (initially hidden)
+            const pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+            
+            const points = path.map(nodeId => {
+                const node = campusNodes.find(n => n.id === nodeId);
+                return node ? `${node.x},${node.y}` : '';
+            }).filter(point => point).join(' ');
+            
+            pathElement.setAttribute('points', points);
+            pathElement.setAttribute('class', 'path-line');
+            pathElement.style.strokeDasharray = '0';
+            pathElement.style.strokeDashoffset = '0';
+            pathElement.style.opacity = '0';
+            
+            pathLayer.appendChild(pathElement);
+            
+            // Create traveling icon that will lead the path drawing
+            const travelingIcon = createTravelingIcon(path);
+            if (travelingIcon) {
+                pathLayer.appendChild(travelingIcon);
+                console.log('✅ Traveling icon created and added to path layer');
+            } else {
+                console.error('❌ Failed to create traveling icon');
+            }
+            
+            // Highlight start node immediately with pulsing effect
+            highlightNode(path[0], '#00ff00', true); // Green for start with pulse
+            
+            // Start the train-style animation where icon leads the path
+            setTimeout(() => {
+                if (travelingIcon) {
+                    animateTrainStyle(pathElement, travelingIcon, path);
+                }
+                console.log('🚂 Train-style animation started - icon leads the path');
+            }, 100);
+            
+            // Highlight end node and add final icon after animation completes
+            setTimeout(() => {
+                highlightNode(path[path.length - 1], '#ff0000'); // Red for end
+                console.log('🎯 Traveling icon reached destination');
+                
+                // Keep traveling icon at destination
+                if (travelingIcon) {
+                    // Start final rotation animation to point towards nearest red curve
+                    setTimeout(async () => {
+                        console.log('🎯 Starting final rotation of traveling icon to nearest red curve...');
+                        try {
+                            await animateFinalRotation(path[path.length - 1], campusNodes, travelingIcon, {
+                                rotationSpeed: 0.05,
+                                animationDuration: 1500 // 1.5 seconds for smooth rotation
+                            });
+                            console.log('✅ Final rotation of traveling icon to red curve completed');
+                        } catch (error) {
+                            console.error('❌ Error during final rotation:', error);
+                        }
+                    }, 500); // Small delay to let the animation settle
+                }
+                
+                // Traveling icon stays as the final destination marker with its existing pulsing animation
+            }, 2200); // Slightly after the 2s animation completes
+        }
+        
+        function createTravelingIcon(path) {
+            if (path.length < 2) return null;
+            
+            console.log('🚂 Creating train engine icon...');
+            
+            // Get destination coordinates for direction calculation
+            const destinationNode = campusNodes.find(n => n.id === path[path.length - 1]);
+            if (!destinationNode) return null;
+            
+            // Create the traveling icon group
+            const iconGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            iconGroup.setAttribute('class', 'traveling-icon-group');
+            
+            // Create a larger, more prominent engine icon
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', '0');
+            circle.setAttribute('cy', '0');
+            circle.setAttribute('r', '20'); // Increased from 15 to 20 for better visibility
+            circle.setAttribute('fill', '#FF6B35');
+            circle.setAttribute('stroke', '#ffffff');
+            circle.setAttribute('stroke-width', '4'); // Increased stroke width
+            
+            // Create an arrow pointing towards destination (larger and more visible)
+            const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            arrow.setAttribute('d', 'M-10,-10 L12,0 L-10,10 L-4,0 Z'); // Made arrow larger
+            arrow.setAttribute('fill', '#ffffff');
+            arrow.setAttribute('stroke', 'none');
+            arrow.setAttribute('class', 'engine-arrow');
+            
+            // Add a pulsing effect to make it more visible
+            const animateCircle = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+            animateCircle.setAttribute('attributeName', 'r');
+            animateCircle.setAttribute('values', '20;25;20'); // Updated for new radius
+            animateCircle.setAttribute('dur', '1s');
+            animateCircle.setAttribute('repeatCount', 'indefinite');
+            
+            circle.appendChild(animateCircle);
+            iconGroup.appendChild(circle);
+            iconGroup.appendChild(arrow);
+            
+            // Calculate initial direction towards destination
+            const startNode = campusNodes.find(n => n.id === path[0]);
+            if (startNode) {
+                const initialAngle = Math.atan2(
+                    destinationNode.y - startNode.y,
+                    destinationNode.x - startNode.x
+                ) * (180 / Math.PI);
+                
+                iconGroup.setAttribute('transform', `translate(${startNode.x}, ${startNode.y}) rotate(${initialAngle})`);
+                console.log(`🧭 Engine initially positioned at (${startNode.x}, ${startNode.y}) pointing ${initialAngle.toFixed(1)}° towards destination`);
+            } else {
+                console.error('❌ Start node not found for path[0]:', path[0]);
+            }
+            
+            // Store path and destination for animation
+            iconGroup._pathData = path;
+            iconGroup._destination = destinationNode;
+            
+            console.log('✅ Train engine icon created and positioned');
+            return iconGroup;
+        }
+        
+        function animateTrainStyle(pathElement, iconElement, path) {
+            if (path.length < 2) return;
+            
+            console.log('🚂 Starting train-style animation - icon leads, path follows...');
+            
+            const animationDuration = 2000; // 2 seconds
+            const startTime = performance.now();
+            
+            // Get destination for consistent pointing direction
+            const destinationNode = campusNodes.find(n => n.id === path[path.length - 1]);
+            if (!destinationNode) return;
+            
+            // Calculate total path length for trail effect
+            const totalPathLength = calculatePathLength(path);
+            
+            // Show path with initial opacity
+            pathElement.style.opacity = '0.8';
+            pathElement.style.strokeDasharray = totalPathLength;
+            pathElement.style.strokeDashoffset = totalPathLength;
+            
+            function animate(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / animationDuration, 1);
+                
+                // Move the icon along the path
+                const iconPosition = getPositionAlongPath(path, progress);
+                if (iconPosition) {
+                    // Always calculate angle towards final destination
+                    const angleToDestination = Math.atan2(
+                        destinationNode.y - iconPosition.y,
+                        destinationNode.x - iconPosition.x
+                    ) * (180 / Math.PI);
+                    
+                    // Update icon position and ensure it points towards destination
+                    iconElement.setAttribute('transform', 
+                        `translate(${iconPosition.x}, ${iconPosition.y}) rotate(${angleToDestination})`);
+                    
+                    // Create trail effect: path appears behind the icon
+                    const trailLength = totalPathLength * (1 - progress);
+                    pathElement.style.strokeDashoffset = trailLength;
+                }
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    console.log('✅ Train animation completed - engine reached destination');
+                    // Ensure full path is visible at the end
+                    pathElement.style.strokeDashoffset = '0';
+                }
+            }
+            
+            requestAnimationFrame(animate);
+        }
+        
+        function getPositionAlongPath(path, progress) {
+            if (path.length < 2) return null;
+            
+            // Calculate total path length and create segments
+            const segments = [];
+            let totalLength = 0;
+            
+            for (let i = 0; i < path.length - 1; i++) {
+                const currentNode = campusNodes.find(n => n.id === path[i]);
+                const nextNode = campusNodes.find(n => n.id === path[i + 1]);
+                
+                if (currentNode && nextNode) {
+                    const dx = nextNode.x - currentNode.x;
+                    const dy = nextNode.y - currentNode.y;
+                    const length = Math.sqrt(dx * dx + dy * dy);
+                    
+                    segments.push({
+                        start: currentNode,
+                        end: nextNode,
+                        length: length,
+                        dx: dx,
+                        dy: dy
+                    });
+                    totalLength += length;
+                }
+            }
+            
+            // Find position based on progress
+            const targetDistance = totalLength * progress;
+            let currentDistance = 0;
+            
+            for (const segment of segments) {
+                if (currentDistance + segment.length >= targetDistance) {
+                    // Position is within this segment
+                    const segmentProgress = (targetDistance - currentDistance) / segment.length;
+                    const x = segment.start.x + (segment.dx * segmentProgress);
+                    const y = segment.start.y + (segment.dy * segmentProgress);
+                    
+                    return { x, y };
+                }
+                currentDistance += segment.length;
+            }
+            
+            // Fallback to end position
+            const endNode = campusNodes.find(n => n.id === path[path.length - 1]);
+            return endNode ? { x: endNode.x, y: endNode.y } : null;
+        }
+        
+        function calculatePathLength(path) {
+            let totalLength = 0;
+            
+            for (let i = 0; i < path.length - 1; i++) {
+                const currentNode = campusNodes.find(n => n.id === path[i]);
+                const nextNode = campusNodes.find(n => n.id === path[i + 1]);
+                
+                if (currentNode && nextNode) {
+                    const dx = nextNode.x - currentNode.x;
+                    const dy = nextNode.y - currentNode.y;
+                    const segmentLength = Math.sqrt(dx * dx + dy * dy);
+                    totalLength += segmentLength;
+                }
+            }
+            
+            return Math.max(totalLength, 100); // Ensure minimum length for animation
+        }
+        
+        function highlightNode(nodeId, color, pulse = false) {
+            const nodeElement = document.querySelector(`[data-id="${nodeId}"]`);
+            if (nodeElement) {
+                nodeElement.style.stroke = color;
+                nodeElement.style.strokeWidth = '5';
+                
+                if (pulse) {
+                    nodeElement.classList.add('start-node-pulse');
+                    console.log('🔄 Start node pulsing animation added');
+                    
+                    // Remove pulsing after path animation completes
+                    setTimeout(() => {
+                        nodeElement.classList.remove('start-node-pulse');
+                        console.log('⏹️ Start node pulsing animation removed');
+                    }, 2500);
+                }
+            }
+        }
+        
+        async function animateFinalRotation(destinationNodeId, allNodes, iconElement, options = {}) {
+            const { rotationSpeed = 0.05, animationDuration = 1500 } = options;
+            
+            console.log('🎯 Starting final rotation animation...');
+            
+            // Find the destination node
+            const destinationNode = allNodes.find(n => n.id === destinationNodeId);
+            if (!destinationNode) {
+                console.error('❌ Destination node not found:', destinationNodeId);
+                return;
+            }
+            
+            // Find all red curve nodes
+            const redCurveNodes = allNodes.filter(n => 
+                n.type === 'red_curve_location' || n.type === 'data_node'
+            );
+            
+            if (redCurveNodes.length === 0) {
+                console.log('ℹ️ No red curve nodes found, skipping final rotation');
+                return;
+            }
+            
+            // Find the nearest red curve node
+            let nearestRedCurve = null;
+            let minDistance = Infinity;
+            
+            redCurveNodes.forEach(redCurve => {
+                const distance = Math.sqrt(
+                    Math.pow(redCurve.x - destinationNode.x, 2) + 
+                    Math.pow(redCurve.y - destinationNode.y, 2)
+                );
+                
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearestRedCurve = redCurve;
+                }
+            });
+            
+            if (!nearestRedCurve) {
+                console.log('ℹ️ No nearest red curve found, skipping final rotation');
+                return;
+            }
+            
+            // Calculate target angle towards red curve
+            const targetAngle = Math.atan2(
+                nearestRedCurve.y - destinationNode.y,
+                nearestRedCurve.x - destinationNode.x
+            ) * (180 / Math.PI);
+            
+            console.log(`🎯 Target angle towards red curve: ${targetAngle.toFixed(1)}°`);
+            console.log(`📍 Destination: ${destinationNode.label} (${destinationNode.x}, ${destinationNode.y})`);
+            console.log(`🔴 Nearest red curve: ${nearestRedCurve.id} (${nearestRedCurve.x}, ${nearestRedCurve.y})`);
+            
+            // Get current transform to extract current angle
+            const currentTransform = iconElement.getAttribute('transform') || '';
+            const rotateMatch = currentTransform.match(/rotate\(([^)]+)\)/);
+            const currentAngle = rotateMatch ? parseFloat(rotateMatch[1]) : 0;
+            
+            // Calculate the shortest rotation path
+            let angleDiff = targetAngle - currentAngle;
+            while (angleDiff > 180) angleDiff -= 360;
+            while (angleDiff < -180) angleDiff += 360;
+            
+            console.log(`🔄 Current angle: ${currentAngle.toFixed(1)}°, Target: ${targetAngle.toFixed(1)}°, Diff: ${angleDiff.toFixed(1)}°`);
+            
+            // Animate the rotation
+            const startTime = performance.now();
+            const startAngle = currentAngle;
+            
+            return new Promise((resolve) => {
+                function rotateAnimation(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / animationDuration, 1);
+                    
+                    // Use easing function for smooth rotation
+                    const easedProgress = 1 - Math.pow(1 - progress, 3); // Ease-out cubic
+                    const currentRotation = startAngle + (angleDiff * easedProgress);
+                    
+                    // Update the icon transform
+                    iconElement.setAttribute('transform', 
+                        `translate(${destinationNode.x}, ${destinationNode.y}) rotate(${currentRotation})`);
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(rotateAnimation);
+                    } else {
+                        console.log('✅ Final rotation animation completed');
+                        resolve();
+                    }
+                }
+                
+                requestAnimationFrame(rotateAnimation);
+            });
+        }
+        
+        function clearPath() {
+            const pathLayer = document.getElementById('path-layer');
+            if (pathLayer) {
+                pathLayer.innerHTML = '';
+            }
+            
+            // Reset node highlights
+            document.querySelectorAll('.node').forEach(node => {
+                node.style.stroke = '#ffffff';
+                node.style.strokeWidth = '3';
+                node.classList.remove('start-node-pulse');
+            });
+            
+            currentPath = [];
+            const status = document.getElementById('status');
+            status.textContent = 'Ready';
+        }
+        
+        // Interactive Zones Implementation (transformed for new SVG)
+        function addInteractiveZones(svg) {
+            console.log('🎯 Adding interactive zones to final SVG...');
+            
+            // Since the coordinates are transformed, we need to transform the zone paths too
+            // For now, I'll create a simplified version that works with the new coordinate system
+            // The zones would need to be redefined for the new SVG structure
+            
+            console.log('🎯 Interactive zones will be added based on new SVG structure');
+            
+            // Create zones layer
+            const zonesLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            zonesLayer.id = 'interactive-zones';
+            zonesLayer.style.pointerEvents = 'auto';
+            svg.appendChild(zonesLayer);
+            
+            console.log('🎯 Zones layer created for final SVG');
+        }
+        
+        // Node label functions
+        function showNodeLabel(node, event) {
+            hideNodeLabel(); // Remove any existing label
+            
+            const label = document.createElement('div');
+            label.className = 'node-label';
+            label.textContent = node.label || node.id;
+            label.id = 'current-node-label';
+            
+            document.body.appendChild(label);
+            updateLabelPosition(event);
+        }
+        
+        function hideNodeLabel() {
+            const existingLabel = document.getElementById('current-node-label');
+            if (existingLabel) {
+                existingLabel.remove();
+            }
+        }
+        
+        function updateLabelPosition(event) {
+            const label = document.getElementById('current-node-label');
+            if (label) {
+                label.style.left = event.clientX + 'px';
+                label.style.top = event.clientY + 'px';
+            }
+        }
+        
+        // Zoom controls for fixed canvas
+        function addZoomControls(svgWrapper) {
+            const svg = svgWrapper.querySelector('svg');
+            if (!svg) return;
+            
+            let scale = 1;
+            let translateX = 0;
+            let translateY = 0;
+            let isDragging = false;
+            let lastMouseX = 0;
+            let lastMouseY = 0;
+            
+            // Touch handling variables
+            let initialDistance = 0;
+            let initialScale = 1;
+            let touches = [];
+            
+            function updateTransform() {
+                svgWrapper.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            }
+            
+            function getDistance(touch1, touch2) {
+                const dx = touch1.clientX - touch2.clientX;
+                const dy = touch1.clientY - touch2.clientY;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+            
+            function getTouchCenter(touch1, touch2) {
+                return {
+                    x: (touch1.clientX + touch2.clientX) / 2,
+                    y: (touch1.clientY + touch2.clientY) / 2
+                };
+            }
+            
+            // Zoom controls
+            document.getElementById('zoomIn').addEventListener('click', () => {
+                const oldScale = scale;
+                scale = Math.min(scale * 1.2, 3);
+                
+                // Keep zoom centered in the fixed canvas
+                const rect = svgWrapper.getBoundingClientRect();
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const scaleRatio = scale / oldScale;
+                translateX = centerX - (centerX - translateX) * scaleRatio;
+                translateY = centerY - (centerY - translateY) * scaleRatio;
+                
+                updateTransform();
+            });
+            
+            document.getElementById('zoomOut').addEventListener('click', () => {
+                const oldScale = scale;
+                scale = Math.max(scale / 1.2, 0.5);
+                
+                // Keep zoom centered in the fixed canvas
+                const rect = svgWrapper.getBoundingClientRect();
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const scaleRatio = scale / oldScale;
+                translateX = centerX - (centerX - translateX) * scaleRatio;
+                translateY = centerY - (centerY - translateY) * scaleRatio;
+                
+                updateTransform();
+            });
+            
+            document.getElementById('zoomReset').addEventListener('click', () => {
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+            });
+            
+            // Touch events for mobile
+            svgWrapper.addEventListener('touchstart', (e) => {
+                touches = Array.from(e.touches);
+                
+                if (touches.length === 1) {
+                    // Single touch - start pan
+                    isDragging = true;
+                    lastMouseX = touches[0].clientX;
+                    lastMouseY = touches[0].clientY;
+                } else if (touches.length === 2) {
+                    // Two finger touch - start pinch zoom
+                    isDragging = false;
+                    initialDistance = getDistance(touches[0], touches[1]);
+                    initialScale = scale;
+                }
+                
+                e.preventDefault();
+            });
+            
+            svgWrapper.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                touches = Array.from(e.touches);
+                
+                if (touches.length === 1 && isDragging) {
+                    // Single finger pan
+                    const deltaX = touches[0].clientX - lastMouseX;
+                    const deltaY = touches[0].clientY - lastMouseY;
+                    
+                    translateX += deltaX;
+                    translateY += deltaY;
+                    
+                    lastMouseX = touches[0].clientX;
+                    lastMouseY = touches[0].clientY;
+                    
+                    updateTransform();
+                } else if (touches.length === 2) {
+                    // Two finger pinch zoom
+                    const currentDistance = getDistance(touches[0], touches[1]);
+                    const scaleChange = currentDistance / initialDistance;
+                    const newScale = Math.max(0.5, Math.min(3, initialScale * scaleChange));
+                    
+                    if (Math.abs(newScale - scale) > 0.01) { // Threshold to prevent jittery updates
+                        const rect = svgWrapper.getBoundingClientRect();
+                        const touchCenter = getTouchCenter(touches[0], touches[1]);
+                        const centerX = touchCenter.x - rect.left;
+                        const centerY = touchCenter.y - rect.top;
+                        
+                        const oldScale = scale;
+                        scale = newScale;
+                        
+                        // Zoom towards touch center
+                        const scaleRatio = scale / oldScale;
+                        translateX = centerX - (centerX - translateX) * scaleRatio;
+                        translateY = centerY - (centerY - translateY) * scaleRatio;
+                        
+                        updateTransform();
+                    }
+                }
+            });
+            
+            svgWrapper.addEventListener('touchend', (e) => {
+                if (e.touches.length === 0) {
+                    isDragging = false;
+                    touches = [];
+                } else if (e.touches.length === 1) {
+                    // From two fingers to one - restart single touch
+                    touches = Array.from(e.touches);
+                    lastMouseX = touches[0].clientX;
+                    lastMouseY = touches[0].clientY;
+                    isDragging = true;
+                }
+            });
+            
+            // Mouse events for desktop
+            svgWrapper.addEventListener('mousedown', (e) => {
+                if (e.touches) return; // Ignore if touch event
+                
+                isDragging = true;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                svgWrapper.style.cursor = 'grabbing';
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging || e.touches) return;
+                
+                const deltaX = e.clientX - lastMouseX;
+                const deltaY = e.clientY - lastMouseY;
+                
+                translateX += deltaX;
+                translateY += deltaY;
+                
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                
+                updateTransform();
+                e.preventDefault();
+            });
+            
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    svgWrapper.style.cursor = 'grab';
+                }
+            });
+            
+            // Wheel zoom for desktop
+            svgWrapper.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const rect = svgWrapper.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                
+                const oldScale = scale;
+                const delta = e.deltaY > 0 ? 0.95 : 1.05; // Smaller increments for smoother zoom
+                scale = Math.max(0.5, Math.min(3, scale * delta));
+                
+                // Zoom towards mouse position within the canvas
+                const scaleRatio = scale / oldScale;
+                translateX = mouseX - (mouseX - translateX) * scaleRatio;
+                translateY = mouseY - (mouseY - translateY) * scaleRatio;
+                
+                updateTransform();
+            });
+            
+            // Prevent default touch behaviors that interfere
+            svgWrapper.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+            svgWrapper.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+        }
+        
+        function updateStats() {
+            document.getElementById('nodeCount').textContent = campusNodes.length;
+            
+            let connectionCount = 0;
+            for (const node in campusGraph) {
+                connectionCount += Object.keys(campusGraph[node] || {}).length;
+            }
+            document.getElementById('connectionCount').textContent = connectionCount;
+            
+            const searchableNodes = campusNodes.filter(n => n.searchable === true);
+            const coverage = campusNodes.length > 0 ? Math.round((searchableNodes.length / campusNodes.length) * 100) : 0;
+            document.getElementById('coverage').textContent = coverage + '%';
+        }
+    </script>
+</body>
+</html>
