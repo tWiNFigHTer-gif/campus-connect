@@ -162,12 +162,19 @@
         
         .node {
             cursor: pointer;
+            opacity: 0; /* Make all nodes invisible */
+            transition: opacity 0.2s ease; /* Smooth transition for hover */
             /* Removed transition and hover effects to prevent glitching */
+        }
+        
+        .node:hover {
+            opacity: 0.6; /* Make nodes slightly visible on hover */
         }
         
         .node.highlighted {
             stroke-width: 5;
             stroke: #ffff00;
+            opacity: 1; /* Make highlighted nodes visible */
         }
         
         .node-label {
@@ -178,10 +185,87 @@
             border-radius: 4px;
             font-size: 12px;
             font-weight: bold;
-            pointer-events: none;
+            opacity: 0; /* Make all node labels invisible */
+            transition: opacity 0.2s ease; /* Smooth transition */
+            pointer-events: none; /* Don't interfere with node clicking */
             z-index: 1000;
             white-space: nowrap;
             display: none;
+        }
+        
+        .node:hover + .node-label,
+        .node-label:hover {
+            opacity: 1; /* Make labels visible when hovering over nodes */
+            display: block; /* Show labels on hover */
+        }
+        
+        /* Special styling for data nodes */
+        .data-node {
+            stroke-dasharray: 2,2; /* Dashed border for data nodes */
+            stroke-width: 2;
+        }
+        
+        .data-node:hover {
+            opacity: 1; /* Full opacity on hover */
+            stroke-width: 3;
+        }
+        
+        /* Interactive Zone Styles */
+        .interactive-zone {
+            cursor: pointer;
+            transition: fill-opacity 0.3s ease;
+        }
+        
+        .interactive-zone:hover {
+            fill-opacity: 0.7;
+        }
+        
+        .interactive-zone.highlighted {
+            fill-opacity: 0.8;
+            stroke: #2563EB;
+            stroke-width: 3;
+        }
+        
+        /* Info Box Styles */
+        .zone-info-box {
+            position: absolute;
+            background: white;
+            border: 2px solid #2563EB;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 2000;
+            min-width: 200px;
+            font-family: Arial, sans-serif;
+        }
+        
+        .zone-info-box h3 {
+            margin: 0 0 8px 0;
+            color: #1E40AF;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .zone-info-box p {
+            margin: 0 0 12px 0;
+            color: #374151;
+            font-size: 14px;
+        }
+        
+        .zone-destination-btn {
+            background: #2563EB;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background-color 0.2s ease;
+        }
+        
+        .zone-destination-btn:hover {
+            background: #1D4ED8;
         }
         
         .loading {
@@ -408,6 +492,9 @@
                     svg.style.maxWidth = 'none';
                     svg.style.maxHeight = 'none';
                     
+                    // Add interactive zones
+                    addInteractiveZones(svg);
+                    
                     // Add overlay for nodes and paths
                     const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'g');
                     overlay.id = 'overlay';
@@ -493,6 +580,24 @@
                 circle.setAttribute('data-id', node.id);
                 circle.setAttribute('data-label', node.label);
                 
+                // Special styling for data nodes - make them visible for reference
+                if (node.type === 'data_node') {
+                    circle.setAttribute('fill', '#9C27B0'); // Purple color for data nodes
+                    circle.setAttribute('stroke', '#E1BEE7'); // Light purple border
+                    circle.setAttribute('r', '8'); // Smaller size
+                    circle.setAttribute('opacity', '0.8'); // Semi-transparent
+                    circle.setAttribute('class', 'node data-node'); // Special class
+                }
+                circle.setAttribute('cx', node.x);
+                circle.setAttribute('cy', node.y);
+                circle.setAttribute('r', getNodeRadius(node));
+                circle.setAttribute('fill', getNodeColor(node));
+                circle.setAttribute('stroke', '#ffffff');
+                circle.setAttribute('stroke-width', '3');
+                circle.setAttribute('class', 'node');
+                circle.setAttribute('data-id', node.id);
+                circle.setAttribute('data-label', node.label);
+                
                 // Add click handler and stable hover feedback
                 circle.addEventListener('click', () => selectNode(node));
                 
@@ -540,6 +645,8 @@
                 case 'intersection': return '#7C3AED'; // Purple for intersection nodes (#3500C6 equivalent)
                 case 'invisible': return '#10B981'; // Green for invisible corridor nodes (#33CA60 equivalent)
                 case 'stairway': return '#F59E0B'; // Yellow for stairway nodes (#FFAE00 equivalent)
+                case 'data_node': return '#9C27B0'; // Purple for data nodes
+                case 'red_curve_location': return '#EF4444'; // Red for red curve locations
                 default: return '#339AF0'; // Blue fallback
             }
         }
@@ -741,6 +848,11 @@
             const travelingIcon = createTravelingIcon(path);
             if (travelingIcon) {
                 pathLayer.appendChild(travelingIcon);
+                console.log('✅ Traveling icon created and added to path layer');
+                console.log('🎯 Traveling icon element:', travelingIcon);
+                console.log('📍 Traveling icon transform:', travelingIcon.getAttribute('transform'));
+            } else {
+                console.error('❌ Failed to create traveling icon');
             }
             
             // Highlight start node immediately with pulsing effect
@@ -757,13 +869,26 @@
             // Highlight end node and add final icon after animation completes
             setTimeout(() => {
                 highlightNode(path[path.length - 1], '#ff0000'); // Red for end
-                console.log('🎯 Adding final destination icon after train animation');
-                addDestinationIcon(path[path.length - 1]);
+                console.log('🎯 Traveling icon reached destination - applying final rotation');
                 
-                // Remove traveling icon and show final icon
+                // Keep traveling icon at destination and apply final rotation functionality
                 if (travelingIcon) {
-                    travelingIcon.remove();
+                    // Start final rotation animation to point towards nearest red curve
+                    setTimeout(async () => {
+                        console.log('🎯 Starting final rotation of traveling icon to nearest red curve...');
+                        try {
+                            await animateFinalRotation(path[path.length - 1], campusNodes, travelingIcon, {
+                                rotationSpeed: 0.05,
+                                animationDuration: 1500 // 1.5 seconds for smooth rotation
+                            });
+                            console.log('✅ Final rotation of traveling icon to red curve completed');
+                        } catch (error) {
+                            console.error('❌ Error during final rotation:', error);
+                        }
+                    }, 500); // Small delay to let the animation settle
                 }
+                
+                // Traveling icon stays as the final destination marker with its existing pulsing animation
             }, 2200); // Slightly after the 2s animation completes
         }
         
@@ -784,14 +909,14 @@
             const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
             circle.setAttribute('cx', '0');
             circle.setAttribute('cy', '0');
-            circle.setAttribute('r', '15');
+            circle.setAttribute('r', '20'); // Increased from 15 to 20 for better visibility
             circle.setAttribute('fill', '#FF6B35');
             circle.setAttribute('stroke', '#ffffff');
-            circle.setAttribute('stroke-width', '3');
+            circle.setAttribute('stroke-width', '4'); // Increased stroke width
             
             // Create an arrow pointing towards destination (larger and more visible)
             const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            arrow.setAttribute('d', 'M-8,-8 L10,0 L-8,8 L-3,0 Z');
+            arrow.setAttribute('d', 'M-10,-10 L12,0 L-10,10 L-4,0 Z'); // Made arrow larger
             arrow.setAttribute('fill', '#ffffff');
             arrow.setAttribute('stroke', 'none');
             arrow.setAttribute('class', 'engine-arrow');
@@ -799,7 +924,7 @@
             // Add a pulsing effect to make it more visible
             const animateCircle = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
             animateCircle.setAttribute('attributeName', 'r');
-            animateCircle.setAttribute('values', '15;18;15');
+            animateCircle.setAttribute('values', '20;25;20'); // Updated for new radius
             animateCircle.setAttribute('dur', '1s');
             animateCircle.setAttribute('repeatCount', 'indefinite');
             
@@ -816,7 +941,11 @@
                 ) * (180 / Math.PI);
                 
                 iconGroup.setAttribute('transform', `translate(${startNode.x}, ${startNode.y}) rotate(${initialAngle})`);
-                console.log(`🧭 Engine initially pointing ${initialAngle.toFixed(1)}° towards destination`);
+                console.log(`🧭 Engine initially positioned at (${startNode.x}, ${startNode.y}) pointing ${initialAngle.toFixed(1)}° towards destination`);
+                console.log(`📍 Start node: ${startNode.label} (${startNode.x}, ${startNode.y})`);
+                console.log(`🎯 Destination node: ${destinationNode.label} (${destinationNode.x}, ${destinationNode.y})`);
+            } else {
+                console.error('❌ Start node not found for path[0]:', path[0]);
             }
             
             // Store path and destination for animation
@@ -1038,6 +1167,783 @@
             };
         }
         
+        // Function to find the nearest navigable node to a data node
+        function findNearestNavigableNode(dataNode, allNodes) {
+            let nearestNode = null;
+            let minDistance = Infinity;
+            
+            allNodes.forEach(node => {
+                // Only consider navigable node types (class, intersection, stairway)
+                if (node.type === 'class' || node.type === 'intersection' || node.type === 'stairway') {
+                    const distance = Math.sqrt(
+                        Math.pow(node.x - dataNode.x, 2) + 
+                        Math.pow(node.y - dataNode.y, 2)
+                    );
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        nearestNode = node;
+                    }
+                }
+            });
+            
+            return { node: nearestNode, distance: minDistance };
+        }
+        
+        // Interactive Zones Implementation
+        function addInteractiveZones(svg) {
+            console.log('🎯 Adding interactive zones to SVG...');
+            
+            // Helper function to calculate zone center from path data
+            function getZoneCenter(pathData) {
+                // Extract coordinates from path data
+                const coords = pathData.match(/(\d+\.?\d*)\s+(\d+\.?\d*)/g);
+                if (!coords || coords.length === 0) return null;
+                
+                let totalX = 0, totalY = 0, count = 0;
+                coords.forEach(coord => {
+                    const [x, y] = coord.split(/\s+/).map(Number);
+                    if (!isNaN(x) && !isNaN(y)) {
+                        totalX += x;
+                        totalY += y;
+                        count++;
+                    }
+                });
+                
+                return count > 0 ? { x: totalX / count, y: totalY / count } : null;
+            }
+            
+            // Helper function to find nearest node to a zone center
+            function findNearestNodeToZone(zoneCenter) {
+                let nearestNode = null;
+                let minDistance = Infinity;
+                
+                campusNodes.forEach(node => {
+                    // Only consider nodes that are actually searchable (appear in dropdown)
+                    if (node.searchable === true) {
+                        const distance = Math.sqrt(
+                            Math.pow(node.x - zoneCenter.x, 2) + 
+                            Math.pow(node.y - zoneCenter.y, 2)
+                        );
+                        
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            nearestNode = node;
+                        }
+                    }
+                });
+                
+                return nearestNode;
+            }
+            
+            // Helper function to find red curve data nodes within a zone
+            function findRedCurvesInZone(pathData) {
+                const redCurveNodes = campusNodes.filter(node => 
+                    node.type === 'red_curve_location' || node.type === 'data_node'
+                );
+                
+                if (redCurveNodes.length === 0) return [];
+                
+                // Get zone bounding box from path data
+                const coords = pathData.match(/(\d+\.?\d*)\s+(\d+\.?\d*)/g);
+                if (!coords || coords.length === 0) return [];
+                
+                let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+                coords.forEach(coord => {
+                    const [x, y] = coord.split(/\s+/).map(Number);
+                    if (!isNaN(x) && !isNaN(y)) {
+                        minX = Math.min(minX, x);
+                        maxX = Math.max(maxX, x);
+                        minY = Math.min(minY, y);
+                        maxY = Math.max(maxY, y);
+                    }
+                });
+                
+                // Find red curves within the zone bounds (with some padding)
+                const padding = 100; // Expand search area
+                const redCurvesInZone = redCurveNodes.filter(node => 
+                    node.x >= (minX - padding) && node.x <= (maxX + padding) &&
+                    node.y >= (minY - padding) && node.y <= (maxY + padding)
+                );
+                
+                console.log(`🔴 Found ${redCurvesInZone.length} red curves in zone bounds`);
+                return redCurvesInZone;
+            }
+            
+            // Helper function to find the best destination node for a zone
+            function findBestDestinationForZone(zone) {
+                console.log(`🎯 Finding best destination for zone: ${zone.name} (${zone.id})`);
+                
+                // Special handling for classroom zones - prefer the intended classroom
+                if (zone.type === 'classroom' && zone.destinationNode) {
+                    const intendedClassroom = campusNodes.find(node => 
+                        node.id === zone.destinationNode && node.searchable === true
+                    );
+                    
+                    if (intendedClassroom) {
+                        // For classroom zones, always prefer the intended classroom if it exists and is searchable
+                        // Only do distance check as a sanity check for extremely far nodes
+                        const zoneCenter = getZoneCenter(zone.path);
+                        if (zoneCenter) {
+                            const distanceToIntended = Math.sqrt(
+                                Math.pow(intendedClassroom.x - zoneCenter.x, 2) + 
+                                Math.pow(intendedClassroom.y - zoneCenter.y, 2)
+                            );
+                            
+                            // For classroom zones, use a very liberal distance check (2000px)
+                            // The intent is to prioritize the labeled classroom unless it's clearly wrong
+                            if (distanceToIntended <= 2000) {
+                                console.log(`✅ Using intended classroom for ${zone.name}: ${intendedClassroom.id} (${intendedClassroom.label}) - distance: ${distanceToIntended.toFixed(1)}px`);
+                                return intendedClassroom.id;
+                            } else {
+                                console.log(`⚠️ Intended classroom ${intendedClassroom.id} is extremely far (${distanceToIntended.toFixed(1)}px) from zone center, will use dynamic calculation`);
+                            }
+                        } else {
+                            // If we can't calculate zone center, just use the intended classroom
+                            console.log(`✅ Using intended classroom for ${zone.name}: ${intendedClassroom.id} (${intendedClassroom.label}) - no zone center available`);
+                            return intendedClassroom.id;
+                        }
+                    } else {
+                        console.log(`⚠️ Intended classroom ${zone.destinationNode} not found or not searchable`);
+                    }
+                }
+                
+                // Try to find red curves within the zone
+                const redCurvesInZone = findRedCurvesInZone(zone.path);
+                
+                if (redCurvesInZone.length > 0) {
+                    console.log(`🔴 Found ${redCurvesInZone.length} red curves in zone ${zone.name}`);
+                    
+                    // Find the nearest navigable node to each red curve, then pick the closest overall
+                    let bestNode = null;
+                    let minDistanceToRedCurve = Infinity;
+                    
+                    redCurvesInZone.forEach((redCurve, index) => {
+                        console.log(`🔴 Processing red curve ${index + 1}/${redCurvesInZone.length}: ${redCurve.id} at (${redCurve.x}, ${redCurve.y})`);
+                        const nearestToRedCurve = findNearestNavigableNodeToPoint(redCurve);
+                        if (nearestToRedCurve && nearestToRedCurve.distance < minDistanceToRedCurve) {
+                            minDistanceToRedCurve = nearestToRedCurve.distance;
+                            bestNode = nearestToRedCurve.node;
+                            console.log(`🔴 New best: Red curve ${redCurve.id} -> nearest node: ${bestNode.id} (${bestNode.label}) at distance ${nearestToRedCurve.distance.toFixed(1)}`);
+                        } else if (nearestToRedCurve) {
+                            console.log(`🔴 Red curve ${redCurve.id} -> nearest node: ${nearestToRedCurve.node.id} (${nearestToRedCurve.node.label}) at distance ${nearestToRedCurve.distance.toFixed(1)} (not better)`);
+                        }
+                    });
+                    
+                    if (bestNode) {
+                        console.log(`✅ Best destination for ${zone.name}: ${bestNode.id} (${bestNode.label}) based on red curves`);
+                        console.log(`🎯 Zone ${zone.name}: Original=${zone.destinationNode}, Dynamic=${bestNode.id}`);
+                        return bestNode.id;
+                    }
+                }
+                
+                // Fallback: use zone center
+                console.log(`📍 No red curves found, using zone center for ${zone.name}`);
+                const zoneCenter = getZoneCenter(zone.path);
+                if (zoneCenter) {
+                    const nearestNode = findNearestNodeToZone(zoneCenter);
+                    if (nearestNode) {
+                        console.log(`✅ Fallback destination for ${zone.name}: ${nearestNode.id} (${nearestNode.label}) based on zone center`);
+                        console.log(`🎯 Zone ${zone.name}: Original=${zone.destinationNode}, Dynamic=${nearestNode.id}`);
+                        return nearestNode.id;
+                    }
+                }
+                
+                // Final fallback: use the original hardcoded value
+                console.log(`⚠️ Using hardcoded fallback destination for ${zone.name}: ${zone.destinationNode}`);
+                return zone.destinationNode;
+            }
+            
+            // Helper function to find nearest navigable node to a specific point
+            function findNearestNavigableNodeToPoint(point) {
+                let nearestNode = null;
+                let minDistance = Infinity;
+                
+                campusNodes.forEach(node => {
+                    // Only consider nodes that are actually searchable (appear in dropdown)
+                    if (node.searchable === true) {
+                        const distance = Math.sqrt(
+                            Math.pow(node.x - point.x, 2) + 
+                            Math.pow(node.y - point.y, 2)
+                        );
+                        
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            nearestNode = node;
+                        }
+                    }
+                });
+                
+                return nearestNode ? { node: nearestNode, distance: minDistance } : null;
+            }
+            
+            // Define zone data with all 20 zones from your specification
+            const zones = [
+                // Labs (Fill: #CBF3EE)
+                {
+                    id: 'lab_area_1',
+                    type: 'lab',
+                    name: 'LAB',
+                    fill: '#CBF3EE',
+                    destinationNode: 'class_3',
+                    path: 'M3728 3756L3438.5 4049L3427 4052.5L3419 4045L3456.5 4006C3424.88 3986.94 3405.93 3984.2 3377 4003L3310.5 3936.5L3316.5 3930L3300.5 3915L3295 3921L3180 3805L3186 3800L3171 3784.5L3165.5 3791.5L3049.5 3676L3055 3671L3039 3656L3034 3660L2985.5 3610V3479.5L2993 3470L2994.5 3465.5L3145 3317L3146.5 3318L3157.5 3306L3290.5 3307L3340.5 3356.5L3334 3362L3349 3377L3354.5 3371L3466.5 3487.5L3464.5 3492L3479 3507.5L3485 3501.5L3600.5 3617L3595 3623L3609 3637L3616 3632L3731.5 3747.5L3725.5 3753.5L3728 3756Z'
+                },
+                {
+                    id: 'lab_area_2',
+                    type: 'lab',
+                    name: 'LAB',
+                    fill: '#CBF3EE',
+                    destinationNode: 'class_15',
+                    path: 'M3129.5 2859L3150 2879.5H3262L3321.5 2820L3315.5 2813.5L3332.5 2798.5L3338.5 2804.5L3454.5 2690L3447 2682L3462.5 2669.5L3468.5 2675L3533.5 2608L3538 2611.5C3512.79 2581.17 3514.76 2565.23 3538 2531L3578.5 2571L3576 2568.5L3575 2567L3576.5 2565L3582.5 2559L3577 2553L3591 2538.5L3594.5 2541.5L3597.5 2544.5L3657 2485L3656 2373L3635.5 2352.5L3637.5 2350.5L3486.5 2199.5L3484.5 2201L3463 2180H3351L3292 2239L3298 2245L3283.5 2260L3277.5 2254L3161.5 2369.5L3167.5 2375.5L3153 2390.5L3147 2384.5L3031.5 2500L3037.5 2506L3022.5 2521L3016.5 2515L2957 2574.5V2686.5L2978 2707.5L2976 2709.5L3127 2861L3129.5 2859Z'
+                },
+                {
+                    id: 'lab_area_3',
+                    type: 'lab',
+                    name: 'LAB',
+                    fill: '#CBF3EE',
+                    destinationNode: 'class_15',
+                    path: 'M3859 4611L3443.5 4609.5L3444 4606.5H3435V4442.5H3443.5V4422.5L3435 4422V4259L3443 4258.5V4237.5H3435V4147.5L3434 4146C3471.88 4140.44 3479.62 4127.77 3486 4087.5H3432V4085V4073L3445.5 4068V4065L3735 3770.5L3741 3767.5L3745.5 3762L3860 3877.5H3859L3860 3892.5H3869V4053H3860V4073H3869V4237.5H3859V4258.5H3869V4421.5H3859L3860 4440.5H3869V4606.5H3860L3859 4611Z'
+                },
+                {
+                    id: 'lab_area_4',
+                    type: 'lab',
+                    name: 'LAB',
+                    fill: '#CBF3EE',
+                    destinationNode: 'class_1',
+                    path: 'M1981.5 4609.5H1656V4606.5H1648V4443.5H1657V4422.5H1648V4259H1655.5V4238.5H1648V4074H1656V4053.5H1648V3894.5H1650.5L1658.5 3876.5L1655.5 3874.5L1768.5 3762L1774.5 3768L1789 3753.5L1783.5 3747.5L1899 3631.5L1905 3637L1906.5 3635.5L2198 3929L2205 3934.5L2201.5 3937.5L2195.5 3942.5L2161 3907C2138.97 3937.7 2132.1 3953.34 2159.5 3987L2155 3984L2087 4051L2076 4047L2068 4066.5L2079 4071.5V4237H2071V4258.5H2079V4351C2077.41 4408.5 2079.9 4408.59 2079.5 4421.5H2071L2070.5 4442L2079 4443.5V4491H1981.5V4609.5Z'
+                },
+                // Classrooms (Fill: #FFD6D4)
+                {
+                    id: 'classroom_area_1',
+                    type: 'classroom',
+                    name: 'Classroom: B-203',
+                    fill: '#FFD6D4',
+                    destinationNode: 'class_4',
+                    path: 'M2029.5 3501.5L1914 3615.5L1919.5 3622L1918 3624L2212 3916.5L2214 3914L2219.5 3919.5L2227 3913L2228 3912L2191.5 3876C2226.08 3851.14 2241.4 3850.07 2272 3874.5L2269 3870.5L2336 3804.5L2329.5 3798L2344 3784L2350.5 3789.5L2466 3674.5L2460 3667.5L2474.5 3653L2480.5 3659.5L2530.5 3610V3478L2520 3467L2520.5 3465L2369.5 3314.5L2367 3316.5L2356.5 3306H2225L2175 3355.5L2181 3361L2166 3376L2160 3370.5L2045 3485.5L2051 3491.5L2036 3506.5L2029.5 3501.5Z'
+                },
+                {
+                    id: 'classroom_area_2',
+                    type: 'classroom',
+                    name: 'Classroom (Class 5)',
+                    fill: '#FFD6D4',
+                    destinationNode: 'class_5',
+                    path: 'M4407 1734L4275 1731.5L4264.5 1723.5L4262.5 1725L4112 1574L4114 1571.5L4103 1560.5V1428.5L4153.5 1379L4158 1384.5L4173.5 1370L4167.5 1364L4283.5 1249L4289 1254.5L4304 1240L4297 1232.5L4413 1118.5L4419.5 1124.5L4421.5 1122L4713.5 1416.5L4712 1418L4716.5 1423L4601.5 1539.5L4596 1533.5L4581 1548L4587 1554L4521 1619.5L4523.5 1624.5C4496.95 1598.94 4476.3 1600.27 4444 1627L4483.5 1665.5L4478.5 1663L4471.5 1670L4465 1664L4451 1678L4457 1684.5L4407 1734Z'
+                },
+                {
+                    id: 'classroom_area_3',
+                    type: 'classroom',
+                    name: 'Classroom (Class 10)',
+                    fill: '#FFD6D4',
+                    destinationNode: 'class_10',
+                    path: 'M4724.5 1405.5L4431.5 1112.5L4433.5 1110.5L4428 1104L4544 988.5L4550.5 993.5L4565 980L4558.5 972.5L4673.5 859V862L4691 856V851.5H4852V859H4869.5V851.5H5035V862H5038.5V1278H5035V1286H5023V1233.5C4987.15 1238.39 4965.21 1248.12 4965.5 1288.5L4964.5 1284H4869L4864 1272L4843.5 1280.5L4849 1292.5L4732 1409L4727 1404L4724.5 1405.5Z'
+                },
+                {
+                    id: 'classroom_area_4',
+                    type: 'classroom',
+                    name: 'Classroom (Class 13)',
+                    fill: '#FFD6D4',
+                    destinationNode: 'class_13',
+                    path: 'M5050.5 859L5052.5 1275.5H5055.5V1284H5218.5V1276H5239V1284H5403V1275.5H5423.5L5424 1284H5515H5518.5C5518.89 1243.52 5532.55 1240.84 5573.05 1232.88L5575 1232.5L5576 1289L5577 1284H5587V1276L5590 1275.5L5591 859H5587V851.5H5424V859H5402.5V851.5H5239V859H5218.5V851.5H5055V859H5050.5Z'
+                },
+                {
+                    id: 'classroom_area_5',
+                    type: 'classroom',
+                    name: 'Classroom (Class 14)',
+                    fill: '#FFD6D4',
+                    destinationNode: 'class_14',
+                    path: 'M6144.5 1967H5729.5V1972H5722V2135L5729.5 2136.5V2155.5H5722V2320H5729.5V2339H5722V2437H5712.5C5750.33 2437.64 5770.76 2455.9 5775 2495.5L5717 2495V2495.5L5721.5 2496L5722 2507L6144.5 2508.5V2504.5H6153L6154.5 2340H6144.5V2320H6153V2155.5H6144.5V2136.5H6153V1972H6144.5V1967Z'
+                },
+                {
+                    id: 'classroom_area_6',
+                    type: 'classroom',
+                    name: 'Classroom (Class 19)',
+                    fill: '#FFD6D4',
+                    destinationNode: 'class_19',
+                    path: 'M5218 3071H5055V3063.5L5052.5 3063V2648L5055 2647V2640L5218 2638.5V2648.5H5239V2638.5L5403 2640V2648H5423.5L5424 2639.5H5518H5519.5C5521.78 2678.92 5532.99 2683.95 5575.5 2689.5L5576 2635L5576.5 2639.5L5579 2640L5587.5 2639.5V2648H5590V3062.5H5587V3071H5424.5V3062.5H5402.5L5404 3071H5239V3062.5H5218V3071Z'
+                },
+                {
+                    id: 'classroom_area_7',
+                    type: 'classroom',
+                    name: 'Classroom (Class 14)',
+                    fill: '#FFD6D4',
+                    destinationNode: 'class_14',
+                    path: 'M4544.5 2938L4429 2822L4433 2812.5L4723.5 2519.5H4727.5L4733.5 2514.5L4849 2627L4846.5 2641L4864.5 2648.5L4871 2638.5L4965.5 2639.5L4966 2634.5C4970.25 2672.76 4983.01 2683.66 5024 2691L5023.5 2634.5L5024.5 2639.5H5026.5H5034.5V2647L5037.5 2648.5V3062.5L5034.5 3065V3071.5L4871 3071V3062.5H4849V3071L4691.5 3071.5L4693.5 3070L4675.5 3062.5L4671.5 3063.5L4557.5 2951.5L4565 2945L4550.5 2930L4544.5 2938Z'
+                },
+                {
+                    id: 'classroom_area_8',
+                    type: 'classroom',
+                    name: 'Classroom (Class 8)',
+                    fill: '#FFD6D4',
+                    destinationNode: 'class_8',
+                    path: 'M4299 2690.5L4412.5 2806L4419.5 2802H4424L4713 2509V2504.5L4717.5 2499L4601.5 2384L4595.5 2390L4581.5 2375.5L4587.5 2369.5L4524 2306.5L4527 2302L4488 2341C4466.61 2317.56 4456.96 2296.07 4486 2261L4482.5 2265L4477 2259.5L4471.5 2254L4465.5 2259.5L4451 2244.5L4458 2238.5L4407.5 2189H4276L4264 2200L4261 2197.5L4109 2348.5L4113 2352L4101.5 2361.5V2495.5L4153 2544.5L4159 2539L4173 2554L4167.5 2561L4283 2676L4289 2668.5L4303.5 2684L4299 2690.5Z'
+                },
+                // Staff Rooms (Fill: #CFD7F4)
+                {
+                    id: 'staff_room_1',
+                    type: 'staff_room',
+                    name: 'Staff Room',
+                    fill: '#CFD7F4',
+                    destinationNode: 'class_1',
+                    path: 'M1728 4994.2V5159.26H1736.51V5173.86L1826.6 5264.94H1843.11V5274H2006.27V5264.94L2026.79 5265.95V5272.99L2068.83 5274H2099.36V5258.4C2099.36 5233.24 2099.36 5233.74 2096.86 5214.62L2095.36 5196.5H2099.36L2119.38 5197.01L2193.45 5199.02V4923.25H2147.91L2133.39 4909.16L2130.89 4906.14L2092.85 4942.37C2069 4908.08 2066.97 4889.26 2092.85 4862.36L2088.35 4864.87L2076.84 4853.3V4809.01H2069.49V4807H1729L1728 4973.07L1736.51 4974.07V4994.2H1728Z'
+                },
+                {
+                    id: 'staff_room_2',
+                    type: 'staff_room',
+                    name: 'Staff Room',
+                    fill: '#CFD7F4',
+                    destinationNode: 'class_2',
+                    path: 'M3321.14 5270.48V4935.08L3325.65 4933.4V4926.47L3367.27 4925.97L3384.83 4908.62L3382.87 4905.72L3382.32 4905.15L3382.82 4905.65L3382.87 4905.72L3422.43 4946.5C3442.46 4915.48 3452.06 4894.72 3422.43 4864.01L3426.45 4867.48L3438.48 4854.59V4812.45H3446.51V4809.48L3665.14 4808.49V4880.86H3675.17H3688.4H3710.27H3787V4974.55H3778.47V4995.37H3787L3788 5157.96H3780.48V5173.82L3688.71 5262.06H3672.16V5270.48H3507.68V5263.54H3488.13V5270.48H3321.14Z'
+                },
+                {
+                    id: 'staff_room_3',
+                    type: 'staff_room',
+                    name: 'Staff Room',
+                    fill: '#CFD7F4',
+                    destinationNode: 'class_8',
+                    path: 'M6073 1338.5V1415.5H5938.5V1338.5H6073Z'
+                },
+                {
+                    id: 'staff_room_4',
+                    type: 'staff_room',
+                    name: 'Staff Room',
+                    fill: '#CFD7F4',
+                    destinationNode: 'class_1',
+                    path: 'M2198 5271.5H2104L2100 5195.5L2198 5198.5V5271.5Z'
+                },
+                {
+                    id: 'staff_room_5',
+                    type: 'staff_room',
+                    name: 'Staff Room',
+                    fill: '#CFD7F4',
+                    destinationNode: 'class_15',
+                    path: 'M3783.5 4807H3662H3659V4880.5H3783.5V4807Z'
+                },
+                // Toilet (Boys) (Fill: #FAF8CB)
+                {
+                    id: 'toilet_b_1',
+                    type: 'toilet_boys',
+                    name: 'Toilet (Boys)',
+                    fill: '#FAF8CB',
+                    destinationNode: 'class_15',
+                    path: 'M3443.5 4622.5V4625.5L3431 4626.5C3431 4626.5 3477 4626 3486.5 4628C3496 4630 3485.31 4685.46 3432.5 4683.5L3435.5 4685V4789.5H3443.5V4791.5H3859V4789.5H3868V4625.5H3859V4622.5H3443.5Z'
+                },
+                {
+                    id: 'toilet_b_2',
+                    type: 'toilet_boys',
+                    name: 'Toilet (Boys)',
+                    fill: '#FAF8CB',
+                    destinationNode: 'class_8',
+                    path: 'M5786 1332C5826.36 1332.93 5836.62 1350.98 5839.5 1389H5787.5V1401.5H5931V1330.5H6070V1234H6062V1214.5H6070V1140H5863.5V1284.5H5792V1308H5789.5V1331.5H5784L5786 1332Z'
+                },
+                // Toilet (Girls) (Fill: #E2FFCF)
+                {
+                    id: 'toilet_g_1',
+                    type: 'toilet_girls',
+                    name: 'Toilet (Girls)',
+                    fill: '#E2FFCF',
+                    destinationNode: 'class_7',
+                    path: 'M5955 935H5792V944H5788.5L5785.5 1216.5L5786 1218C5825.19 1220.55 5833.98 1234.59 5840.5 1275.5L5801.5 1275.62L5856.5 1276V1131.5H6069.5V1050H6060.5V1033L5970.5 944H5955V935Z'
+                },
+                // Other Zones (Fill: #FFDDFC)
+                {
+                    id: 'other_area_1',
+                    type: 'other',
+                    name: 'Other Area',
+                    fill: '#FFDDFC',
+                    destinationNode: 'class_2',
+                    path: 'M2211 5350L2212 4924H2222H2229.5H2248H2283H2378.5C2378.5 4924 2377 4932.5 2381 4932.5H2399.5V4926L2563 5026.5V5033L2584 5033.5L2584.5 5025.5H2588H2589H2591.5V5077C2631.53 5071.88 2645.65 5059.93 2649.5 5019.5L2650 5024.5L2651.5 5026.5L2932 5025V5033H2952V5025L3115.5 4926V4932.5H3137.5V4924.5H3217L3231.5 4924H3250H3276.5H3292H3300.5V4932.5H3303L3303.5 5347L3301 5349V5358H3137.5V5349H3115.5V5358L2952 5456V5450.5H2932V5459H2583V5450.5H2563V5456L2399.5 5359V5350H2379V5359H2215.5V5350H2211Z'
+                },
+                {
+                    id: 'other_area_2',
+                    type: 'other',
+                    name: 'Other Area',
+                    fill: '#FFDDFC',
+                    destinationNode: 'class_9',
+                    path: 'M5769.5 2990.5H5606.5L5605.5 2648L5608 2647V2639.5H5651.5L5663.5 2628L5674.5 2616L5671.5 2612L5710.5 2653C5731.78 2626.76 5742.64 2605.12 5712.5 2573L5715.5 2575L5720 2571.5L5721.5 2569.5V2524H6069V2691H6062V2711.5H6069V2875H6062V2891L5972 2981H5955.5V2990.5H5792V2981H5769.5V2990.5Z'
+                },
+                // Additional Other Zone (Fill: #DEF0D3)
+                {
+                    id: 'other_area_3',
+                    type: 'other',
+                    name: 'Other Area',
+                    fill: '#DEF0D3',
+                    destinationNode: 'class_1',
+                    path: 'M1990 4500V4612H2068.5L2073 4607.5H2081.5V4500H1990Z'
+                },
+                // Additional Other Zone (Fill: #D1D1D1)
+                {
+                    id: 'other_area_4',
+                    type: 'other',
+                    name: 'Other Area',
+                    fill: '#D1D1D1',
+                    destinationNode: 'class_3',
+                    path: 'M3493.5 2974V3226L3499.5 3236L3759 3226L4027 2964L4021 2722.5L3999 2710.5H3759L3747 2722.5L3493.5 2974Z'
+                }
+            ];
+            
+            // Create zones layer - place it at the end so zones are on top and clickable
+            const zonesLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            zonesLayer.id = 'interactive-zones';
+            zonesLayer.style.pointerEvents = 'auto'; // Ensure pointer events are enabled
+            svg.appendChild(zonesLayer); // Append at end so zones are on top
+            
+            console.log('🎯 Zones layer created and appended to SVG:', zonesLayer);
+            console.log('🎯 SVG element:', svg);
+            console.log('🎯 Total zones to create:', zones.length);
+            
+            // Debug: Check available red curve and data nodes
+            const redCurveNodes = campusNodes.filter(node => 
+                node.type === 'red_curve_location' || node.type === 'data_node'
+            );
+            console.log('🔴 Total red curve/data nodes available:', redCurveNodes.length);
+            redCurveNodes.forEach(node => {
+                console.log(`🔴 Red curve node: ${node.id} (${node.type}) at (${node.x}, ${node.y})`);
+            });
+            
+            // Debug: Check available searchable nodes (those that appear in dropdown)
+            const searchableNodes = campusNodes.filter(node => node.searchable === true);
+            console.log('🎯 Total searchable nodes (dropdown options):', searchableNodes.length);
+            searchableNodes.forEach(node => {
+                console.log(`🎯 Searchable node: ${node.id} (${node.label}) at (${node.x}, ${node.y})`);
+            });
+            
+            let currentInfoBox = null;
+            let highlightedZone = null;
+            
+            // Create each zone
+            zones.forEach(zone => {
+                // Find the best destination node for this zone based on red curves
+                const dynamicDestinationNode = findBestDestinationForZone(zone);
+                
+                const pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                pathElement.setAttribute('id', zone.id);
+                pathElement.setAttribute('d', zone.path);
+                pathElement.setAttribute('fill', zone.fill);
+                pathElement.setAttribute('fill-opacity', '0.5'); // Increased opacity for better visibility during debugging
+                pathElement.setAttribute('stroke', '#ff0000'); // Bright red stroke for debugging
+                pathElement.setAttribute('stroke-width', '2'); // Thicker stroke for debugging
+                pathElement.setAttribute('stroke-opacity', '0.8'); // Higher stroke opacity for debugging
+                pathElement.setAttribute('class', 'interactive-zone');
+                pathElement.setAttribute('data-zone-type', zone.type);
+                pathElement.setAttribute('data-zone-name', zone.name);
+                pathElement.setAttribute('data-destination-node', dynamicDestinationNode); // Use dynamic destination
+                pathElement.style.cursor = 'pointer'; // Ensure cursor shows it's clickable
+                pathElement.style.pointerEvents = 'auto'; // Ensure the element can receive events
+                
+                // Store the dynamic destination in the zone object for the click handler
+                zone.dynamicDestinationNode = dynamicDestinationNode;
+                
+                // Add click event (hover effects removed)
+                pathElement.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🎯 Zone clicked event triggered:', zone.name);
+                    console.log('🎯 Event details:', e);
+                    console.log('🎯 Path element:', pathElement);
+                    console.log('🎯 Dynamic destination node:', dynamicDestinationNode);
+                    handleZoneClick(zone, pathElement, e);
+                });
+                
+                zonesLayer.appendChild(pathElement);
+                console.log('✅ Zone added:', zone.id, zone.name, 'Dynamic destination:', dynamicDestinationNode, 'Path data length:', zone.path.length);
+            });
+            
+            // Handle zone clicks
+            function handleZoneClick(zone, pathElement, event) {
+                console.log('🎯 Zone clicked:', zone.name, 'Type:', zone.type);
+                console.log('🎯 handleZoneClick called with:', { zone, pathElement, event });
+                
+                // Remove previous highlight
+                if (highlightedZone && highlightedZone !== pathElement) {
+                    console.log('🎯 Removing previous highlight');
+                    highlightedZone.classList.remove('highlighted');
+                    highlightedZone.setAttribute('fill-opacity', '0.3');
+                    highlightedZone.setAttribute('stroke-width', '1');
+                }
+                
+                // Highlight clicked zone
+                console.log('🎯 Highlighting clicked zone');
+                pathElement.classList.add('highlighted');
+                pathElement.setAttribute('fill-opacity', '0.6');
+                pathElement.setAttribute('stroke-width', '2');
+                highlightedZone = pathElement;
+                
+                // Remove existing info box
+                if (currentInfoBox) {
+                    console.log('🎯 Removing existing info box');
+                    currentInfoBox.remove();
+                }
+                
+                // Get click coordinates relative to the map container
+                const mapContainer = document.querySelector('.map-container');
+                console.log('🎯 Map container found:', mapContainer);
+                
+                if (!mapContainer) {
+                    console.error('❌ Map container not found');
+                    return;
+                }
+                
+                const containerRect = mapContainer.getBoundingClientRect();
+                const clickX = event.clientX - containerRect.left;
+                const clickY = event.clientY - containerRect.top;
+                
+                console.log('🎯 Click coordinates:', { clickX, clickY });
+                
+                // Create info box
+                const infoBox = document.createElement('div');
+                infoBox.className = 'zone-info-box';
+                
+                // Use the dynamic destination node instead of the hardcoded one
+                const destinationNodeId = zone.dynamicDestinationNode || zone.destinationNode;
+                const destinationNodeInfo = campusNodes.find(n => n.id === destinationNodeId);
+                const destinationLabel = destinationNodeInfo ? destinationNodeInfo.label : destinationNodeId;
+                
+                infoBox.innerHTML = `
+                    <h3>${zone.name}</h3>
+                    <p>Type: ${zone.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                    <p>Destination: ${destinationLabel}</p>
+                    <button class="zone-destination-btn" onclick="setZoneDestination('${destinationNodeId}', '${zone.name}')">
+                        Set as Destination
+                    </button>
+                `;
+                
+                console.log('🎯 Info box created with dynamic destination:', destinationNodeId, destinationLabel);
+                
+                // Position info box so its top-left corner starts from the clicked point
+                infoBox.style.left = `${clickX}px`;
+                infoBox.style.top = `${clickY}px`;
+                infoBox.style.position = 'absolute';
+                infoBox.style.zIndex = '1000';
+                
+                console.log('🎯 Info box created and positioned at:', { clickX, clickY });
+                
+                mapContainer.appendChild(infoBox);
+                currentInfoBox = infoBox;
+                
+                console.log('🎯 Info box appended to container');
+                
+                // Auto-hide info box after 10 seconds
+                setTimeout(() => {
+                    if (infoBox && infoBox.parentNode) {
+                        console.log('🎯 Auto-removing info box after timeout');
+                        infoBox.remove();
+                        if (currentInfoBox === infoBox) {
+                            currentInfoBox = null;
+                        }
+                        // Remove highlighting when info box disappears
+                        if (highlightedZone) {
+                            highlightedZone.classList.remove('highlighted');
+                            highlightedZone.setAttribute('fill-opacity', '0.3');
+                            highlightedZone.setAttribute('stroke-width', '1');
+                            highlightedZone = null;
+                        }
+                    }
+                }, 10000);
+            }
+            
+            // Global function for setting destination
+            window.setZoneDestination = function(nodeId, zoneName) {
+                console.log('🎯 setZoneDestination called with:', { nodeId, zoneName });
+                
+                // Find the node details for debugging
+                const nodeDetails = campusNodes.find(n => n.id === nodeId);
+                console.log('🎯 Node details:', nodeDetails);
+                
+                // Update dropdown
+                const toSelect = document.getElementById('toLocation');
+                if (toSelect) {
+                    console.log('🎯 Dropdown before setting:', toSelect.value);
+                    toSelect.value = nodeId;
+                    console.log('🎯 Dropdown after setting:', toSelect.value);
+                    
+                    // Check if the option exists in the dropdown
+                    const optionExists = Array.from(toSelect.options).find(option => option.value === nodeId);
+                    console.log('🎯 Option exists in dropdown:', optionExists ? 'YES' : 'NO', optionExists);
+                    
+                    if (!optionExists) {
+                        console.error('❌ Node ID not found in dropdown options:', nodeId);
+                        console.log('🎯 Available options:', Array.from(toSelect.options).map(opt => ({ value: opt.value, text: opt.text })));
+                    }
+                } else {
+                    console.error('❌ Dropdown not found');
+                }
+                
+                // Close info box
+                if (currentInfoBox) {
+                    currentInfoBox.remove();
+                    currentInfoBox = null;
+                }
+                
+                // Remove highlighting
+                if (highlightedZone) {
+                    highlightedZone.classList.remove('highlighted');
+                    highlightedZone.setAttribute('fill-opacity', '0.3');
+                    highlightedZone.setAttribute('stroke-width', '1');
+                    highlightedZone = null;
+                }
+                
+                // Show success message with detailed info
+                const successMessage = nodeDetails ? 
+                    `Destination set to: ${zoneName}\nNode: ${nodeDetails.label} (${nodeDetails.id})\nNow select a starting location and click "Find Path"` :
+                    `Destination set to: ${zoneName}\nNode ID: ${nodeId}\nNow select a starting location and click "Find Path"`;
+                
+                console.log('✅', successMessage);
+                alert(successMessage);
+            };
+            
+            // Close info box when clicking outside
+            document.addEventListener('click', (e) => {
+                if (currentInfoBox && !currentInfoBox.contains(e.target) && !e.target.classList.contains('interactive-zone')) {
+                    currentInfoBox.remove();
+                    currentInfoBox = null;
+                    
+                    if (highlightedZone) {
+                        highlightedZone.classList.remove('highlighted');
+                        highlightedZone.setAttribute('fill-opacity', '0.3');
+                        highlightedZone.setAttribute('stroke-width', '1');
+                        highlightedZone = null;
+                    }
+                }
+            });
+            
+            console.log(`✅ Added ${zones.length} interactive zones to the map`);
+        }
+        
+        // Function to get data nodes near a navigation path
+        function getDataNodesNearPath(path, allNodes, proximityRadius = 150) {
+            const dataNodes = allNodes.filter(node => node.type === 'data_node');
+            const pathNodes = path.map(nodeId => allNodes.find(n => n.id === nodeId)).filter(Boolean);
+            const nearbyDataNodes = [];
+            
+            dataNodes.forEach(dataNode => {
+                pathNodes.forEach(pathNode => {
+                    const distance = Math.sqrt(
+                        Math.pow(pathNode.x - dataNode.x, 2) + 
+                        Math.pow(pathNode.y - dataNode.y, 2)
+                    );
+                    
+                    if (distance <= proximityRadius) {
+                        nearbyDataNodes.push({
+                            dataNode: dataNode,
+                            nearestPathNode: pathNode,
+                            distance: distance
+                        });
+                    }
+                });
+            });
+            
+            return nearbyDataNodes;
+        }
+        
+        // Final rotation function for when the navigation icon reaches its destination
+        async function animateFinalRotation(finalNodeId, allNodes, iconElement, options = {}) {
+            return new Promise((resolve) => {
+                console.log('🎯 Starting final rotation animation for node:', finalNodeId);
+                
+                // Default options
+                const defaultOptions = {
+                    rotationSpeed: 0.05,
+                    animationDuration: 1000 // 1 second
+                };
+                const config = { ...defaultOptions, ...options };
+                
+                // Step 1: Find nearest red curve location
+                const redCurveNodes = allNodes.filter(node => node.type === 'red_curve_location');
+                if (redCurveNodes.length === 0) {
+                    console.log('❌ No red curve locations found');
+                    resolve();
+                    return;
+                }
+                
+                // Get the final destination node coordinates
+                const finalNode = allNodes.find(node => node.id === finalNodeId);
+                if (!finalNode) {
+                    console.error('❌ Final node not found:', finalNodeId);
+                    resolve();
+                    return;
+                }
+                
+                console.log('📍 Final node position:', finalNode.x, finalNode.y);
+                console.log('🔍 Found', redCurveNodes.length, 'red curve locations');
+                
+                // Calculate distances to all red curve locations
+                let nearestRedCurve = null;
+                let minDistance = Infinity;
+                
+                redCurveNodes.forEach(redNode => {
+                    const distance = Math.sqrt(
+                        Math.pow(redNode.x - finalNode.x, 2) + 
+                        Math.pow(redNode.y - finalNode.y, 2)
+                    );
+                    console.log(`📏 Distance to ${redNode.id}: ${distance.toFixed(1)}`);
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        nearestRedCurve = redNode;
+                    }
+                });
+                
+                if (!nearestRedCurve) {
+                    console.log('❌ No nearest red curve found');
+                    resolve();
+                    return;
+                }
+                
+                console.log('🎯 Nearest red curve:', nearestRedCurve.id, 'at distance:', minDistance.toFixed(1));
+                
+                // Step 2: Calculate target angle to nearest red curve
+                const deltaX = nearestRedCurve.x - finalNode.x;
+                const deltaY = nearestRedCurve.y - finalNode.y;
+                const targetAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+                
+                console.log('📐 Target angle to red curve:', targetAngle.toFixed(1), '°');
+                
+                // Get current rotation from the icon's transform
+                const currentTransform = iconElement.getAttribute('transform') || '';
+                const rotateMatch = currentTransform.match(/rotate\(([^)]+)\)/);
+                const currentAngle = rotateMatch ? parseFloat(rotateMatch[1]) : 0;
+                
+                console.log('🔄 Current icon angle:', currentAngle.toFixed(1), '°');
+                
+                // Step 3: Animate the rotation
+                const startTime = performance.now();
+                
+                function animateRotation(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / config.animationDuration, 1);
+                    
+                    // Smooth easing function
+                    const easedProgress = 1 - Math.pow(1 - progress, 3); // Ease-out cubic
+                    
+                    // Calculate angular difference and handle wraparound
+                    let angleDiff = targetAngle - currentAngle;
+                    if (angleDiff > 180) angleDiff -= 360;
+                    if (angleDiff < -180) angleDiff += 360;
+                    
+                    // Interpolate angle
+                    const interpolatedAngle = currentAngle + (angleDiff * easedProgress);
+                    
+                    // Update icon transform - preserve translation, update rotation
+                    const translateMatch = currentTransform.match(/translate\(([^)]+)\)/);
+                    const translatePart = translateMatch ? `translate(${translateMatch[1]})` : '';
+                    
+                    iconElement.setAttribute('transform', 
+                        `${translatePart} rotate(${interpolatedAngle})`);
+                    
+                    console.log(`🔄 Rotating: ${(progress * 100).toFixed(1)}% - Angle: ${interpolatedAngle.toFixed(1)}°`);
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animateRotation);
+                    } else {
+                        console.log('✅ Final rotation animation completed - icon now points to red curve');
+                        resolve();
+                    }
+                }
+                
+                requestAnimationFrame(animateRotation);
+            });
+        }
+        
         function addDestinationIcon(nodeId) {
             console.log('🎯 addDestinationIcon called for nodeId:', nodeId);
             
@@ -1131,6 +2037,20 @@
             console.log('✅ Destination icon added to path layer successfully pointing towards destination');
             console.log('📄 PathLayer children count:', pathLayer.children.length);
             console.log('🎯 Icon group element:', iconGroup);
+            
+            // Start final rotation animation to point towards nearest red curve
+            setTimeout(async () => {
+                console.log('🎯 Starting final rotation to nearest red curve...');
+                try {
+                    await animateFinalRotation(nodeId, campusNodes, iconGroup, {
+                        rotationSpeed: 0.05,
+                        animationDuration: 1500 // 1.5 seconds for smooth rotation
+                    });
+                    console.log('✅ Final rotation to red curve completed');
+                } catch (error) {
+                    console.error('❌ Error during final rotation:', error);
+                }
+            }, 500); // Small delay to let the initial icon settle
         }
         
         function clearPath() {

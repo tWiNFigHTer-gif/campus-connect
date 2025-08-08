@@ -4,7 +4,7 @@
       "id": "class_1",
       "x": 2620.5,
       "y": 4942.5,
-      "label": "Classroom 1",
+      "label": "Administration Block",
       "type": "class",
       "searchable": true,
       "cluster_size": 1
@@ -13,7 +13,7 @@
       "id": "class_2",
       "x": 3377.5,
       "y": 4862.0,
-      "label": "Classroom 2",
+      "label": "Health Centre",
       "type": "class",
       "searchable": true,
       "cluster_size": 1
@@ -31,7 +31,7 @@
       "id": "class_4",
       "x": 3356.5,
       "y": 4045.0,
-      "label": "Classroom 4",
+      "label": "Classroom: B-203",
       "type": "class",
       "searchable": true,
       "cluster_size": 1
@@ -130,7 +130,7 @@
       "id": "class_15",
       "x": 3376.5,
       "y": 4664.0,
-      "label": "Classroom 15",
+      "label": "Main Lab Area",
       "type": "class",
       "searchable": true,
       "cluster_size": 1
@@ -304,6 +304,177 @@
       "label": "Stairway D",
       "type": "stairway",
       "searchable": true,
+      "cluster_size": 1
+    },
+    {
+      "id": "red_curve_1",
+      "x": 3400.0,
+      "y": 4100.0,
+      "label": "Red Curve Area 1",
+      "type": "red_curve_location",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "red_curve_2",
+      "x": 2200.0,
+      "y": 4000.0,
+      "label": "Red Curve Area 2", 
+      "type": "red_curve_location",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "red_curve_3",
+      "x": 5700.0,
+      "y": 1300.0,
+      "label": "Red Curve Area 3",
+      "type": "red_curve_location", 
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "red_curve_4",
+      "x": 4300.0,
+      "y": 2000.0,
+      "label": "Red Curve Area 4",
+      "type": "red_curve_location",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "data_node_1",
+      "x": 4820,
+      "y": 1946,
+      "label": "Data Point 1",
+      "type": "data_node",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "data_node_2",
+      "x": 5796,
+      "y": 2750,
+      "label": "Data Point 2",
+      "type": "data_node",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "data_node_3",
+      "x": 3241,
+      "y": 2522,
+      "label": "Data Point 3",
+      "type": "data_node",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "data_node_4",
+      "x": 1911,
+      "y": 5042,
+      "label": "Data Point 4",
+      "type": "data_node",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "data_node_5",
+      "x": 3598,
+      "y": 4714,
+      "label": "Data Point 5",
+      "type": "data_node",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "data_node_6",
+      "x": 3550,
+      "y": 5087,
+      "label": "Data Point 6",
+      "type": "data_node",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "data_node_7",
+      "x": 5925,
+      "y": 1692,
+      "label": "Data Point 7",
+      "type": "data_node",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "data_node_8",
+      "x": 5915,
+      "y": 2255,
+      "label": "Data Point 8",
+      "type": "data_node",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "data_node_9",
+      "x": 4350,
+      "y": 1495,
+      "label": "Data Point 9",
+      "type": "data_node",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "data_node_10",
+      "x": 4743,
+      "y": 1110,
+      "label": "Data Point 10",
+      "type": "data_node",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "data_node_11",
+      "x": 5315,
+      "y": 1075,
+      "label": "Data Point 11",
+      "type": "data_node",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "data_node_12",
+      "x": 2175,
+      "y": 3612,
+      "label": "Data Point 12",
+      "type": "data_node",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "data_node_13",
+      "x": 3620,
+      "y": 4330,
+      "label": "Data Point 13",
+      "type": "data_node",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "data_node_14",
+      "x": 5890,
+      "y": 1080,
+      "label": "Data Point 14",
+      "type": "data_node",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "data_node_15",
+      "x": 5950,
+      "y": 1295,
+      "label": "Data Point 15",
+      "type": "data_node",
+      "searchable": false,
       "cluster_size": 1
     }
   ],
