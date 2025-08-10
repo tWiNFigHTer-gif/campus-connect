@@ -128,7 +128,7 @@
             position: fixed;
             top: 50%;
             right: 20px;
-            transform: translateY(-50%);
+            transform: translateY(-50%) !important; /* Prevent zoom from affecting controls */
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-radius: 15px;
@@ -138,6 +138,7 @@
             min-width: 280px;
             max-height: 80vh;
             overflow-y: auto;
+            touch-action: auto; /* Allow normal touch behavior on controls */
             transition: all 0.3s ease;
         }
         
@@ -217,7 +218,7 @@
             position: fixed;
             top: 50%;
             left: 20px;
-            transform: translateY(-50%);
+            transform: translateY(-50%) !important; /* Prevent zoom from affecting zoom controls */
             display: flex;
             flex-direction: column;
             background: white;
@@ -226,6 +227,7 @@
             overflow: hidden;
             z-index: 200;
             border: 1px solid #e0e6ed;
+            touch-action: auto; /* Allow normal touch behavior on zoom controls */
         }
         
         .zoom-btn {
@@ -320,12 +322,19 @@
         
         /* Animations */
         @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.1); }
+            0%, 100% { 
+                opacity: 1; 
+                box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7);
+            }
+            50% { 
+                opacity: 0.8; 
+                box-shadow: 0 0 0 10px rgba(0, 255, 0, 0);
+            }
         }
         
         .start-node-pulse {
             animation: pulse 1s infinite;
+            transform-origin: center center;
         }
         
         /* Responsive Design */
@@ -452,23 +461,7 @@
             <button id="clearPath">🧹 Clear Route</button>
         </div>
         
-        <div class="control-group">
-            <label>📊 Navigation Stats</label>
-            <div id="stats" style="font-size: 0.8rem; color: #7f8c8d; line-height: 1.4;">
-                <div>Total Nodes: <span id="nodeCount">0</span></div>
-                <div>Connections: <span id="connectionCount">0</span></div>
-                <div>Coverage: <span id="coverage">0%</span></div>
-            </div>
-        </div>
-        
-        <div class="control-group">
-            <label>🔧 Node Management</label>
-            <button id="toggleNodeInfo" style="background: #9b59b6; margin-bottom: 0.5rem;">Show Node Info</button>
-            <button id="highlightUnusedNodes" style="background: #e67e22; margin-bottom: 0.5rem;">Highlight Unused</button>
-            <div id="nodeInfo" style="display: none; font-size: 0.7rem; color: #7f8c8d; max-height: 150px; overflow-y: auto; background: #f8f9fa; padding: 8px; border-radius: 4px; margin-top: 8px;">
-                <div>Node information will appear here...</div>
-            </div>
-        </div>
+
     </div>
 
     <script>
@@ -497,9 +490,16 @@
         
         // Initialize the application
         document.addEventListener('DOMContentLoaded', async function() {
-            console.log('🚀 Starting Campus Connect with Final SVG...');
-            setupResponsiveControls();
-            await loadApplication();
+            console.log('🚀 DOMContentLoaded fired - Starting Campus Connect with Final SVG...');
+            try {
+                setupResponsiveControls();
+                console.log('🚀 About to call loadApplication()...');
+                await loadApplication();
+                console.log('🚀 loadApplication() completed successfully');
+            } catch (error) {
+                console.error('🚀 Error in DOMContentLoaded:', error);
+                throw error;
+            }
         });
         
         function setupResponsiveControls() {
@@ -526,20 +526,55 @@
         }
         
         async function loadApplication() {
+            console.log('� === STARTING LOAD APPLICATION ===');
+            console.log('�🔄 loadApplication() started at:', new Date().toISOString());
+            
             const loading = document.getElementById('loading');
             const container = document.getElementById('svg-container');
             const status = document.getElementById('status');
             
+            console.log('🔄 DOM elements check:', { 
+                loading: !!loading, 
+                container: !!container, 
+                status: !!status,
+                loadingElement: loading,
+                containerElement: container,
+                statusElement: status
+            });
+            
+            if (!loading || !container || !status) {
+                const error = `Required DOM elements not found: loading=${!!loading}, container=${!!container}, status=${!!status}`;
+                console.error('❌ DOM ERROR:', error);
+                throw new Error(error);
+            }
+
             try {
                 // Step 1: Load New SVG
-                console.log('📂 Loading new final SVG...');
+                console.log('📂 Step 1: Loading new final SVG...');
                 status.textContent = 'Loading final map...';
-                const svgResponse = await fetch('2nd floor final.svg');
-                if (!svgResponse.ok) throw new Error('Failed to load final SVG');
+                
+                console.log('🌐 About to fetch: 2nd-floor-final.svg');
+                const svgResponse = await fetch('2nd-floor-final.svg');
+                console.log('📋 SVG Response:', {
+                    ok: svgResponse.ok,
+                    status: svgResponse.status,
+                    statusText: svgResponse.statusText,
+                    url: svgResponse.url
+                });
+                
+                if (!svgResponse.ok) {
+                    const errorMsg = `Failed to load final SVG: ${svgResponse.status} ${svgResponse.statusText}`;
+                    console.error('❌ SVG FETCH ERROR:', errorMsg);
+                    throw new Error(errorMsg);
+                }
+                console.log('📄 Getting SVG text content...');
                 const svgContent = await svgResponse.text();
+                console.log('✅ SVG Content loaded:', {
+                    length: svgContent.length,
+                    preview: svgContent.substring(0, 200) + '...'
+                });
                 
                 // Step 2: Load and Transform graph data
-                console.log('📂 Loading and transforming graph data...');
                 status.textContent = 'Loading and transforming navigation data...';
                 const timestamp = Date.now(); // Strong cache buster
                 const randomSuffix = Math.random().toString(36).substring(7);
@@ -550,16 +585,18 @@
                         'Pragma': 'no-cache'
                     }
                 });
-                if (!graphResponse.ok) throw new Error(`Failed to load graph data: ${graphResponse.status} ${graphResponse.statusText}`);
+                
+                if (!graphResponse.ok) {
+                    throw new Error(`Failed to load graph data: ${graphResponse.status} ${graphResponse.statusText}`);
+                }
+                
                 const originalGraphData = await graphResponse.json();
                 
                 // Step 3: Transform coordinates for the new SVG
-                console.log('🔄 Transforming coordinates for rotated SVG...');
                 status.textContent = 'Transforming coordinates...';
                 const transformedGraphData = transformCoordinatesForRotatedSVG(originalGraphData);
                 
                 // Step 4: Setup the interface
-                console.log('🎨 Setting up interface...');
                 status.textContent = 'Ready';
                 
                 // Insert SVG
@@ -567,39 +604,27 @@
                 const svg = container.querySelector('svg');
                 if (svg) {
                     svg.setAttribute('class', 'map-svg');
-                    
-                    // Create a wrapper div for the SVG content that will handle transforms
-                    const svgWrapper = document.createElement('div');
-                    svgWrapper.className = 'svg-content';
-                    
-                    // Move SVG inside the wrapper
-                    container.removeChild(svg);
-                    svgWrapper.appendChild(svg);
-                    container.appendChild(svgWrapper);
-                    
-                    // Set SVG to fill the wrapper
                     svg.style.width = '100%';
                     svg.style.height = '100%';
                     svg.style.display = 'block';
-                    
+                    svg.style.transition = 'transform 0.2s cubic-bezier(.4,2,.6,1)';
+                    svg.style.transformOrigin = 'center center';
+
                     // Add interactive zones
                     addInteractiveZones(svg);
-                    
+
                     // Add overlay for nodes and paths
                     const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'g');
                     overlay.id = 'overlay';
                     svg.appendChild(overlay);
-                    
+
                     // Add zoom controls
-                    addZoomControls(svgWrapper);
+                    addZoomControls(svg);
                 }
                 
                 // Store transformed graph data
                 campusNodes = transformedGraphData.nodes || [];
                 campusGraph = transformedGraphData.graph || {};
-                
-                console.log('📊 Loaded transformed nodes:', campusNodes.length);
-                console.log('🔄 Coordinate transformation applied for rotated SVG');
                 
                 // Create visual nodes
                 createNodes();
@@ -611,20 +636,21 @@
                 loading.style.display = 'none';
                 container.style.display = 'block';
                 
-                updateStats();
-                
             } catch (error) {
                 console.error('❌ Error loading application:', error);
+                console.error('❌ Error stack:', error.stack);
                 status.textContent = 'Error loading';
                 loading.innerHTML = `
                     <div style="color: red; padding: 20px; text-align: center;">
                         <h3>❌ Error Loading Campus Connect Final</h3>
                         <p><strong>Error:</strong> ${error.message}</p>
+                        <p><strong>Stack:</strong> <pre style="text-align: left; font-size: 10px; background: #f5f5f5; padding: 10px; margin: 10px 0;">${error.stack}</pre></p>
                         <p>Please check:</p>
                         <ul style="text-align: left; display: inline-block;">
                             <li>Server is running on port 8000</li>
-                            <li>Files exist: pathfinding_graph_structural.json, 2nd floor final.svg</li>
+                            <li>Files exist: pathfinding_graph_structural.json, "2nd-floor-final.svg"</li>
                             <li>Browser console for detailed error messages</li>
+                            <li>Check that the SVG file name has no invalid characters</li>
                         </ul>
                     </div>
                 `;
@@ -792,119 +818,9 @@
             // Event handlers
             findButton.addEventListener('click', findPath);
             clearButton.addEventListener('click', clearPath);
-            
-            // Node management handlers
-            document.getElementById('toggleNodeInfo').addEventListener('click', toggleNodeInfo);
-            document.getElementById('highlightUnusedNodes').addEventListener('click', highlightUnusedNodes);
         }
         
-        function toggleNodeInfo() {
-            const nodeInfo = document.getElementById('nodeInfo');
-            const button = document.getElementById('toggleNodeInfo');
-            
-            if (nodeInfo.style.display === 'none') {
-                // Show node information
-                nodeInfo.style.display = 'block';
-                button.textContent = 'Hide Node Info';
-                updateNodeInfo();
-            } else {
-                // Hide node information
-                nodeInfo.style.display = 'none';
-                button.textContent = 'Show Node Info';
-            }
-        }
-        
-        function updateNodeInfo() {
-            const nodeInfo = document.getElementById('nodeInfo');
-            
-            // Analyze nodes
-            const nodesByType = {};
-            const searchableNodes = [];
-            const nonSearchableNodes = [];
-            
-            campusNodes.forEach(node => {
-                // Group by type
-                if (!nodesByType[node.type]) {
-                    nodesByType[node.type] = [];
-                }
-                nodesByType[node.type].push(node);
-                
-                // Group by searchability
-                if (node.searchable === true) {
-                    searchableNodes.push(node);
-                } else {
-                    nonSearchableNodes.push(node);
-                }
-            });
-            
-            let infoHTML = '<div style="margin-bottom: 10px;"><strong>Node Analysis:</strong></div>';
-            
-            // Node types breakdown
-            infoHTML += '<div style="margin-bottom: 8px;"><strong>By Type:</strong></div>';
-            for (const [type, nodes] of Object.entries(nodesByType)) {
-                infoHTML += `<div>${type}: ${nodes.length} nodes</div>`;
-            }
-            
-            infoHTML += '<div style="margin: 8px 0;"><strong>Searchability:</strong></div>';
-            infoHTML += `<div>Searchable: ${searchableNodes.length} nodes</div>`;
-            infoHTML += `<div>Non-searchable: ${nonSearchableNodes.length} nodes</div>`;
-            
-            // Show potentially unused nodes
-            const unusedNodes = nonSearchableNodes.filter(node => 
-                node.type !== 'invisible' && 
-                node.type !== 'intersection' && 
-                node.type !== 'data_node'
-            );
-            
-            if (unusedNodes.length > 0) {
-                infoHTML += '<div style="margin: 8px 0; color: #e67e22;"><strong>Potentially Unused:</strong></div>';
-                unusedNodes.forEach(node => {
-                    infoHTML += `<div style="font-size: 0.6rem;">• ${node.id} (${node.type}) - ${node.label || 'No label'}</div>`;
-                });
-            }
-            
-            nodeInfo.innerHTML = infoHTML;
-        }
-        
-        function highlightUnusedNodes() {
-            // Reset all node styles first
-            document.querySelectorAll('.node').forEach(node => {
-                node.style.stroke = '#ffffff';
-                node.style.strokeWidth = '3';
-            });
-            
-            // Find and highlight potentially unused nodes
-            const unusedNodes = campusNodes.filter(node => 
-                node.searchable !== true && 
-                node.type !== 'invisible' && 
-                node.type !== 'intersection' && 
-                node.type !== 'data_node'
-            );
-            
-            console.log('🔍 Highlighting potentially unused nodes:', unusedNodes);
-            
-            unusedNodes.forEach(node => {
-                const nodeElement = document.querySelector(`[data-id="${node.id}"]`);
-                if (nodeElement) {
-                    nodeElement.style.stroke = '#ff6b6b';
-                    nodeElement.style.strokeWidth = '6';
-                    nodeElement.style.fill = '#ff6b6b';
-                    nodeElement.style.opacity = '0.8';
-                }
-            });
-            
-            // Update status
-            const status = document.getElementById('status');
-            status.textContent = `Highlighted ${unusedNodes.length} potentially unused nodes in red`;
-            
-            // Show alert with node IDs
-            if (unusedNodes.length > 0) {
-                const nodeIds = unusedNodes.map(node => node.id).join(', ');
-                alert(`Found ${unusedNodes.length} potentially unused nodes:\n\n${nodeIds}\n\nThese are highlighted in red on the map.`);
-            } else {
-                alert('No potentially unused nodes found!');
-            }
-        }
+
         
         function selectNode(node) {
             const fromSelect = document.getElementById('fromLocation');
@@ -1484,226 +1400,205 @@
             }
         }
         
-        // Zoom controls for fixed canvas
-        function addZoomControls(svgWrapper) {
-            const svg = svgWrapper.querySelector('svg');
-            if (!svg) return;
-            
+        // Zoom controls with proper pinch-to-zoom for touch devices
+        function addZoomControls(svg) {
             let scale = 1;
             let translateX = 0;
             let translateY = 0;
+            const minScale = 0.5;
+            const maxScale = 3;
+            const panSensitivity = 0.8; // Reduced for controlled movement
+            svg.style.transform = 'scale(1) translate(0px, 0px)';
+            svg.style.transformOrigin = 'center center';
+
+            // Function to update transform
+            function updateTransform() {
+                svg.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+            }
+
+            // Desktop zoom buttons - check if elements exist first
+            const zoomInBtn = document.getElementById('zoomIn');
+            const zoomOutBtn = document.getElementById('zoomOut');
+            const zoomResetBtn = document.getElementById('zoomReset');
+            
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', () => {
+                    scale = Math.min(maxScale, scale * 1.2);
+                    updateTransform();
+                });
+            }
+            
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', () => {
+                    scale = Math.max(minScale, scale / 1.2);
+                    // Reset pan when zooming out to prevent map from going off-screen
+                    if (scale <= 1) {
+                        translateX = 0;
+                        translateY = 0;
+                    }
+                    updateTransform();
+                });
+            }
+            
+            if (zoomResetBtn) {
+                zoomResetBtn.addEventListener('click', () => {
+                    scale = 1;
+                    translateX = 0;
+                    translateY = 0;
+                    updateTransform();
+                });
+            }
+
+            // Mouse/Desktop panning
             let isDragging = false;
             let lastMouseX = 0;
             let lastMouseY = 0;
-            
-            // Touch handling variables
-            let initialDistance = 0;
+
+            svg.addEventListener('mousedown', function(e) {
+                if (scale > 1) { // Only allow panning when zoomed in
+                    isDragging = true;
+                    lastMouseX = e.clientX;
+                    lastMouseY = e.clientY;
+                    svg.style.cursor = 'grabbing';
+                    e.preventDefault();
+                }
+            });
+
+            document.addEventListener('mousemove', function(e) {
+                if (isDragging && scale > 1) {
+                    const deltaX = (e.clientX - lastMouseX) * panSensitivity;
+                    const deltaY = (e.clientY - lastMouseY) * panSensitivity;
+                    
+                    // Limit panning to prevent map from going too far off-screen
+                    const maxPan = 200 * scale;
+                    translateX = Math.max(-maxPan, Math.min(maxPan, translateX + deltaX));
+                    translateY = Math.max(-maxPan, Math.min(maxPan, translateY + deltaY));
+                    
+                    updateTransform();
+                    lastMouseX = e.clientX;
+                    lastMouseY = e.clientY;
+                }
+            });
+
+            document.addEventListener('mouseup', function() {
+                if (isDragging) {
+                    isDragging = false;
+                    svg.style.cursor = scale > 1 ? 'grab' : 'default';
+                }
+            });
+
+            // Touch panning (single finger)
+            let isTouchPanning = false;
+            let lastTouchX = 0;
+            let lastTouchY = 0;
+
+            // Improved touch pinch-to-zoom and panning
+            let initialDistance = null;
             let initialScale = 1;
-            let touches = [];
-            
-            function updateTransform() {
-                svgWrapper.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-            }
-            
-            function getDistance(touch1, touch2) {
+            let isZooming = false;
+
+            // Helper function to get distance between two touches
+            function getTouchDistance(touch1, touch2) {
                 const dx = touch1.clientX - touch2.clientX;
                 const dy = touch1.clientY - touch2.clientY;
                 return Math.sqrt(dx * dx + dy * dy);
             }
-            
-            function getTouchCenter(touch1, touch2) {
-                return {
-                    x: (touch1.clientX + touch2.clientX) / 2,
-                    y: (touch1.clientY + touch2.clientY) / 2
-                };
-            }
-            
-            // Zoom controls
-            document.getElementById('zoomIn').addEventListener('click', () => {
-                const oldScale = scale;
-                scale = Math.min(scale * 1.2, 3);
-                
-                // Keep zoom centered in the fixed canvas
-                const rect = svgWrapper.getBoundingClientRect();
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
-                
-                const scaleRatio = scale / oldScale;
-                translateX = centerX - (centerX - translateX) * scaleRatio;
-                translateY = centerY - (centerY - translateY) * scaleRatio;
-                
-                updateTransform();
-            });
-            
-            document.getElementById('zoomOut').addEventListener('click', () => {
-                const oldScale = scale;
-                scale = Math.max(scale / 1.2, 0.5);
-                
-                // Keep zoom centered in the fixed canvas
-                const rect = svgWrapper.getBoundingClientRect();
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
-                
-                const scaleRatio = scale / oldScale;
-                translateX = centerX - (centerX - translateX) * scaleRatio;
-                translateY = centerY - (centerY - translateY) * scaleRatio;
-                
-                updateTransform();
-            });
-            
-            document.getElementById('zoomReset').addEventListener('click', () => {
-                scale = 1;
-                translateX = 0;
-                translateY = 0;
-                updateTransform();
-            });
-            
-            // Touch events for mobile
-            svgWrapper.addEventListener('touchstart', (e) => {
-                touches = Array.from(e.touches);
-                
-                if (touches.length === 1) {
-                    // Single touch - start pan
-                    isDragging = true;
-                    lastMouseX = touches[0].clientX;
-                    lastMouseY = touches[0].clientY;
-                } else if (touches.length === 2) {
-                    // Two finger touch - start pinch zoom
-                    isDragging = false;
-                    initialDistance = getDistance(touches[0], touches[1]);
+
+            svg.addEventListener('touchstart', function(e) {
+                if (e.touches.length === 1 && scale > 1) {
+                    // Single finger panning
+                    isTouchPanning = true;
+                    lastTouchX = e.touches[0].clientX;
+                    lastTouchY = e.touches[0].clientY;
+                } else if (e.touches.length === 2) {
+                    // Two finger zooming
+                    e.preventDefault();
+                    isZooming = true;
+                    isTouchPanning = false;
+                    initialDistance = getTouchDistance(e.touches[0], e.touches[1]);
                     initialScale = scale;
                 }
-                
-                e.preventDefault();
-            });
-            
-            svgWrapper.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-                touches = Array.from(e.touches);
-                
-                if (touches.length === 1 && isDragging) {
-                    // Single finger pan
-                    const deltaX = touches[0].clientX - lastMouseX;
-                    const deltaY = touches[0].clientY - lastMouseY;
+            }, { passive: false });
+
+            svg.addEventListener('touchmove', function(e) {
+                if (e.touches.length === 1 && isTouchPanning && scale > 1) {
+                    // Single finger panning
+                    e.preventDefault();
+                    const deltaX = (e.touches[0].clientX - lastTouchX) * panSensitivity;
+                    const deltaY = (e.touches[0].clientY - lastTouchY) * panSensitivity;
                     
-                    translateX += deltaX;
-                    translateY += deltaY;
-                    
-                    lastMouseX = touches[0].clientX;
-                    lastMouseY = touches[0].clientY;
+                    // Limit panning
+                    const maxPan = 200 * scale;
+                    translateX = Math.max(-maxPan, Math.min(maxPan, translateX + deltaX));
+                    translateY = Math.max(-maxPan, Math.min(maxPan, translateY + deltaY));
                     
                     updateTransform();
-                } else if (touches.length === 2) {
-                    // Two finger pinch zoom
-                    const currentDistance = getDistance(touches[0], touches[1]);
-                    const scaleChange = currentDistance / initialDistance;
-                    const newScale = Math.max(0.5, Math.min(3, initialScale * scaleChange));
+                    lastTouchX = e.touches[0].clientX;
+                    lastTouchY = e.touches[0].clientY;
+                } else if (e.touches.length === 2 && isZooming && initialDistance) {
+                    // Two finger zooming
+                    e.preventDefault();
                     
-                    if (Math.abs(newScale - scale) > 0.01) { // Threshold to prevent jittery updates
-                        const rect = svgWrapper.getBoundingClientRect();
-                        const touchCenter = getTouchCenter(touches[0], touches[1]);
-                        const centerX = touchCenter.x - rect.left;
-                        const centerY = touchCenter.y - rect.top;
-                        
-                        const oldScale = scale;
-                        scale = newScale;
-                        
-                        // Zoom towards touch center
-                        const scaleRatio = scale / oldScale;
-                        translateX = centerX - (centerX - translateX) * scaleRatio;
-                        translateY = centerY - (centerY - translateY) * scaleRatio;
-                        
-                        updateTransform();
+                    const currentDistance = getTouchDistance(e.touches[0], e.touches[1]);
+                    const scaleRatio = currentDistance / initialDistance;
+                    
+                    // Apply the scale change more smoothly and equally for zoom in/out
+                    const newScale = initialScale * scaleRatio;
+                    
+                    // Clamp the scale within bounds
+                    scale = Math.max(minScale, Math.min(maxScale, newScale));
+                    
+                    // Reset pan when zooming out to prevent map from going off-screen
+                    if (scale <= 1) {
+                        translateX = 0;
+                        translateY = 0;
                     }
+                    
+                    updateTransform();
                 }
-            });
-            
-            svgWrapper.addEventListener('touchend', (e) => {
+            }, { passive: false });
+
+            svg.addEventListener('touchend', function(e) {
+                if (e.touches.length < 2) {
+                    isZooming = false;
+                    initialDistance = null;
+                    initialScale = scale;
+                }
                 if (e.touches.length === 0) {
-                    isDragging = false;
-                    touches = [];
-                } else if (e.touches.length === 1) {
-                    // From two fingers to one - restart single touch
-                    touches = Array.from(e.touches);
-                    lastMouseX = touches[0].clientX;
-                    lastMouseY = touches[0].clientY;
-                    isDragging = true;
+                    isTouchPanning = false;
                 }
-            });
-            
-            // Mouse events for desktop
-            svgWrapper.addEventListener('mousedown', (e) => {
-                if (e.touches) return; // Ignore if touch event
-                
-                isDragging = true;
-                lastMouseX = e.clientX;
-                lastMouseY = e.clientY;
-                svgWrapper.style.cursor = 'grabbing';
-                e.preventDefault();
-                e.stopPropagation();
-            });
-            
-            document.addEventListener('mousemove', (e) => {
-                if (!isDragging || e.touches) return;
-                
-                const deltaX = e.clientX - lastMouseX;
-                const deltaY = e.clientY - lastMouseY;
-                
-                translateX += deltaX;
-                translateY += deltaY;
-                
-                lastMouseX = e.clientX;
-                lastMouseY = e.clientY;
-                
-                updateTransform();
-                e.preventDefault();
-            });
-            
-            document.addEventListener('mouseup', () => {
-                if (isDragging) {
-                    isDragging = false;
-                    svgWrapper.style.cursor = 'grab';
+            }, { passive: false });
+
+            // Update cursor based on zoom level
+            function updateCursor() {
+                if (scale > 1) {
+                    svg.style.cursor = isDragging ? 'grabbing' : 'grab';
+                } else {
+                    svg.style.cursor = 'default';
                 }
-            });
-            
-            // Wheel zoom for desktop
-            svgWrapper.addEventListener('wheel', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const rect = svgWrapper.getBoundingClientRect();
-                const mouseX = e.clientX - rect.left;
-                const mouseY = e.clientY - rect.top;
-                
-                const oldScale = scale;
-                const delta = e.deltaY > 0 ? 0.95 : 1.05; // Smaller increments for smoother zoom
-                scale = Math.max(0.5, Math.min(3, scale * delta));
-                
-                // Zoom towards mouse position within the canvas
-                const scaleRatio = scale / oldScale;
-                translateX = mouseX - (mouseX - translateX) * scaleRatio;
-                translateY = mouseY - (mouseY - translateY) * scaleRatio;
-                
-                updateTransform();
-            });
-            
-            // Prevent default touch behaviors that interfere
-            svgWrapper.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
-            svgWrapper.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
-        }
-        
-        function updateStats() {
-            document.getElementById('nodeCount').textContent = campusNodes.length;
-            
-            let connectionCount = 0;
-            for (const node in campusGraph) {
-                connectionCount += Object.keys(campusGraph[node] || {}).length;
             }
-            document.getElementById('connectionCount').textContent = connectionCount;
-            
-            const searchableNodes = campusNodes.filter(n => n.searchable === true);
-            const coverage = campusNodes.length > 0 ? Math.round((searchableNodes.length / campusNodes.length) * 100) : 0;
-            document.getElementById('coverage').textContent = coverage + '%';
+
+            // Update cursor when scale changes
+            svg.addEventListener('transitionend', updateCursor);
+            updateCursor();
+
+            // Prevent zoom on touch events for navigation elements
+            const navElements = document.querySelectorAll('#controls, .zoom-controls, #controlsToggle');
+            navElements.forEach(element => {
+                if (element) {
+                    element.addEventListener('touchstart', function(e) {
+                        e.stopPropagation();
+                    }, { passive: true });
+                    
+                    element.addEventListener('touchmove', function(e) {
+                        e.stopPropagation();
+                    }, { passive: true });
+                    
+                    element.addEventListener('touchend', function(e) {
+                        e.stopPropagation();
+                    }, { passive: true });
+                }
+            });
         }
     </script>
 </body>

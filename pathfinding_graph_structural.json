@@ -19,6 +19,15 @@
       "cluster_size": 1
     },
     {
+      "id": "class_21",
+      "x": 3259.25,
+      "y": 4860.25,
+      "label": "Classroom 21",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
+    },
+    {
       "id": "class_3",
       "x": 3375.5,
       "y": 4128.0,
@@ -304,42 +313,6 @@
       "label": "Stairway D",
       "type": "stairway",
       "searchable": true,
-      "cluster_size": 1
-    },
-    {
-      "id": "red_curve_1",
-      "x": 3400.0,
-      "y": 4100.0,
-      "label": "Red Curve Area 1",
-      "type": "red_curve_location",
-      "searchable": false,
-      "cluster_size": 1
-    },
-    {
-      "id": "red_curve_2",
-      "x": 2200.0,
-      "y": 4000.0,
-      "label": "Red Curve Area 2", 
-      "type": "red_curve_location",
-      "searchable": false,
-      "cluster_size": 1
-    },
-    {
-      "id": "red_curve_3",
-      "x": 5700.0,
-      "y": 1300.0,
-      "label": "Red Curve Area 3",
-      "type": "red_curve_location", 
-      "searchable": false,
-      "cluster_size": 1
-    },
-    {
-      "id": "red_curve_4",
-      "x": 4300.0,
-      "y": 2000.0,
-      "label": "Red Curve Area 4",
-      "type": "red_curve_location",
-      "searchable": false,
       "cluster_size": 1
     },
     {
