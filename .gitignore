@@ -96,3 +96,14 @@ wheels/
 
 # Server directories
 .vscode/settings.json
+
+# Flask
+instance/
+.webassets-cache
+.pytest_cache/
+
+# Environment files
+.env
+.venv
+env/
+venv/

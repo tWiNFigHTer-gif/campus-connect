@@ -4,13 +4,40 @@ A web-based campus navigation system with intelligent pathfinding through floor 
 
 ## 🚀 Quick Start
 
+### Local Development
+
+1. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Start the Flask server:**
+   ```bash
+   python app.py
+   ```
+
+3. **Open the application:**
+   - Browser: http://localhost:5000/
+
+### Simple Static Server (Alternative)
+
 1. **Start the server:**
    ```bash
    python -m http.server 8000
    ```
 
 2. **Open the application:**
-   - Browser: http://localhost:8000/campus-connect-fixed.html
+   - Browser: http://localhost:8000/campus-connect-final.html
+
+## 🌐 Deployment
+
+This application is ready for deployment on Render and other cloud platforms. See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions.
+
+### Render Deployment
+- Uses `render.yaml` for automatic configuration
+- Flask backend with gunicorn WSGI server
+- Serves both frontend and API endpoints
+- Free tier compatible
 
 ## 📁 Project Structure
 
@@ -66,6 +93,29 @@ python extract_red_curves_enhanced.py findpath pathfinding_graph.json node_8 nod
 - **Path Visualization**: Animated route display
 - **Console Debugging**: Detailed pathfinding logs
 - **Responsive Design**: Works on desktop and mobile
+
+## 🔗 API Endpoints
+
+The Flask backend provides REST API endpoints for programmatic access:
+
+- `GET /api/health` - Service health check and status
+- `GET /api/graph` - Complete navigation graph data
+- `GET /api/nodes` - All navigation nodes
+- `GET /api/searchable-nodes` - Searchable nodes (classrooms, facilities)
+- `GET /api/path?start=<node_id>&end=<node_id>` - Find optimal path
+
+### Example API Usage
+
+```bash
+# Health check
+curl http://localhost:5000/api/health
+
+# Find path between classrooms
+curl "http://localhost:5000/api/path?start=class_1&end=class_2"
+
+# Get all searchable locations
+curl http://localhost:5000/api/searchable-nodes
+```
 
 ## 📊 Graph Statistics
 
