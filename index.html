@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    
     <link rel="stylesheet" href="main.css">
+    <link rel="" >
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=close" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
     <meta charset="UTF-8">
@@ -9,6 +11,7 @@
     <title>Campusconnect</title>
 </head>
 <body>
+    
     <div class="top-section">
         <p class="head">CampusConnect</p>
         <nav>
@@ -80,45 +83,7 @@
   </div>
 
   
-
-
-    <script>
-       const openBtn = document.getElementById('openDirections');
-const closeBtn = document.querySelector('.back');
-const panel = document.getElementById('directionsPanel');
-
-openBtn.addEventListener('click', () => {
-  panel.classList.add('open');
-});
-
-closeBtn.addEventListener('click', () => {
-  panel.classList.remove('open');
-});
-        const sidebar = document.querySelector('.sidebar');
-        const menuToggle = document.getElementById('menuToggle');
-
-        menuToggle.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent click from bubbling up
-            sidebar.style.display = sidebar.style.display === 'flex' ? 'none' : 'flex';
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
-                sidebar.style.display = 'none';
-            }
-        });
-
-      
-
-
-               
-
-  
-    </script>
-
-
-   
 </div>
-
+<script src="script.js"></script>
 </body>
 </html>

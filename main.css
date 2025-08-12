@@ -269,7 +269,7 @@ nav a:hover{
 
 .buttons a{
     text-decoration: none;
-    color: rgba(0, 0, 0, 0.7);;
+    color: rgba(0, 0, 0, 0.697);;
 }
 
 @media(max-width:800px){
@@ -290,11 +290,11 @@ nav a:hover{
 
 
 
-.directions-panel {
-  position: fixed;
+.directions-panel {    
+  position: fixed; 
   top: 0;
-  left: -450px; /* hidden */
-  width: 400px;
+  left: -450px;
+  width: 400px; 
   height: 100%;
   background: white;
   box-shadow: 2px 0 6px rgba(0,0,0,0.2);
@@ -304,7 +304,7 @@ nav a:hover{
 }
 
 .directions-panel.open {
-  left: 0; /* visible */
+  left: 0; 
 }
 
 .panel-header {
