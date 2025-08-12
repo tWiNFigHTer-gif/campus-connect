@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=close" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campusconnect</title>
+</head>
+<body>
+    <div class="top-section">
+        <p class="head">CampusConnect</p>
+        <nav>
+            <ul class="sidebar">
+                <li class="floor"><a href="#">Ground Floor</a></li>
+                <li class="floor"><a href="#">Floor 1</a></li>
+                <li class="floor"><a href="#">Floor 2</a></li>
+                <li class="floor"><a href="#">Floor 3</a></li>
+                <li class="floor"><a href="#">Floor 4</a></li>
+            </ul>
+            <ul>
+                <li class="hideonMobile"><a href="#">Floor 1</a></li>
+                <li class="hideonMobile"><a href="#">Floor 2</a></li>
+                <li class="hideonMobile"><a href="#">Floor 3</a></li>
+                <li class="hideonMobile"><a href="#">Floor 4</a></li>
+                <li id="menuToggle"><a href="#"><img src="images/menu.png" class="menu" ></a></li>
+                
+            </ul>
+        </nav>
+        
+        
+    </div>
+
+    <div class="search-bar">
+        <span class="search material-symbols-outlined">search</span>
+          <input type="search" name="search" placeholder="Search class,departments" class="search-field">
+          
+    </div>
+
+    <div class="map">
+        <img src="images/map.png">
+        <button id="openDirections"><img src="images/dir.svg"></button>
+        <button class="previous">Prev</button>
+        <button class="next">Next</button>
+        
+        
+    </div>
+    
+    <div class="line"></div>
+
+    <div class="explore">
+        <p class="heading">Explore the Campus</p>
+
+        <div class="buttons">
+            <div class="group-1">
+        <button class="clas"><img src="images/class.png"></button>
+        <span class="label-1"><a href="">Class</a></span>
+            </div>
+            <div class="group-2">
+        <button class="department"><img src="images/department.png"></button>
+        <span class="label-2"><a href="">Department</a></span>
+            </div>
+            <div class="group-3">
+        <button class="faculties"><img src="images/faculties.png"></button>
+        <span class="label-3"><a href="">Faculties</a></span>
+            </div>
+        </div>
+    </div>
+    
+
+<div class="directions-panel" id="directionsPanel">
+  
+  <button class="back" onclick="goback()"><img src="images/back.svg"></button>
+  <div class="inputs">
+    <input type="text" placeholder="Choose start location" class="input1">
+    <input type="text" placeholder="Choose destination" class="input2">
+    <button class="find">Find Path</button>
+    <button class="clear">Clear Path</button>
+  </div>
+
+  
+
+
+    <script>
+       const openBtn = document.getElementById('openDirections');
+const closeBtn = document.querySelector('.back');
+const panel = document.getElementById('directionsPanel');
+
+openBtn.addEventListener('click', () => {
+  panel.classList.add('open');
+});
+
+closeBtn.addEventListener('click', () => {
+  panel.classList.remove('open');
+});
+        const sidebar = document.querySelector('.sidebar');
+        const menuToggle = document.getElementById('menuToggle');
+
+        menuToggle.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent click from bubbling up
+            sidebar.style.display = sidebar.style.display === 'flex' ? 'none' : 'flex';
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+                sidebar.style.display = 'none';
+            }
+        });
+
+      
+
+
+               
+
+  
+    </script>
+
+
+   
+</div>
+
+</body>
+</html>
