@@ -387,11 +387,11 @@ nav a:hover{
 
 
 .next{
-    background: #0e0171;
-    padding: 8px 25px;
-    color: white;
+    background:rgb(241, 241, 241) ;
+    padding: 5px 5px;
+    color: rgba(2, 2, 2, 0.67);
     position:absolute;
-    transform: translate(140%,-980%);
+    transform: translate(150%,-1040%);
     font-weight: 500;
     border-radius: 2px;
     border: none;
@@ -400,15 +400,20 @@ nav a:hover{
 
 .previous{
     background: rgb(241, 241, 241);
-    padding: 8px 25px;
+    padding: 5px 5px;
     color: rgba(2, 2, 2, 0.67);
     position:absolute;
-    transform: translate(30%,-980%);
+    transform: translate(40%,-1040%);
     font-weight: 500;
     border-radius: 2px;
     border: none;
     cursor: pointer;
     transition: opacity 0.8s;
+}
+
+.previous img{
+    width: 5;
+    height: 5;
 }
 
 .next:hover{
