@@ -118,6 +118,7 @@ nav a:hover{
 .menu:active{
      opacity: 0.8;
      -webkit-tap-highlight-color: transparent;
+     color: #007BFF;
     
     
 }
@@ -338,6 +339,7 @@ nav a:hover{
 
 .inputs {
   padding: 20px;
+  
 }
 
 
@@ -345,10 +347,11 @@ nav a:hover{
 .inputs input {
   width: 340px;
   padding: 10px;
-  
+  margin-top: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  margin: 10px 14px 8px 8px;
+  margin-bottom: 0px;
+ 
 }
 
 
@@ -358,6 +361,7 @@ nav a:hover{
 }
 
 .find{
+    
     padding: 14px 130px;
     background-color: #007BFF;
     border: none;
@@ -365,7 +369,7 @@ nav a:hover{
     color: white;
     border-radius: 7px;
     font-size: 14px;
-    margin: 10px 15px;
+    margin: 25px 15px 0px;
     transition: opacity 0.8s;
     cursor: pointer;
 }
@@ -378,13 +382,14 @@ nav a:hover{
     color: rgba(2, 2, 2, 0.67);
     border-radius: 7px;
     font-size: 14px;
-    margin: 10px 15px;
+    margin: 12px 15px;
     transition: background-color 0.6s;
     cursor: pointer;
 }
 
 .find:hover{
     opacity: 0.8;
+ 
 }
 
 .clear:hover{
@@ -410,6 +415,7 @@ nav a:hover{
     border-radius: 2px;
     border: none;
     cursor: pointer;
+    transition: background-color 0.5s;
 }
 
 .previous{
@@ -419,7 +425,7 @@ nav a:hover{
     border-radius: 2px;
     border: none;
     cursor: pointer;
-    transition: opacity 0.8s;
+    transition: background-color 0.5s;
 }
 
 .previous img{
@@ -428,7 +434,7 @@ nav a:hover{
 }
 
 .next:hover{
-    opacity: 0.8;
+    background-color: #dddddda7;
 
 }
 
@@ -477,16 +483,19 @@ nav a:hover{
 }
 
 
-@media(max-width: 380px){
+@media(max-width: 400px){
     .directions-panel{
-        width: 350px;
+        width: 380px;
     }
     .inputs input{
-        width: 280px;
+        width: 300px;
         
     }
     .find,.clear{
         font-size: 12px;
         
+        margin-left: 4px;
+        
     }
 }
+
