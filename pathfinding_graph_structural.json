@@ -29,8 +29,8 @@
     },
     {
       "id": "class_3",
-      "x": 3375.5,
-      "y": 4128.0,
+      "x": 3376.5,
+      "y": 4535.0,
       "label": "Classroom 3",
       "type": "class",
       "searchable": true,
@@ -146,8 +146,8 @@
     },
     {
       "id": "class_16",
-      "x": 4547.5,
-      "y": 1689.0,
+      "x": 4722.25,
+      "y": 1521.25,
       "label": "Classroom 16",
       "type": "class",
       "searchable": true,
@@ -155,8 +155,8 @@
     },
     {
       "id": "class_17",
-      "x": 4989.5,
-      "y": 1352.0,
+      "x": 4809.625,
+      "y": 1437.375,
       "label": "Classroom 17",
       "type": "class",
       "searchable": true,

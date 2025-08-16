@@ -487,6 +487,8 @@
         let campusNodes = [];
         let campusGraph = {};
         let currentPath = [];
+        let startNode = null;
+        let destinationNode = null;
         
         // Initialize the application
         document.addEventListener('DOMContentLoaded', async function() {
@@ -843,6 +845,8 @@
             const fromId = document.getElementById('fromLocation').value;
             const toId = document.getElementById('toLocation').value;
             
+            console.log(`🚀 Finding path: "${fromId}" → "${toId}"`);
+            
             if (!fromId || !toId) {
                 alert('Please select both starting point and destination');
                 return;
@@ -868,6 +872,7 @@
                 status.textContent = `Route: ${startNode?.label || fromId} → ${endNode?.label || toId} (${path.length - 1} steps)`;
             } else {
                 console.error('❌ No path found');
+                console.error(`💥 Pathfinding failed for: ${fromId} → ${toId}`);
                 alert('No path found between selected locations');
             }
         }
@@ -888,14 +893,31 @@
         }
         
         function astarPath(graph, nodes, start, end) {
+            console.log(`🔍 A* Pathfinding: ${start} → ${end}`);
+            
             // Get coordinates for heuristic calculation
             const endCoords = getNodeCoordinates(nodes, end);
             const startCoords = getNodeCoordinates(nodes, start);
             
             if (!endCoords || !startCoords) {
-                console.error('Could not find coordinates for start or end node');
+                console.error('❌ Could not find coordinates for start or end node');
+                console.error(`Start node "${start}" coords:`, startCoords);
+                console.error(`End node "${end}" coords:`, endCoords);
                 return null;
             }
+            
+            // Check if start and end nodes exist in graph
+            if (!graph[start]) {
+                console.error(`❌ Start node "${start}" not found in graph`);
+                return null;
+            }
+            if (!graph[end]) {
+                console.error(`❌ End node "${end}" not found in graph`);
+                return null;
+            }
+            
+            console.log(`✅ Start node "${start}" has ${Object.keys(graph[start]).length} connections`);
+            console.log(`✅ End node "${end}" has ${Object.keys(graph[end]).length} connections`);
             
             const gScore = {};
             const fScore = {};
@@ -925,10 +947,14 @@
                     }
                 }
                 
-                if (current === null) break;
+                if (current === null) {
+                    console.error('❌ No current node found in openSet');
+                    break;
+                }
                 
                 // Check if we've reached the goal
                 if (current === end) {
+                    console.log(`🎯 Reached destination: ${end}`);
                     break;
                 }
                 
@@ -936,7 +962,10 @@
                 closedSet.add(current);
                 
                 // Check neighbors
-                for (const neighbor in graph[current] || {}) {
+                const neighbors = graph[current] || {};
+                console.log(`🔍 Processing node "${current}" with ${Object.keys(neighbors).length} neighbors:`, Object.keys(neighbors));
+                
+                for (const neighbor in neighbors) {
                     if (closedSet.has(neighbor)) continue;
                     
                     const tentativeGScore = gScore[current] + graph[current][neighbor];
@@ -967,7 +996,16 @@
                 current = previous[current];
             }
             
-            return path.length > 1 && path[0] === start ? path : null;
+            console.log(`🔍 Path reconstruction completed. Length: ${path.length}`);
+            console.log(`🛤️ Final path:`, path);
+            
+            if (path.length > 1 && path[0] === start) {
+                console.log(`✅ Valid path found: ${path.join(' → ')}`);
+                return path;
+            } else {
+                console.error(`❌ Invalid path: length=${path.length}, starts with=${path[0]}, should start with=${start}`);
+                return null;
+            }
         }
         
         function drawPath(path) {
@@ -1353,23 +1391,393 @@
             status.textContent = 'Ready';
         }
         
-        // Interactive Zones Implementation (transformed for new SVG)
-        function addInteractiveZones(svg) {
-            console.log('🎯 Adding interactive zones to final SVG...');
+        // Interactive Zones Implementation
+        async function addInteractiveZones(svg) {
+            console.log('🎯 Loading interactive zones...');
             
-            // Since the coordinates are transformed, we need to transform the zone paths too
-            // For now, I'll create a simplified version that works with the new coordinate system
-            // The zones would need to be redefined for the new SVG structure
+            try {
+                // Load zone data
+                const response = await fetch('./svg_zones_8830x6238.json');
+                const zonesData = await response.json();
+                console.log('📊 Loaded', zonesData.length, 'zones');
+                
+                // Create zones layer
+                const zonesLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                zonesLayer.id = 'interactive-zones';
+                zonesLayer.style.pointerEvents = 'auto';
+                svg.appendChild(zonesLayer);
+                
+                // Create info box for zone details
+                createZoneInfoBox();
+                
+                // Add each zone
+                zonesData.forEach(zone => {
+                    addZoneToMap(zonesLayer, zone);
+                });
+                
+                console.log('✅ Interactive zones implemented successfully');
+                
+            } catch (error) {
+                console.error('❌ Error loading zones:', error);
+            }
+        }
+        
+        function createZoneInfoBox() {
+            const infoBox = document.createElement('div');
+            infoBox.id = 'zone-info-box';
+            infoBox.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                border-radius: 12px;
+                padding: 16px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                max-width: 280px;
+                display: none;
+                z-index: 1000;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            `;
+            document.body.appendChild(infoBox);
+        }
+        
+        function addZoneToMap(zonesLayer, zone) {
+            // Create polygon element
+            const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
             
-            console.log('🎯 Interactive zones will be added based on new SVG structure');
+            // Convert points array to SVG polygon points string
+            const pointsString = zone.points.map(point => `${point[0]},${point[1]}`).join(' ');
+            polygon.setAttribute('points', pointsString);
             
-            // Create zones layer
-            const zonesLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            zonesLayer.id = 'interactive-zones';
-            zonesLayer.style.pointerEvents = 'auto';
-            svg.appendChild(zonesLayer);
+            // Set initial styling
+            polygon.setAttribute('fill', zone.fill);
+            polygon.setAttribute('fill-opacity', '0.3');
+            polygon.setAttribute('stroke', zone.fill);
+            polygon.setAttribute('stroke-width', '2');
+            polygon.setAttribute('stroke-opacity', '0.6');
+            polygon.style.cursor = 'pointer';
+            polygon.style.transition = 'all 0.3s ease';
             
-            console.log('🎯 Zones layer created for final SVG');
+            // Add zone data as attributes
+            polygon.setAttribute('data-zone-id', zone.id);
+            polygon.setAttribute('data-zone-category', zone.category);
+            polygon.setAttribute('data-centroid-x', zone.centroid_x);
+            polygon.setAttribute('data-centroid-y', zone.centroid_y);
+            
+            // Add event listeners
+            polygon.addEventListener('mouseenter', () => handleZoneHover(zone, true));
+            polygon.addEventListener('mouseleave', () => handleZoneHover(zone, false));
+            polygon.addEventListener('click', (event) => handleZoneClick(zone, event));
+            
+            // Add to zones layer
+            zonesLayer.appendChild(polygon);
+        }
+        
+        function formatZoneName(zoneId) {
+            // Convert zone ID to readable format
+            return zoneId
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, l => l.toUpperCase())
+                .replace(/(\d+)/, ' $1');
+        }
+        
+        function handleZoneHover(zone, isHovering) {
+            const polygon = document.querySelector(`polygon[data-zone-id="${zone.id}"]`);
+            
+            if (isHovering) {
+                // Highlight zone
+                polygon.setAttribute('fill-opacity', '0.6');
+                polygon.setAttribute('stroke-width', '3');
+                polygon.setAttribute('stroke-opacity', '1');
+            } else {
+                // Reset zone appearance
+                polygon.setAttribute('fill-opacity', '0.3');
+                polygon.setAttribute('stroke-width', '2');
+                polygon.setAttribute('stroke-opacity', '0.6');
+            }
+        }
+        
+        function showZoneInfo(zone, clickX, clickY) {
+            const infoBox = document.getElementById('zone-info-box');
+            
+            // Find the destination node that would be selected for this zone
+            const nearestNode = findNearestNode(zone.centroid_x, zone.centroid_y);
+            
+            let displayName, categoryName, nodeLabel;
+            
+            if (nearestNode) {
+                // Get node information from the node data
+                const nodeId = nearestNode.getAttribute('data-id');
+                const nodeData = campusNodes.find(node => node.id === nodeId);
+                
+                if (nodeData) {
+                    nodeLabel = nodeData.label;
+                    displayName = nodeLabel;
+                    categoryName = formatZoneName(nodeData.type);
+                } else {
+                    // Fallback to zone info if node data not found
+                    displayName = formatZoneName(zone.id);
+                    categoryName = formatZoneName(zone.category);
+                }
+            } else {
+                // Fallback to zone info if no node found
+                displayName = formatZoneName(zone.id);
+                categoryName = formatZoneName(zone.category);
+            }
+            
+            infoBox.innerHTML = `
+                <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                    <div style="
+                        width: 16px; 
+                        height: 16px; 
+                        background-color: ${zone.fill}; 
+                        border-radius: 4px; 
+                        margin-right: 8px;
+                        border: 1px solid rgba(0,0,0,0.2);
+                    "></div>
+                    <h3 style="margin: 0; color: #2c3e50; font-size: 16px;">${displayName}</h3>
+                </div>
+                <p style="margin: 0 0 12px 0; color: #7f8c8d; font-size: 14px;">
+                    <strong>Type:</strong> ${categoryName}
+                </p>
+                <button id="set-destination-btn" style="
+                    width: 100%;
+                    padding: 8px 12px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    font-size: 14px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: transform 0.2s ease;
+                " onmouseover="this.style.transform='translateY(-1px)'" 
+                   onmouseout="this.style.transform='translateY(0)'">
+                    Set as Destination
+                </button>
+                <div style="
+                    margin-top: 8px;
+                    text-align: center;
+                ">
+                    <button id="close-info-btn" style="
+                        background: none;
+                        border: 1px solid #ddd;
+                        border-radius: 4px;
+                        padding: 4px 8px;
+                        font-size: 12px;
+                        color: #666;
+                        cursor: pointer;
+                    ">Close</button>
+                </div>
+            `;
+            
+            // Position info box at click location
+            if (clickX !== undefined && clickY !== undefined) {
+                infoBox.style.left = `${clickX + 10}px`;
+                infoBox.style.top = `${clickY + 10}px`;
+                infoBox.style.right = 'auto';
+            }
+            
+            // Add click handler for destination button
+            const setDestinationBtn = infoBox.querySelector('#set-destination-btn');
+            setDestinationBtn.addEventListener('click', () => {
+                setZoneAsDestination(zone);
+            });
+            
+            // Add click handler for close button
+            const closeBtn = infoBox.querySelector('#close-info-btn');
+            closeBtn.addEventListener('click', () => {
+                infoBox.style.display = 'none';
+            });
+            
+            infoBox.style.display = 'block';
+        }
+        
+        function handleZoneClick(zone, event) {
+            console.log('🎯 Zone clicked:', zone.id);
+            
+            // Get click coordinates relative to viewport
+            const clickX = event.clientX;
+            const clickY = event.clientY;
+            
+            // Highlight clicked zone with special effect
+            const polygon = document.querySelector(`polygon[data-zone-id="${zone.id}"]`);
+            const originalFillOpacity = polygon.getAttribute('fill-opacity');
+            
+            // Brief highlight animation
+            polygon.setAttribute('fill-opacity', '0.8');
+            setTimeout(() => {
+                polygon.setAttribute('fill-opacity', originalFillOpacity);
+            }, 200);
+            
+            // Show info box at click position
+            showZoneInfo(zone, clickX, clickY);
+        }
+        
+        function setZoneAsDestination(zone) {
+            console.log('🎯 Setting zone as destination:', zone.id);
+            
+            // Find nearest navigation node to zone centroid
+            const nearestNode = findNearestNode(zone.centroid_x, zone.centroid_y);
+            
+            if (nearestNode) {
+                // Get the node ID from the data-id attribute
+                const nodeId = nearestNode.getAttribute('data-id');
+                
+                // Get node data for display name
+                const nodeData = campusNodes.find(node => node.id === nodeId);
+                const displayName = nodeData ? nodeData.label : formatZoneName(zone.id);
+                
+                // Set as destination in the dropdown
+                const toSelect = document.getElementById('toLocation');
+                toSelect.value = nodeId;
+                
+                // Update status with the same name shown in info box
+                const status = document.getElementById('status');
+                status.textContent = `Destination set: ${displayName}`;
+                
+                // Hide info box
+                const infoBox = document.getElementById('zone-info-box');
+                infoBox.style.display = 'none';
+                
+                // Trigger pathfinding if start location is already selected
+                const fromSelect = document.getElementById('fromLocation');
+                if (fromSelect.value && toSelect.value) {
+                    console.log('🚀 Both start and destination selected, finding path...');
+                    findPath();
+                } else {
+                    console.log('📍 Destination set, waiting for start location selection');
+                    status.textContent = `Destination set: ${displayName}. Please select starting point.`;
+                }
+                
+                console.log('✅ Zone destination set successfully');
+            } else {
+                console.warn('⚠️ No nearby navigation node found for zone');
+                alert('Unable to set destination: No nearby navigation point found');
+            }
+        }
+        
+        function findNearestNode(x, y) {
+            // First check if there are any data nodes inside the current zone
+            const dataNodesInZone = findDataNodesInZone(x, y);
+            
+            if (dataNodesInZone.length > 0) {
+                console.log('📍 Found', dataNodesInZone.length, 'data nodes in zone, finding nearest class node to them');
+                // Find the nearest class node to the data nodes
+                return findNearestClassNodeToDataNodes(dataNodesInZone);
+            } else {
+                console.log('📍 No data nodes in zone, finding nearest class node to zone centroid');
+                // Fall back to finding nearest class node to zone centroid
+                return findNearestClassNodeToPoint(x, y);
+            }
+        }
+        
+        function findDataNodesInZone(zoneCentroidX, zoneCentroidY) {
+            const dataNodesInZone = [];
+            const currentZone = getCurrentZonePolygon(zoneCentroidX, zoneCentroidY);
+            
+            if (!currentZone) return dataNodesInZone;
+            
+            // Get all data node elements
+            const dataNodes = document.querySelectorAll('.data-node');
+            
+            dataNodes.forEach(dataNode => {
+                const nodeX = parseFloat(dataNode.getAttribute('cx'));
+                const nodeY = parseFloat(dataNode.getAttribute('cy'));
+                
+                // Check if data node is inside the zone polygon
+                if (isPointInPolygon(nodeX, nodeY, currentZone.points)) {
+                    dataNodesInZone.push({
+                        element: dataNode,
+                        x: nodeX,
+                        y: nodeY,
+                        id: dataNode.getAttribute('data-id')
+                    });
+                }
+            });
+            
+            return dataNodesInZone;
+        }
+        
+        function getCurrentZonePolygon(x, y) {
+            // Find the zone polygon that contains the centroid point
+            const zonePolygons = document.querySelectorAll('#interactive-zones polygon');
+            
+            for (let polygon of zonePolygons) {
+                const centroidX = parseFloat(polygon.getAttribute('data-centroid-x'));
+                const centroidY = parseFloat(polygon.getAttribute('data-centroid-y'));
+                
+                // If this is the zone we're looking for (matching centroid)
+                if (Math.abs(centroidX - x) < 1 && Math.abs(centroidY - y) < 1) {
+                    const pointsStr = polygon.getAttribute('points');
+                    const points = pointsStr.split(' ').map(point => {
+                        const coords = point.split(',');
+                        return [parseFloat(coords[0]), parseFloat(coords[1])];
+                    });
+                    
+                    return { points: points };
+                }
+            }
+            return null;
+        }
+        
+        function isPointInPolygon(x, y, polygon) {
+            let inside = false;
+            for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+                if (((polygon[i][1] > y) !== (polygon[j][1] > y)) &&
+                    (x < (polygon[j][0] - polygon[i][0]) * (y - polygon[i][1]) / (polygon[j][1] - polygon[i][1]) + polygon[i][0])) {
+                    inside = !inside;
+                }
+            }
+            return inside;
+        }
+        
+        function findNearestClassNodeToDataNodes(dataNodes) {
+            // Get all class nodes (non-data nodes)
+            const classNodes = document.querySelectorAll('.node:not(.data-node)');
+            let nearestClassNode = null;
+            let minDistance = Infinity;
+            
+            // Calculate average position of data nodes
+            const avgX = dataNodes.reduce((sum, node) => sum + node.x, 0) / dataNodes.length;
+            const avgY = dataNodes.reduce((sum, node) => sum + node.y, 0) / dataNodes.length;
+            
+            classNodes.forEach(classNode => {
+                const nodeX = parseFloat(classNode.getAttribute('cx'));
+                const nodeY = parseFloat(classNode.getAttribute('cy'));
+                const distance = Math.sqrt(Math.pow(avgX - nodeX, 2) + Math.pow(avgY - nodeY, 2));
+                
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearestClassNode = classNode;
+                }
+            });
+            
+            console.log('✅ Found nearest class node to data nodes:', nearestClassNode?.getAttribute('data-id'), 'at distance:', Math.round(minDistance));
+            return nearestClassNode;
+        }
+        
+        function findNearestClassNodeToPoint(x, y) {
+            // Get all class nodes (non-data nodes)
+            const classNodes = document.querySelectorAll('.node:not(.data-node)');
+            let nearestClassNode = null;
+            let minDistance = Infinity;
+            
+            classNodes.forEach(classNode => {
+                const nodeX = parseFloat(classNode.getAttribute('cx'));
+                const nodeY = parseFloat(classNode.getAttribute('cy'));
+                const distance = Math.sqrt(Math.pow(x - nodeX, 2) + Math.pow(y - nodeY, 2));
+                
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearestClassNode = classNode;
+                }
+            });
+            
+            console.log('✅ Found nearest class node to point:', nearestClassNode?.getAttribute('data-id'), 'at distance:', Math.round(minDistance));
+            return nearestClassNode;
         }
         
         // Node label functions
