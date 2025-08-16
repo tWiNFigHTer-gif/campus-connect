@@ -69,8 +69,9 @@ nav a:hover{
 }
 
 .sidebar li{
-    margin-top: -7px;
+    margin-top: 0px;
     width: 100%;
+   
 
 }
 
@@ -88,6 +89,8 @@ nav a:hover{
 .sidebar a{
     width: 100%;
     transition: background-color 0.3s;
+    margin-right: 0;
+    
 }
 
 .sidebar a:active{
@@ -164,9 +167,9 @@ nav a:hover{
     display: inline-block;
     margin-top: 35px;
     width: 100%;
-    aspect-ratio: 16/13;
+    
     overflow: hidden;
-  border-radius: 8px;
+  border-radius: 1px;
 }
 
 .map img{
@@ -176,16 +179,25 @@ nav a:hover{
     
     
 }
+
+.button-div{
+    width: 100%;
+    background-color: white;
+    height: 80px;
+    margin-top: -5px;
+    display: inline-flex;
+    justify-content: space-between;
+}
 #openDirections {
-    position: absolute;
-  margin: 20px;
-  padding: 12px 14px;
+
+  margin: 10px 12px 10px 12px;
+  padding: 11px 14px;
   background: #003366;
   border: none;
   color: white;
   border-radius: 13px;
   cursor: pointer;
-  transform: translate(600%,-180%);
+  
   
 }
 
@@ -333,9 +345,10 @@ nav a:hover{
 .inputs input {
   width: 340px;
   padding: 10px;
-  margin-bottom: 8px;
+  
   border: 1px solid #ccc;
   border-radius: 4px;
+  margin: 10px 14px 8px 8px;
 }
 
 
@@ -384,15 +397,16 @@ nav a:hover{
 .clear:active{
     background-color: #dddddda7;
 }
-
+.next-floor{
+    margin: 20px 15px;
+    
+}
 
 .next{
+    margin-left: 5px;
     background:rgb(241, 241, 241) ;
     padding: 5px 5px;
     color: rgba(2, 2, 2, 0.67);
-    position:absolute;
-    transform: translate(150%,-1040%);
-    font-weight: 500;
     border-radius: 2px;
     border: none;
     cursor: pointer;
@@ -402,9 +416,6 @@ nav a:hover{
     background: rgb(241, 241, 241);
     padding: 5px 5px;
     color: rgba(2, 2, 2, 0.67);
-    position:absolute;
-    transform: translate(40%,-1040%);
-    font-weight: 500;
     border-radius: 2px;
     border: none;
     cursor: pointer;
@@ -431,4 +442,51 @@ nav a:hover{
 
 .previous:active{
    background-color: #dddddda7;
+}
+
+@media(min-width: 800px){
+    #menuToggle{
+        display: none;
+    }
+}
+
+/* Mobile: when width ≤ 576px */
+@media (max-width: 576px) {
+    .search-bar {
+        width: 90%;              /* take most of the screen width */
+        margin: 10px auto;       /* center it */
+        padding: 10px;           /* slightly smaller padding */
+    }
+    .search-field {
+        width: 100%;             /* input takes full available width */
+        font-size: 14px;         /* smaller text for mobile */
+    }
+}
+
+/* Tablet: between 577px and 800px */
+@media (min-width: 577px) {
+    .search-bar {
+        width: 70%;
+        margin: 15px auto;
+        padding: 12px;
+    }
+    .search-field {
+        width: 100%;
+        font-size: 15px;
+    }
+}
+
+
+@media(max-width: 380px){
+    .directions-panel{
+        width: 350px;
+    }
+    .inputs input{
+        width: 280px;
+        
+    }
+    .find,.clear{
+        font-size: 12px;
+        
+    }
 }
