@@ -1,0 +1,2292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Connect - 2nd Floor Navigation</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=close" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #F5F5F5;
+            font-family: Arial, sans-serif;
+            margin: 0px;
+            height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Loading Screen */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #007BFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Top Header Section */
+        .top-section {
+            align-items: center;
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .head {
+            font-size: 18px;
+            color: black;
+            font-weight: 600;
+        }
+
+        nav ul {
+            width: 100%;
+            display: flex;
+            list-style: none;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        nav li {
+            height: 50px;
+        }
+
+        nav a {
+            height: 100%;
+            padding: 0 30px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            color: black;
+        }
+
+        nav a:hover {
+            background-color: #f0f0f0;
+        }
+
+        .sidebar {
+            margin-top: 60px;
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 200px;
+            width: 170px;
+            z-index: 1001;
+            border-radius: 10px;
+            background-color: #f0f0f0;
+            box-shadow: -10px 0 10px rgba(0,0,0,0.2);
+            display: none;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+        }
+
+        .sidebar li {
+            margin-top: 0px;
+            width: 100%;
+        }
+
+        .floor {
+            transition: opacity 0.8s, background-color 0.8s;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .sidebar a {
+            width: 100%;
+            transition: background-color 0.3s;
+            margin-right: 0;
+        }
+
+        .sidebar a:active {
+            background-color: #dcdcdc;
+        }
+
+        .menu {
+            margin-right: -80px;
+            display: none;
+            height: 30px;
+            width: 30px;
+            cursor: pointer;
+        }
+
+        .menu:active {
+            opacity: 0.8;
+            -webkit-tap-highlight-color: transparent;
+            color: #007BFF;
+        }
+
+        /* Search Bar with Dropdown Suggestions */
+        .search-container {
+            position: relative;
+            margin: 15px;
+        }
+
+        .search-bar {
+            display: flex;
+            width: max-content;
+            align-items: center;
+            padding: 14px;
+            border-radius: 30px;
+            background-color: #FFFFFF;
+            box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+            transition: box-shadow 0.25s;
+            position: relative;
+        }
+
+        .search-bar:focus-within {
+            box-shadow: 0 0 2px rgba(0,0,0,0.75);
+        }
+
+        .search-field {
+            font-size: 16px;
+            font-family: sans-serif;
+            color: #333333;
+            margin-left: 14px;
+            outline: none;
+            border: none;
+            background: transparent;
+            display: flex;
+            width: 296px;
+        }
+
+        .search {
+            color: #6C757D;
+        }
+
+        /* Search Suggestions Dropdown */
+        .suggestions-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            border: 1px solid #e0e0e0;
+            margin-top: 5px;
+        }
+
+        .suggestion-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .suggestion-item:hover,
+        .suggestion-item.selected {
+            background-color: #f8f9fa;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-icon {
+            margin-right: 10px;
+            font-size: 18px;
+            color: #6C757D;
+        }
+
+        .suggestion-text {
+            flex: 1;
+        }
+
+        .suggestion-category {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+        }
+
+        /* Status Display */
+        #status {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin: 0 15px;
+            padding: 5px 0;
+        }
+
+        /* Map Container */
+        .map-container {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 200px);
+            overflow: hidden;
+            border-radius: 1px;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #svg-container {
+            width: 90%;
+            height: 80%;
+            position: relative;
+            overflow: hidden;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: 2px solid #e0e6ed;
+        }
+
+        .map-svg {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+            touch-action: pinch-zoom;
+            cursor: default;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            pointer-events: auto;
+            position: absolute;
+            top: 0;
+            left: 0;
+            object-fit: contain;
+        }
+
+        .map-svg:active {
+            cursor: default;
+        }
+
+        /* Prevent default drag behavior on touch devices */
+        .map-svg * {
+            pointer-events: auto;
+        }
+
+        /* SVG Overlay Controls */
+        .svg-overlay-controls {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        #dirButton {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #003366;
+            border: none;
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            pointer-events: all;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        #dirButton img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .navigation-controls {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            display: flex;
+            gap: 8px;
+            pointer-events: all;
+        }
+
+        .nav-btn {
+            background: rgb(241, 241, 241);
+            border: none;
+            border-radius: 4px;
+            padding: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .nav-btn:hover {
+            background-color: #dddddda7;
+        }
+
+        .nav-btn img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .map-svg {
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+            transition: transform 0.1s ease;
+            transform-origin: center center;
+            touch-action: none;
+            user-select: none;
+        }
+
+        .map-svg:active {
+            cursor: grabbing;
+        }
+
+        /* Button Controls at Bottom */
+        .button-div {
+            width: 100%;
+            background-color: white;
+            height: 80px;
+            display: inline-flex;
+            justify-content: space-between;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
+        .direction button {
+            margin: 10px 12px;
+            padding: 11px 14px;
+            background: #003366;
+            border: none;
+            color: white;
+            border-radius: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .direction button:hover {
+            background: #004080;
+        }
+
+        .next-floor {
+            margin: 20px 15px;
+        }
+
+        .next, .previous {
+            margin-left: 5px;
+            background: rgb(241, 241, 241);
+            padding: 5px 10px;
+            color: rgba(2, 2, 2, 0.67);
+            border-radius: 2px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.5s;
+        }
+
+        .next:hover, .previous:hover {
+            background-color: #dddddda7;
+        }
+
+        /* Zoom Controls */
+        .zoom-controls {
+            position: fixed;
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            overflow: hidden;
+            z-index: 200;
+            border: 1px solid #e0e6ed;
+        }
+
+        .zoom-btn {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .zoom-btn:hover {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .zoom-btn:not(:last-child) {
+            border-bottom: 1px solid #e0e6ed;
+        }
+
+        /* Directions Panel */
+        .directions-panel {    
+            position: fixed; 
+            top: 0;
+            left: -450px;
+            width: 400px; 
+            height: 100%;
+            background: white;
+            box-shadow: 2px 0 6px rgba(0,0,0,0.2);
+            transition: left 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            z-index: 1002;
+        }
+
+        .directions-panel.open {
+            left: 0; 
+        }
+
+        .back-button {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .back {
+            width: 50px;
+            background: transparent;
+            border: none;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+
+        .inputs {
+            padding: 20px;
+            position: relative;
+        }
+
+        .input-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .inputs input {
+            width: 340px;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        /* Panel-specific dropdown styles */
+        .input-container .suggestions-dropdown {
+            position: absolute;
+            top: calc(100% - 10px);
+            left: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 2000;
+            display: none;
+            border: 1px solid #ddd;
+            width: 360px;
+        }
+
+        .input-container .suggestions-dropdown .suggestion-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-container .suggestions-dropdown .suggestion-item:hover,
+        .input-container .suggestions-dropdown .suggestion-item.selected {
+            background-color: #e3f2fd;
+        }
+
+        .input-container .suggestions-dropdown .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .find {
+            padding: 14px 130px;
+            background-color: #007BFF;
+            border: none;
+            display: block;
+            color: white;
+            border-radius: 7px;
+            font-size: 14px;
+            margin: 25px 15px 0px;
+            transition: opacity 0.8s;
+            cursor: pointer;
+        }
+
+        .clear {
+            padding: 14px 128px;
+            background-color: rgb(241, 241, 241);
+            border: none;
+            display: block;
+            color: rgba(2, 2, 2, 0.67);
+            border-radius: 7px;
+            font-size: 14px;
+            margin: 12px 15px;
+            transition: background-color 0.6s;
+            cursor: pointer;
+        }
+
+        .find:hover {
+            opacity: 0.8;
+        }
+
+        .clear:hover {
+            background-color: #dddddda7;
+        }
+
+        /* Line Divider */
+        .line {
+            margin-top: 20px;
+            height: 0.6px;
+            background-color: rgb(211, 211, 211);
+        }
+
+        /* Explore Section */
+        .explore {
+            margin-top: 35px;
+            padding-bottom: 20px;
+        }
+
+        .heading {
+            text-align: center;
+            font-size: 23px;
+            font-weight: bold;
+        }
+
+        .buttons {
+            display: flex;
+            margin-top: 40px;
+            gap: 10px;
+            padding: 10px 15px;
+            justify-content: space-evenly;
+        }
+
+        .buttons button {
+            background-color: #007BFF;
+            border-radius: 100px;
+            border: none;
+            width: 70px;
+            height: 55px;
+            box-shadow: 3px 5px 9px rgba(0,0,0,0.2);
+            transition: opacity 0.85s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .buttons button:hover {
+            opacity: 0.8;
+        }
+
+        .buttons img {
+            width: 25px;
+            height: 25px;
+        }
+
+        .group-1, .group-2, .group-3 {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .label-1, .label-2, .label-3 {
+            margin-top: 10px;
+            color: rgba(0, 0, 0, 0.7);
+            font-weight: 500;
+            font-size: 15px;
+            text-align: center;
+        }
+
+        .buttons a {
+            text-decoration: none;
+            color: rgba(0, 0, 0, 0.697);
+        }
+
+        /* SVG Styles */
+        .node {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .node:hover {
+            filter: brightness(1.2);
+        }
+
+        .path-line {
+            fill: none;
+            stroke: #007BFF;
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0.8;
+            filter: drop-shadow(0 0 10px rgba(0, 123, 255, 0.5));
+        }
+
+        .traveling-icon-group {
+            filter: drop-shadow(0 0 15px rgba(255, 107, 53, 0.7));
+        }
+
+        /* Node Label */
+        .node-label {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            pointer-events: none;
+            z-index: 1000;
+            white-space: nowrap;
+            transform: translate(-50%, -100%);
+            margin-top: -10px;
+        }
+
+        .node-label::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            border: 5px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.9);
+            transform: translateX(-50%);
+        }
+
+        /* Zone Info Box */
+        #zone-info-box {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            max-width: 280px;
+            display: none;
+            z-index: 1000;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Animations */
+        @keyframes zoneHighlight {
+            0%, 100% { 
+                fill-opacity: 0.3;
+                stroke-width: 2;
+            }
+            50% { 
+                fill-opacity: 0.8;
+                stroke-width: 4;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                opacity: 1; 
+                box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7);
+            }
+            50% { 
+                opacity: 0.8; 
+                box-shadow: 0 0 0 10px rgba(0, 255, 0, 0);
+            }
+        }
+
+        .start-node-pulse {
+            animation: pulse 1s infinite;
+            transform-origin: center center;
+        }
+
+        /* Error Display */
+        #error-display {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #e74c3c;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+            z-index: 1001;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 800px) {
+            .hideonMobile {
+                display: none;
+            }
+            .menu {
+                display: block;
+            }
+            
+            .directions-panel {
+                width: 95%;
+                left: -100%;
+            }
+            
+            .inputs input {
+                width: calc(100% - 40px);
+            }
+            
+            .find, .clear {
+                width: calc(100% - 30px);
+                padding: 14px 20px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .search-bar {
+                width: 90%;
+                margin: 10px auto;
+                padding: 10px;
+            }
+            .search-field {
+                width: 100%;
+                font-size: 14px;
+            }
+            
+            #svg-container {
+                width: 95%;
+                height: 70%;
+            }
+        }
+
+        @media (min-width: 800px) {
+            #menuToggle {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+        <div id="loadingText">Loading Campus Connect...</div>
+    </div>
+    
+    <div id="error-display"></div>
+    
+    <!-- Top Navigation -->
+    <div class="top-section">
+        <p class="head">CampusConnect</p>
+        <nav>
+            <ul class="sidebar">
+                <li class="floor"><a href="#">Ground Floor</a></li>
+                <li class="floor"><a href="#">Floor 1</a></li>
+                <li class="floor"><a href="#">Floor 2</a></li>
+                <li class="floor"><a href="#">Floor 3</a></li>
+                <li class="floor"><a href="#">Floor 4</a></li>
+            </ul>
+            <ul>
+                <li class="hideonMobile"><a href="#">Floor 1</a></li>
+                <li class="hideonMobile"><a href="#">Floor 2</a></li>
+                <li class="hideonMobile"><a href="#">Floor 3</a></li>
+                <li class="hideonMobile"><a href="#">Floor 4</a></li>
+                <li id="menuToggle"><a href="#"><span class="menu">☰</span></a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Search Bar with Dropdown -->
+    <div class="search-container">
+        <div class="search-bar">
+            <span class="search material-symbols-outlined">search</span>
+            <input type="search" 
+                   id="searchField" 
+                   placeholder="Search classrooms, departments..." 
+                   class="search-field" 
+                   autocomplete="off">
+            <div class="suggestions-dropdown" id="suggestionsDropdown"></div>
+        </div>
+    </div>
+
+    <!-- Status Display -->
+    <div id="status">Loading...</div>
+
+    <!-- Map Container -->
+    <div class="map-container">
+        <div id="svg-container">
+            <!-- SVG will be loaded here -->
+        </div>
+        
+        <!-- SVG Overlay Controls - positioned over the SVG -->
+        <div class="svg-overlay-controls">
+            <button id="dirButton">
+                <img src="assets/dir.svg" alt="Directions">
+            </button>
+            <div class="navigation-controls">
+                <button class="nav-btn" id="prevBtn">
+                    <img src="assets/backward.svg" alt="Previous">
+                </button>
+                <button class="nav-btn" id="nextBtn">
+                    <img src="assets/forward.svg" alt="Next">
+                </button>
+            </div>
+        </div>
+        
+        <!-- Zoom Controls -->
+        <div class="zoom-controls">
+            <button class="zoom-btn" id="zoomIn">+</button>
+            <button class="zoom-btn" id="zoomOut">−</button>
+            <button class="zoom-btn" id="zoomReset">⌂</button>
+        </div>
+    </div>
+
+    <!-- Bottom Button Controls - Removed since we moved them to SVG overlay -->
+
+    <!-- Line Divider -->
+    <div class="line"></div>
+
+    <!-- Explore Section -->
+    <div class="explore">
+        <p class="heading">Explore the Campus</p>
+        <div class="buttons">
+            <div class="group-1">
+                <button class="clas" onclick="filterByCategory('classroom')">
+                    <img src="assets/class.png" alt="Classes">
+                </button>
+                <span class="label-1"><a href="#">Classes</a></span>
+            </div>
+            <div class="group-2">
+                <button class="department" onclick="filterByCategory('department')">
+                    <img src="assets/department.png" alt="Departments">
+                </button>
+                <span class="label-2"><a href="#">Departments</a></span>
+            </div>
+            <div class="group-3">
+                <button class="faculties" onclick="filterByCategory('staff')">
+                    <img src="assets/faculties.png" alt="Faculties">
+                </button>
+                <span class="label-3"><a href="#">Faculties</a></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Directions Panel (Sliding from left) -->
+    <div class="directions-panel" id="directionsPanel">
+        <div class="back-button">
+            <button class="back" onclick="closeDirections()">
+                <img src="assets/back.svg" alt="Back" style="width: 24px; height: 24px;">
+            </button>
+        </div>
+        <div class="inputs">
+            <div class="input-container">
+                <input type="text" 
+                       id="fromInput" 
+                       placeholder="Choose start location" 
+                       class="input1">
+                <div id="fromSuggestions" class="suggestions-dropdown"></div>
+            </div>
+            
+            <div class="input-container">
+                <input type="text" 
+                       id="toInput" 
+                       placeholder="Choose destination" 
+                       class="input2">
+                <div id="toSuggestions" class="suggestions-dropdown"></div>
+            </div>
+            
+            <button class="find" id="findPathBtn">Find Path</button>
+            <button class="clear" id="clearPathBtn">Clear Path</button>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let campusNodes = [];
+        let campusGraph = {};
+        let currentPath = [];
+        let startNode = null;
+        let destinationNode = null;
+        let selectedSuggestionIndex = -1;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Starting Campus Connect with merged design...');
+            try {
+                setupMobileMenu();
+                setupDirectionsPanel();
+                setupSearch();
+                await loadApplication();
+                console.log('🚀 Application loaded successfully');
+            } catch (error) {
+                console.error('🚀 Error in DOMContentLoaded:', error);
+            }
+        });
+
+        // Mobile menu setup
+        function setupMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const menuToggle = document.getElementById('menuToggle');
+
+            menuToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sidebar.style.display = sidebar.style.display === 'flex' ? 'none' : 'flex';
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+                    sidebar.style.display = 'none';
+                }
+            });
+        }
+
+        // Directions panel setup
+        function setupDirectionsPanel() {
+            const dirBtn = document.getElementById('dirButton');
+            const panel = document.getElementById('directionsPanel');
+
+            // Handle directory button click from SVG overlay
+            dirBtn.addEventListener('click', () => {
+                panel.classList.add('open');
+            });
+
+            // Setup panel search inputs
+            setupPanelInputs();
+            
+            // Setup navigation controls
+            setupNavigationControls();
+        }
+
+        function setupNavigationControls() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.addEventListener('click', () => {
+                console.log('Previous floor clicked');
+                navigateFloor('previous');
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                console.log('Next floor clicked');
+                navigateFloor('next');
+            });
+        }
+
+        function navigateFloor(direction) {
+            // Current floor navigation logic
+            const currentFloor = 2; // Assuming we're on 2nd floor
+            const status = document.getElementById('status');
+            
+            if (direction === 'next') {
+                status.textContent = 'Floor navigation: Moving to next floor (3rd floor coming soon!)';
+                // Here you would load the next floor's SVG and data
+                showFloorMessage('Moving to 3rd Floor', 'Next floor navigation coming soon!');
+            } else {
+                status.textContent = 'Floor navigation: Moving to previous floor (1st floor coming soon!)';
+                // Here you would load the previous floor's SVG and data
+                showFloorMessage('Moving to 1st Floor', 'Previous floor navigation coming soon!');
+            }
+        }
+
+        function showFloorMessage(title, message) {
+            // Create a temporary notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.9);
+                color: white;
+                padding: 20px 30px;
+                border-radius: 10px;
+                font-size: 18px;
+                text-align: center;
+                z-index: 10000;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            `;
+            notification.innerHTML = `<strong>${title}</strong><br>${message}`;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 3000);
+        }
+
+        function closeDirections() {
+            document.getElementById('directionsPanel').classList.remove('open');
+        }
+
+        // Enhanced Search with Dropdown Suggestions
+        function setupSearch() {
+            const searchField = document.getElementById('searchField');
+            const dropdown = document.getElementById('suggestionsDropdown');
+
+            searchField.addEventListener('input', handleSearchInput);
+            searchField.addEventListener('keydown', handleSearchKeydown);
+            searchField.addEventListener('focus', handleSearchFocus);
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!searchField.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.style.display = 'none';
+                    selectedSuggestionIndex = -1;
+                }
+            });
+        }
+
+        function handleSearchInput(e) {
+            const query = e.target.value.toLowerCase();
+            const dropdown = document.getElementById('suggestionsDropdown');
+
+            if (query.length === 0) {
+                dropdown.style.display = 'none';
+                return;
+            }
+
+            // Filter nodes based on search query
+            const suggestions = campusNodes
+                .filter(node => 
+                    node.searchable && 
+                    node.label && node.label.toLowerCase().includes(query)
+                )
+                .slice(0, 15); // Increased from 8 to 15 suggestions
+
+            displaySuggestions(suggestions, dropdown);
+        }
+
+        function handleSearchKeydown(e) {
+            const dropdown = document.getElementById('suggestionsDropdown');
+            const suggestions = dropdown.querySelectorAll('.suggestion-item');
+
+            switch(e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    selectedSuggestionIndex = Math.min(selectedSuggestionIndex + 1, suggestions.length - 1);
+                    updateSelectedSuggestion(suggestions);
+                    break;
+                
+                case 'ArrowUp':
+                    e.preventDefault();
+                    selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, -1);
+                    updateSelectedSuggestion(suggestions);
+                    break;
+                
+                case 'Enter':
+                    e.preventDefault();
+                    if (selectedSuggestionIndex >= 0 && suggestions[selectedSuggestionIndex]) {
+                        selectSuggestion(suggestions[selectedSuggestionIndex].dataset.nodeId);
+                    }
+                    break;
+                
+                case 'Escape':
+                    dropdown.style.display = 'none';
+                    selectedSuggestionIndex = -1;
+                    break;
+            }
+        }
+
+        function handleSearchFocus(e) {
+            if (e.target.value.trim()) {
+                handleSearchInput(e);
+            }
+        }
+
+        function displaySuggestions(suggestions, dropdown) {
+            dropdown.innerHTML = '';
+
+            if (suggestions.length === 0) {
+                dropdown.style.display = 'none';
+                return;
+            }
+
+            suggestions.forEach((node, index) => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+                item.dataset.nodeId = node.id;
+                
+                item.innerHTML = `
+                    <div class="suggestion-icon">${getNodeIcon(node.type)}</div>
+                    <div class="suggestion-text">
+                        <div>${node.label}</div>
+                        <div class="suggestion-category">${node.type}</div>
+                    </div>
+                `;
+
+                item.addEventListener('click', () => selectSuggestion(node.id));
+                dropdown.appendChild(item);
+            });
+
+            dropdown.style.display = 'block';
+            selectedSuggestionIndex = -1;
+        }
+
+        function updateSelectedSuggestion(suggestions) {
+            suggestions.forEach((item, index) => {
+                item.classList.toggle('selected', index === selectedSuggestionIndex);
+            });
+        }
+
+        function selectSuggestion(nodeId) {
+            const node = campusNodes.find(n => n.id === nodeId);
+            if (!node) return;
+
+            // Set as destination and close dropdown
+            document.getElementById('searchField').value = node.label;
+            document.getElementById('suggestionsDropdown').style.display = 'none';
+            
+            // Set as destination and zoom to node
+            setDestinationNode(nodeId);
+            zoomToNode(nodeId);
+            
+            // Highlight corresponding zone
+            highlightCorrespondingZone(node);
+        }
+
+        function getNodeIcon(nodeType) {
+            const icons = {
+                'class': '🏫',
+                'stairway': '🔼',
+                'intersection': '🔀',
+                'invisible': '📍',
+                'data_node': '📌'
+            };
+            return icons[nodeType] || '📍';
+        }
+
+        function highlightCorrespondingZone(node) {
+            // Find zone that contains this node
+            if (window.zoneData && window.zoneData.length > 0) {
+                const correspondingZone = window.zoneData.find(zone => {
+                    // Check if node coordinates are inside zone polygon
+                    return isPointInPolygon(node.x, node.y, zone.coordinates);
+                });
+
+                if (correspondingZone) {
+                    const zoneElement = document.querySelector(`[data-zone-id="${correspondingZone.id}"]`);
+                    if (zoneElement) {
+                        // Add blinking animation
+                        zoneElement.style.animation = 'none';
+                        setTimeout(() => {
+                            zoneElement.style.animation = 'zoneHighlight 2s ease-in-out 3';
+                        }, 10);
+
+                        // Temporary highlight
+                        const originalFill = zoneElement.getAttribute('fill');
+                        zoneElement.setAttribute('fill', '#ffcc00');
+                        zoneElement.setAttribute('fill-opacity', '0.8');
+
+                        setTimeout(() => {
+                            zoneElement.setAttribute('fill', originalFill || 'rgba(0, 123, 255, 0.3)');
+                            zoneElement.setAttribute('fill-opacity', '0.3');
+                        }, 3000);
+                    }
+                }
+            }
+        }
+
+        function isPointInPolygon(x, y, coordinates) {
+            let inside = false;
+            const coords = coordinates.split(' ').map(coord => {
+                const [cx, cy] = coord.split(',').map(Number);
+                return { x: cx, y: cy };
+            });
+
+            for (let i = 0, j = coords.length - 1; i < coords.length; j = i++) {
+                if (((coords[i].y > y) !== (coords[j].y > y)) &&
+                    (x < (coords[j].x - coords[i].x) * (y - coords[i].y) / (coords[j].y - coords[i].y) + coords[i].x)) {
+                    inside = !inside;
+                }
+            }
+            return inside;
+        }
+
+        // Panel inputs setup with same search functionality
+        function setupPanelInputs() {
+            console.log('🔧 Setting up panel inputs...');
+            const fromInput = document.getElementById('fromInput');
+            const toInput = document.getElementById('toInput');
+            const findBtn = document.getElementById('findPathBtn');
+            const clearBtn = document.getElementById('clearPathBtn');
+
+            console.log('🔧 Panel elements found:', {
+                fromInput: !!fromInput,
+                toInput: !!toInput,
+                findBtn: !!findBtn,
+                clearBtn: !!clearBtn
+            });
+
+            if (!fromInput || !toInput) {
+                console.error('❌ Panel input elements not found!');
+                return;
+            }
+
+            // Setup search for both inputs
+            setupPanelSearch(fromInput, 'fromSuggestions', 'from');
+            setupPanelSearch(toInput, 'toSuggestions', 'to');
+
+            findBtn.addEventListener('click', findPathFromPanel);
+            clearBtn.addEventListener('click', clearPath);
+            
+            console.log('✅ Panel inputs setup complete');
+        }
+
+        function setupPanelSearch(input, dropdownId, type) {
+            console.log(`🔧 Setting up panel search for ${type}, dropdown: ${dropdownId}`);
+            const dropdown = document.getElementById(dropdownId);
+            
+            if (!dropdown) {
+                console.error(`❌ Dropdown element not found: ${dropdownId}`);
+                return;
+            }
+            
+            console.log(`✅ Dropdown found for ${type}:`, dropdown);
+
+            input.addEventListener('input', (e) => {
+                console.log(`📝 Input event on ${type}: "${e.target.value}"`);
+                handlePanelSearchInput(e, dropdown, type);
+            });
+
+            input.addEventListener('keydown', (e) => {
+                handlePanelSearchKeydown(e, dropdown, type);
+            });
+
+            // Add focus handling like main search
+            input.addEventListener('focus', (e) => {
+                console.log(`🔍 Focus event on ${type}`);
+                if (e.target.value.trim()) {
+                    handlePanelSearchInput(e, dropdown, type);
+                }
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.style.display = 'none';
+                    selectedSuggestionIndex = -1;
+                }
+            });
+            
+            console.log(`✅ Panel search setup complete for ${type}`);
+        }
+
+        function handlePanelSearchInput(e, dropdown, type) {
+            const query = e.target.value.toLowerCase();
+            
+            console.log(`🔍 Panel search (${type}): "${query}"`);
+            console.log(`🔍 Available campus nodes: ${campusNodes.length}`);
+
+            if (query.length === 0) {
+                dropdown.style.display = 'none';
+                return;
+            }
+
+            // Filter nodes based on search query - same as main search
+            const suggestions = campusNodes
+                .filter(node => {
+                    const isSearchable = node.searchable;
+                    const hasLabel = node.label && node.label.toLowerCase().includes(query);
+                    if (isSearchable && hasLabel) {
+                        console.log(`✅ Found match: ${node.label}`);
+                    }
+                    return isSearchable && hasLabel;
+                })
+                .slice(0, 15); // Same limit as main search
+
+            console.log(`🔍 Panel suggestions found: ${suggestions.length}`);
+            displayPanelSuggestions(suggestions, dropdown, type);
+        }
+
+        function handlePanelSearchKeydown(e, dropdown, type) {
+            const suggestions = dropdown.querySelectorAll('.suggestion-item');
+
+            switch(e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    selectedSuggestionIndex = Math.min(selectedSuggestionIndex + 1, suggestions.length - 1);
+                    updatePanelSelectedSuggestion(suggestions);
+                    break;
+                
+                case 'ArrowUp':
+                    e.preventDefault();
+                    selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, -1);
+                    updatePanelSelectedSuggestion(suggestions);
+                    break;
+                
+                case 'Enter':
+                    e.preventDefault();
+                    if (selectedSuggestionIndex >= 0 && suggestions[selectedSuggestionIndex]) {
+                        selectPanelSuggestion(suggestions[selectedSuggestionIndex].dataset.nodeId, type);
+                    }
+                    break;
+                
+                case 'Escape':
+                    dropdown.style.display = 'none';
+                    selectedSuggestionIndex = -1;
+                    break;
+            }
+        }
+
+        function updatePanelSelectedSuggestion(suggestions) {
+            suggestions.forEach((item, index) => {
+                item.classList.toggle('selected', index === selectedSuggestionIndex);
+            });
+        }
+
+        function displayPanelSuggestions(suggestions, dropdown, type) {
+            console.log(`🎨 Displaying ${suggestions.length} panel suggestions for ${type}`);
+            console.log(`🎨 Dropdown element:`, dropdown);
+            
+            dropdown.innerHTML = '';
+
+            if (suggestions.length === 0) {
+                dropdown.style.display = 'none';
+                console.log('❌ No suggestions to display');
+                return;
+            }
+
+            suggestions.forEach((node) => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+                item.dataset.nodeId = node.id;
+                
+                item.innerHTML = `
+                    <div class="suggestion-icon">${getNodeIcon(node.type)}</div>
+                    <div class="suggestion-text">
+                        <div>${node.label}</div>
+                        <div class="suggestion-category">${node.type}</div>
+                    </div>
+                `;
+
+                item.addEventListener('click', () => {
+                    console.log(`🖱️ Panel suggestion clicked: ${node.label} (${type})`);
+                    selectPanelSuggestion(node.id, type);
+                });
+                dropdown.appendChild(item);
+            });
+
+            dropdown.style.display = 'block';
+            selectedSuggestionIndex = -1;
+            console.log('✅ Panel suggestions displayed');
+        }
+
+        function selectPanelSuggestion(nodeId, type) {
+            const node = campusNodes.find(n => n.id === nodeId);
+            if (!node) return;
+
+            if (type === 'from') {
+                document.getElementById('fromInput').value = node.label;
+                document.getElementById('fromSuggestions').style.display = 'none';
+                startNode = nodeId;
+                
+                // Add visual feedback like main search
+                zoomToNode(nodeId);
+                highlightCorrespondingZone(node);
+            } else {
+                document.getElementById('toInput').value = node.label;
+                document.getElementById('toSuggestions').style.display = 'none';
+                destinationNode = nodeId;
+                
+                // Add visual feedback like main search
+                zoomToNode(nodeId);
+                highlightCorrespondingZone(node);
+            }
+        }
+
+        function findPathFromPanel() {
+            console.log('🔍 Finding path from panel...');
+            console.log('Start:', startNode, 'Destination:', destinationNode);
+            
+            if (!startNode || !destinationNode) {
+                alert('Please select both start location and destination');
+                return;
+            }
+
+            if (startNode === destinationNode) {
+                alert('Start and destination cannot be the same');
+                return;
+            }
+
+            console.log('📊 Graph nodes available:', Object.keys(campusGraph).length);
+            console.log('🎯 Campus nodes available:', campusNodes.length);
+
+            const path = astarPath(campusGraph, campusNodes, startNode, destinationNode);
+            
+            if (path && path.length > 0) {
+                console.log('✅ Path found:', path);
+                drawPath(path);
+                currentPath = path;
+                
+                const startNodeData = campusNodes.find(n => n.id === startNode);
+                const endNodeData = campusNodes.find(n => n.id === destinationNode);
+                const status = document.getElementById('status');
+                status.textContent = `Route: ${startNodeData?.label || startNode} → ${endNodeData?.label || destinationNode} (${path.length - 1} steps)`;
+                
+                // Close the directions panel
+                closeDirections();
+                
+                console.log('🎉 Pathfinding completed successfully');
+            } else {
+                console.error('❌ No path found');
+                alert('No path found between selected locations');
+            }
+        }
+
+        function setDestinationNode(nodeId) {
+            destinationNode = nodeId;
+            const node = campusNodes.find(n => n.id === nodeId);
+            const status = document.getElementById('status');
+            status.textContent = `Destination set: ${node?.label || nodeId}. Tap to select start location.`;
+        }
+
+        function zoomToNode(nodeId) {
+            const node = campusNodes.find(n => n.id === nodeId);
+            if (!node) return;
+
+            // Highlight the node
+            highlightNode(nodeId, '#FF6B35');
+            
+            // Simple visual feedback - we'll implement proper zooming later if needed
+            setTimeout(() => {
+                const nodeElement = document.querySelector(`[data-id="${nodeId}"]`);
+                if (nodeElement) {
+                    nodeElement.style.stroke = '#FF6B35';
+                    nodeElement.style.strokeWidth = '6';
+                    
+                    setTimeout(() => {
+                        nodeElement.style.stroke = '#ffffff';
+                        nodeElement.style.strokeWidth = '3';
+                    }, 2000);
+                }
+            }, 100);
+        }
+
+        function filterByCategory(category) {
+            const categoryMapping = {
+                'classroom': ['class'],
+                'department': ['class', 'stairway'],
+                'staff': ['stairway']
+            };
+
+            const nodeTypes = categoryMapping[category] || [];
+            const filteredNodes = campusNodes.filter(node => 
+                node.searchable && nodeTypes.includes(node.type)
+            );
+
+            // Update search field to show first result
+            if (filteredNodes.length > 0) {
+                document.getElementById('searchField').value = '';
+                displaySuggestions(filteredNodes, document.getElementById('suggestionsDropdown'));
+            }
+        }
+
+        // Application loading (keeping all existing functionality)
+        async function loadApplication() {
+            console.log('📂 === STARTING LOAD APPLICATION ===');
+            
+            const loading = document.getElementById('loading');
+            const container = document.getElementById('svg-container');
+            const status = document.getElementById('status');
+
+            try {
+                // Step 1: Load SVG
+                console.log('📂 Loading SVG...');
+                status.textContent = 'Loading map...';
+                
+                const svgResponse = await fetch('2nd-floor-final.svg');
+                if (!svgResponse.ok) {
+                    throw new Error(`SVG fetch failed: ${svgResponse.status}`);
+                }
+                
+                const svgContent = await svgResponse.text();
+                console.log('✅ SVG loaded successfully');
+
+                // Step 2: Load graph data
+                status.textContent = 'Loading navigation data...';
+                const graphResponse = await fetch('pathfinding_graph_structural.json');
+                
+                if (!graphResponse.ok) {
+                    throw new Error(`Graph fetch failed: ${graphResponse.status}`);
+                }
+                
+                const originalGraphData = await graphResponse.json();
+
+                // Step 3: Transform coordinates
+                status.textContent = 'Processing data...';
+                const transformedGraphData = transformCoordinatesForRotatedSVG(originalGraphData);
+
+                // Step 4: Setup interface
+                container.innerHTML = svgContent;
+                const svg = container.querySelector('svg');
+                if (svg) {
+                    svg.setAttribute('class', 'map-svg');
+                    svg.style.width = '100%';
+                    svg.style.height = '100%';
+                    svg.style.position = 'absolute';
+                    svg.style.top = '0';
+                    svg.style.left = '0';
+                    svg.style.objectFit = 'contain';
+                    
+                    // Disable all pan/drag behaviors
+                    svg.style.touchAction = 'pinch-zoom';
+                    svg.style.userSelect = 'none';
+                    svg.style.webkitUserSelect = 'none';
+                    svg.style.mozUserSelect = 'none';
+                    svg.style.msUserSelect = 'none';
+                    svg.addEventListener('mousedown', (e) => e.preventDefault());
+                    svg.addEventListener('dragstart', (e) => e.preventDefault());
+                    
+                    // Remove any existing zoom controls that might cause movement
+                    // addZoomControls(svg);
+                    
+                    // Add interactive zones
+                    await addInteractiveZones(svg);
+                }
+
+                // Store data
+                campusNodes = transformedGraphData.nodes || [];
+                campusGraph = transformedGraphData.graph || {};
+
+                // Create nodes and setup
+                createNodes();
+                
+                status.textContent = 'Ready - Search or explore the campus!';
+                loading.style.display = 'none';
+
+            } catch (error) {
+                console.error('❌ Error loading application:', error);
+                status.textContent = 'Error loading map';
+                loading.innerHTML = `
+                    <div style="text-align: center; color: #e74c3c;">
+                        <h3>Loading Error</h3>
+                        <p>Failed to load campus map: ${error.message}</p>
+                        <button onclick="location.reload()" style="padding: 10px 20px; background: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Keep all existing functions from your current implementation
+        function transformCoordinatesForRotatedSVG(originalData) {
+            console.log('🔄 Starting coordinate transformation...');
+            const SVG_WIDTH = 8830;
+            const SVG_HEIGHT = 6238;
+
+            const transformedData = {
+                nodes: [],
+                graph: {}
+            };
+
+            if (originalData.nodes) {
+                transformedData.nodes = originalData.nodes.map(node => {
+                    return {
+                        ...node,
+                        x: SVG_WIDTH - node.x,
+                        y: SVG_HEIGHT - node.y
+                    };
+                });
+            }
+
+            if (originalData.graph) {
+                transformedData.graph = { ...originalData.graph };
+            }
+
+            console.log('✅ Coordinate transformation completed');
+            return transformedData;
+        }
+
+        function createNodes() {
+            let overlay = document.getElementById('overlay');
+            
+            // If overlay doesn't exist, create it
+            if (!overlay) {
+                const svg = document.querySelector('#svg-container svg');
+                if (svg) {
+                    overlay = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                    overlay.id = 'overlay';
+                    svg.appendChild(overlay);
+                } else {
+                    console.error('❌ SVG element not found');
+                    return;
+                }
+            }
+
+            overlay.innerHTML = '';
+
+            const pathLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            pathLayer.id = 'path-layer';
+            overlay.appendChild(pathLayer);
+
+            const nodesLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            nodesLayer.id = 'nodes-layer';
+            overlay.appendChild(nodesLayer);
+
+            console.log(`🔵 Creating ${campusNodes.length} nodes...`);
+
+            campusNodes.forEach(node => {
+                // Set searchable property for all nodes except invisible ones
+                if (!node.hasOwnProperty('searchable')) {
+                    node.searchable = node.type !== 'invisible' && node.label && node.label.trim() !== '';
+                }
+
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', node.x);
+                circle.setAttribute('cy', node.y);
+                circle.setAttribute('r', getNodeRadius(node));
+                circle.setAttribute('fill', getNodeColor(node));
+                circle.setAttribute('stroke', '#ffffff');
+                circle.setAttribute('stroke-width', '3');
+                circle.setAttribute('class', 'node');
+                circle.setAttribute('data-id', node.id);
+                circle.setAttribute('data-label', node.label);
+
+                if (node.type === 'data_node') {
+                    circle.setAttribute('class', 'node data-node');
+                    circle.style.opacity = '0.6';
+                }
+
+                circle.addEventListener('click', () => selectNode(node));
+                circle.addEventListener('mouseenter', function(e) {
+                    showNodeLabel(node, e);
+                });
+                circle.addEventListener('mouseleave', function() {
+                    hideNodeLabel();
+                });
+                circle.addEventListener('mousemove', function(e) {
+                    updateLabelPosition(e);
+                });
+
+                nodesLayer.appendChild(circle);
+            });
+
+            console.log('✅ Nodes created successfully');
+        }
+
+        function getNodeRadius(node) {
+            switch (node.type) {
+                case 'intersection': return 25;
+                case 'class': return 18;
+                case 'stairway': return 20;
+                case 'invisible': return 12;
+                default: return 14;
+            }
+        }
+
+        function getNodeColor(node) {
+            switch (node.type) {
+                case 'class': return '#DC2626';
+                case 'intersection': return '#7C3AED';
+                case 'invisible': return '#10B981';
+                case 'stairway': return '#F59E0B';
+                case 'data_node': return '#9C27B0';
+                case 'red_curve_location': return '#EF4444';
+                default: return '#007BFF';
+            }
+        }
+
+        function selectNode(node) {
+            if (!startNode) {
+                startNode = node.id;
+                const status = document.getElementById('status');
+                status.textContent = `Start: ${node.label}. Select destination or search above.`;
+                highlightNode(node.id, '#00ff00', true);
+            } else if (!destinationNode) {
+                destinationNode = node.id;
+                findPath();
+            } else {
+                // Reset and start new
+                clearPath();
+                startNode = node.id;
+                destinationNode = null;
+                const status = document.getElementById('status');
+                status.textContent = `Start: ${node.label}. Select destination.`;
+                highlightNode(node.id, '#00ff00', true);
+            }
+        }
+
+        // Keep all your existing pathfinding and visualization functions
+        function findPath() {
+            if (!startNode || !destinationNode) {
+                alert('Please select both starting point and destination');
+                return;
+            }
+
+            const path = astarPath(campusGraph, campusNodes, startNode, destinationNode);
+            if (path && path.length > 0) {
+                console.log('🛤️ Path found:', path);
+                drawPath(path);
+                currentPath = path;
+                
+                const startNodeData = campusNodes.find(n => n.id === startNode);
+                const endNodeData = campusNodes.find(n => n.id === destinationNode);
+                const status = document.getElementById('status');
+                status.textContent = `Route: ${startNodeData?.label || startNode} → ${endNodeData?.label || destinationNode} (${path.length - 1} steps)`;
+            } else {
+                console.error('❌ No path found');
+                alert('No path found between selected locations');
+            }
+        }
+
+        // Include all your existing pathfinding, animation, and interaction functions here
+        // (astarPath, drawPath, createTravelingIcon, etc. - keeping them exactly as they are)
+        
+        function getNodeCoordinates(nodes, nodeId) {
+            for (const node of nodes) {
+                if (node.id === nodeId) {
+                    return { x: node.x, y: node.y };
+                }
+            }
+            return null;
+        }
+
+        function heuristicDistance(coord1, coord2) {
+            const dx = coord2.x - coord1.x;
+            const dy = coord2.y - coord1.y;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        function astarPath(graph, nodes, start, end) {
+            console.log(`🔍 A* Pathfinding: ${start} → ${end}`);
+            
+            const endCoords = getNodeCoordinates(nodes, end);
+            const startCoords = getNodeCoordinates(nodes, start);
+            
+            if (!endCoords || !startCoords) {
+                console.error('❌ Could not find coordinates');
+                return null;
+            }
+
+            if (!graph[start] || !graph[end]) {
+                console.error('❌ Node not found in graph');
+                return null;
+            }
+
+            const gScore = {};
+            const fScore = {};
+            const previous = {};
+            const openSet = new Set();
+            const closedSet = new Set();
+
+            for (const node in graph) {
+                gScore[node] = Infinity;
+                fScore[node] = Infinity;
+                previous[node] = null;
+            }
+
+            gScore[start] = 0;
+            fScore[start] = heuristicDistance(startCoords, endCoords);
+            openSet.add(start);
+
+            while (openSet.size > 0) {
+                let current = null;
+                let minFScore = Infinity;
+                for (const node of openSet) {
+                    if (fScore[node] < minFScore) {
+                        minFScore = fScore[node];
+                        current = node;
+                    }
+                }
+
+                if (current === null) break;
+                if (current === end) break;
+
+                openSet.delete(current);
+                closedSet.add(current);
+
+                for (const neighbor in graph[current] || {}) {
+                    if (closedSet.has(neighbor)) continue;
+                    
+                    const tentativeGScore = gScore[current] + graph[current][neighbor];
+                    
+                    if (!openSet.has(neighbor)) {
+                        openSet.add(neighbor);
+                    } else if (tentativeGScore >= gScore[neighbor]) {
+                        continue;
+                    }
+
+                    previous[neighbor] = current;
+                    gScore[neighbor] = tentativeGScore;
+                    
+                    const neighborCoords = getNodeCoordinates(nodes, neighbor);
+                    if (neighborCoords) {
+                        const hScore = heuristicDistance(neighborCoords, endCoords);
+                        fScore[neighbor] = gScore[neighbor] + hScore;
+                    }
+                }
+            }
+
+            const path = [];
+            let current = end;
+            while (current !== null) {
+                path.unshift(current);
+                current = previous[current];
+            }
+
+            return path.length > 1 && path[0] === start ? path : null;
+        }
+
+        function drawPath(path) {
+            console.log('🎨 Drawing path:', path);
+            clearPath();
+            
+            const pathLayer = document.getElementById('path-layer');
+            if (!pathLayer) {
+                console.error('❌ Path layer not found');
+                return;
+            }
+            
+            if (path.length < 2) {
+                console.error('❌ Path too short:', path.length);
+                return;
+            }
+
+            console.log('🚂 Creating path line...');
+
+            const pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+            
+            const points = path.map(nodeId => {
+                const node = campusNodes.find(n => n.id === nodeId);
+                if (!node) {
+                    console.error(`❌ Node not found: ${nodeId}`);
+                    return null;
+                }
+                return `${node.x},${node.y}`;
+            }).filter(point => point).join(' ');
+
+            if (!points) {
+                console.error('❌ No valid points for path');
+                return;
+            }
+
+            pathElement.setAttribute('points', points);
+            pathElement.setAttribute('class', 'path-line');
+            pathElement.style.strokeDasharray = '0';
+            pathElement.style.strokeDashoffset = '0';
+            pathElement.style.opacity = '0.8';
+
+            pathLayer.appendChild(pathElement);
+            console.log('✅ Path line created');
+
+            // Create traveling icon
+            const travelingIcon = createTravelingIcon(path);
+            if (travelingIcon) {
+                pathLayer.appendChild(travelingIcon);
+                console.log('✅ Traveling icon added');
+                
+                // Start animation
+                setTimeout(() => {
+                    animateTrainStyle(pathElement, travelingIcon, path);
+                }, 100);
+            }
+
+            // Highlight nodes
+            highlightNode(path[0], '#00ff00', true); // Start with pulse
+            
+            setTimeout(() => {
+                highlightNode(path[path.length - 1], '#ff0000'); // End node
+            }, 2000);
+
+            console.log('🎉 Path drawing completed');
+        }
+
+        function highlightNode(nodeId, color, pulse = false) {
+            const nodeElement = document.querySelector(`[data-id="${nodeId}"]`);
+            if (nodeElement) {
+                nodeElement.style.stroke = color;
+                nodeElement.style.strokeWidth = '5';
+                
+                if (pulse) {
+                    nodeElement.classList.add('start-node-pulse');
+                }
+            }
+        }
+
+        function clearPath() {
+            const pathLayer = document.getElementById('path-layer');
+            if (pathLayer) {
+                pathLayer.innerHTML = '';
+            }
+
+            document.querySelectorAll('.node').forEach(node => {
+                node.style.stroke = '#ffffff';
+                node.style.strokeWidth = '3';
+                node.classList.remove('start-node-pulse');
+            });
+
+            currentPath = [];
+            startNode = null;
+            destinationNode = null;
+            
+            // Clear panel inputs
+            document.getElementById('fromInput').value = '';
+            document.getElementById('toInput').value = '';
+            
+            const status = document.getElementById('status');
+            status.textContent = 'Ready - Search or explore the campus!';
+        }
+
+        // Add all your existing zone, label, and zoom functions here
+        
+        function createTravelingIcon(path) {
+            if (!path || path.length < 2) {
+                console.error('❌ Invalid path for traveling icon');
+                return null;
+            }
+
+            const icon = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            icon.setAttribute('r', '12');
+            icon.setAttribute('fill', '#ffcc00');
+            icon.setAttribute('stroke', '#ff6600');
+            icon.setAttribute('stroke-width', '3');
+            icon.setAttribute('class', 'traveling-icon');
+            icon.style.filter = 'drop-shadow(0 0 8px rgba(255, 204, 0, 0.8))';
+            
+            // Position at start
+            const startNode = campusNodes.find(n => n.id === path[0]);
+            if (startNode) {
+                icon.setAttribute('cx', startNode.x);
+                icon.setAttribute('cy', startNode.y);
+            }
+            
+            console.log('✅ Traveling icon created');
+            return icon;
+        }
+
+        function animateTrainStyle(pathElement, icon, path) {
+            if (!pathElement || !icon || !path || path.length < 2) {
+                console.error('❌ Invalid parameters for train animation');
+                return;
+            }
+
+            console.log('🚂 Starting train animation');
+            
+            let currentIndex = 0;
+            const animationDuration = 500; // milliseconds per segment
+
+            function moveToNext() {
+                if (currentIndex >= path.length - 1) {
+                    console.log('🏁 Train animation completed');
+                    // Add completion pulse
+                    icon.style.animation = 'pulse 0.5s ease-in-out 3';
+                    return;
+                }
+
+                const currentNode = campusNodes.find(n => n.id === path[currentIndex]);
+                const nextNode = campusNodes.find(n => n.id === path[currentIndex + 1]);
+
+                if (!currentNode || !nextNode) {
+                    console.error(`❌ Node not found during animation: ${path[currentIndex]} -> ${path[currentIndex + 1]}`);
+                    currentIndex++;
+                    moveToNext();
+                    return;
+                }
+
+                console.log(`🚂 Moving from ${currentNode.id} to ${nextNode.id}`);
+
+                // Animate to next position
+                icon.style.transition = `cx ${animationDuration}ms ease-in-out, cy ${animationDuration}ms ease-in-out`;
+                icon.setAttribute('cx', nextNode.x);
+                icon.setAttribute('cy', nextNode.y);
+
+                // Highlight current segment
+                const segment = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                segment.setAttribute('x1', currentNode.x);
+                segment.setAttribute('y1', currentNode.y);
+                segment.setAttribute('x2', nextNode.x);
+                segment.setAttribute('y2', nextNode.y);
+                segment.setAttribute('stroke', '#ffcc00');
+                segment.setAttribute('stroke-width', '8');
+                segment.setAttribute('stroke-linecap', 'round');
+                segment.style.opacity = '0.8';
+                segment.style.filter = 'drop-shadow(0 0 10px rgba(255, 204, 0, 0.6))';
+
+                const pathLayer = document.getElementById('path-layer');
+                if (pathLayer) {
+                    pathLayer.appendChild(segment);
+                    
+                    // Remove segment after animation
+                    setTimeout(() => {
+                        if (segment.parentNode) {
+                            segment.parentNode.removeChild(segment);
+                        }
+                    }, animationDuration + 200);
+                }
+
+                currentIndex++;
+                setTimeout(moveToNext, animationDuration);
+            }
+
+            moveToNext();
+        }
+        async function addInteractiveZones(svg) {
+            console.log('🎯 Loading interactive zones...');
+            
+            try {
+                const response = await fetch('./svg_zones_8830x6238.json');
+                const zonesData = await response.json();
+                
+                const zonesLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                zonesLayer.id = 'interactive-zones';
+                zonesLayer.style.pointerEvents = 'auto';
+                svg.appendChild(zonesLayer);
+                
+                createZoneInfoBox();
+                
+                zonesData.forEach(zone => {
+                    addZoneToMap(zonesLayer, zone);
+                });
+                
+                console.log('✅ Interactive zones implemented');
+                
+            } catch (error) {
+                console.error('❌ Error loading zones:', error);
+            }
+        }
+
+        function createZoneInfoBox() {
+            const infoBox = document.createElement('div');
+            infoBox.id = 'zone-info-box';
+            document.body.appendChild(infoBox);
+        }
+
+        function addZoneToMap(zonesLayer, zone) {
+            const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            
+            const pointsString = zone.points.map(point => `${point[0]},${point[1]}`).join(' ');
+            polygon.setAttribute('points', pointsString);
+            polygon.setAttribute('fill', zone.fill);
+            polygon.setAttribute('fill-opacity', '0.3');
+            polygon.setAttribute('stroke', zone.fill);
+            polygon.setAttribute('stroke-width', '2');
+            polygon.setAttribute('stroke-opacity', '0.6');
+            polygon.style.cursor = 'pointer';
+            polygon.style.transition = 'all 0.3s ease';
+            
+            polygon.setAttribute('data-zone-id', zone.id);
+            polygon.setAttribute('data-zone-category', zone.category);
+            polygon.setAttribute('data-centroid-x', zone.centroid_x);
+            polygon.setAttribute('data-centroid-y', zone.centroid_y);
+            
+            polygon.addEventListener('click', (event) => handleZoneClick(zone, event));
+            
+            zonesLayer.appendChild(polygon);
+        }
+
+        function handleZoneClick(zone, event) {
+            const clickX = event.clientX;
+            const clickY = event.clientY;
+            
+            showZoneInfo(zone, clickX, clickY);
+        }
+
+        function showZoneInfo(zone, clickX, clickY) {
+            const infoBox = document.getElementById('zone-info-box');
+            const nearestNode = findNearestNode(zone.centroid_x, zone.centroid_y);
+            
+            let displayName = zone.id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            
+            infoBox.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h3 style="margin: 0; color: #333;">${displayName}</h3>
+                    <button id="close-info-btn" style="background: none; border: none; font-size: 20px; cursor: pointer;">×</button>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <p style="margin: 4px 0; color: #666;">Category: ${zone.category}</p>
+                </div>
+                <button id="set-destination-btn" style="width: 100%; padding: 10px; background: #007BFF; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                    Set as Destination
+                </button>
+            `;
+            
+            if (clickX !== undefined && clickY !== undefined) {
+                infoBox.style.left = `${clickX + 10}px`;
+                infoBox.style.top = `${clickY - 10}px`;
+                infoBox.style.transform = 'none';
+            }
+            
+            document.getElementById('set-destination-btn').addEventListener('click', () => {
+                setZoneAsDestination(zone);
+            });
+            
+            document.getElementById('close-info-btn').addEventListener('click', () => {
+                infoBox.style.display = 'none';
+            });
+            
+            infoBox.style.display = 'block';
+        }
+
+        function findNearestNode(x, y) {
+            let nearestNode = null;
+            let minDistance = Infinity;
+            
+            campusNodes.forEach(node => {
+                if (node.searchable) {
+                    const distance = Math.sqrt(
+                        Math.pow(node.x - x, 2) + Math.pow(node.y - y, 2)
+                    );
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        nearestNode = node;
+                    }
+                }
+            });
+            
+            return nearestNode;
+        }
+
+        function setZoneAsDestination(zone) {
+            const nearestNode = findNearestNode(zone.centroid_x, zone.centroid_y);
+            
+            if (nearestNode) {
+                // Set the destination in the panel
+                destinationNode = nearestNode.id;
+                document.getElementById('toInput').value = nearestNode.label;
+                
+                // Hide the info box
+                document.getElementById('zone-info-box').style.display = 'none';
+                
+                // Open the directions panel
+                const panel = document.getElementById('directionsPanel');
+                panel.classList.add('open');
+                
+                // Focus on the from input for user to enter start location
+                setTimeout(() => {
+                    document.getElementById('fromInput').focus();
+                }, 300);
+                
+                const status = document.getElementById('status');
+                status.textContent = `Destination: ${nearestNode.label}. Please select start location.`;
+            }
+        }
+
+        function showNodeLabel(node, event) {
+            hideNodeLabel();
+            
+            const label = document.createElement('div');
+            label.className = 'node-label';
+            label.textContent = node.label || node.id;
+            label.id = 'current-node-label';
+            
+            document.body.appendChild(label);
+            updateLabelPosition(event);
+        }
+
+        function hideNodeLabel() {
+            const existingLabel = document.getElementById('current-node-label');
+            if (existingLabel) {
+                existingLabel.remove();
+            }
+        }
+
+        function updateLabelPosition(event) {
+            const label = document.getElementById('current-node-label');
+            if (label) {
+                label.style.left = `${event.clientX}px`;
+                label.style.top = `${event.clientY}px`;
+            }
+        }
+
+        function addZoomControls(svg) {
+            let scale = 1;
+            let translateX = 0;
+            let translateY = 0;
+            const minScale = 0.5;
+            const maxScale = 3;
+
+            function updateTransform() {
+                svg.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+            }
+
+            const zoomInBtn = document.getElementById('zoomIn');
+            const zoomOutBtn = document.getElementById('zoomOut');
+            const zoomResetBtn = document.getElementById('zoomReset');
+
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', () => {
+                    scale = Math.min(scale * 1.2, maxScale);
+                    updateTransform();
+                });
+            }
+
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', () => {
+                    scale = Math.max(scale / 1.2, minScale);
+                    updateTransform();
+                });
+            }
+
+            if (zoomResetBtn) {
+                zoomResetBtn.addEventListener('click', () => {
+                    scale = 1;
+                    translateX = 0;
+                    translateY = 0;
+                    updateTransform();
+                });
+            }
+
+            // Touch and mouse panning
+            let isDragging = false;
+            let lastX = 0;
+            let lastY = 0;
+
+            svg.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                lastX = e.clientX;
+                lastY = e.clientY;
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                
+                const deltaX = (e.clientX - lastX) / scale;
+                const deltaY = (e.clientY - lastY) / scale;
+                
+                translateX += deltaX;
+                translateY += deltaY;
+                
+                updateTransform();
+                
+                lastX = e.clientX;
+                lastY = e.clientY;
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+        }
+    </script>
+</body>
+</html>
