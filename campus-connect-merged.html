@@ -945,73 +945,122 @@
 
         function recenterMap() {
             if (panzoomInstance && defaultViewState) {
-                console.log('🎯 Recentering map to default view...');
+                console.log('🎯 Recentering map to your preferred default view...');
                 panzoomInstance.zoom(defaultViewState.scale, { animate: true });
                 panzoomInstance.pan(defaultViewState.x, defaultViewState.y, { animate: true });
                 isZoomedIn = false; // Reset zoom state
             }
         }
 
+        function setMaxZoomOut() {
+            if (panzoomInstance) {
+                console.log('🔍 Setting to maximum zoom out level...');
+                // Use the specific transform values you provided
+                panzoomInstance.zoom(1.81959, { animate: true });
+                panzoomInstance.pan(-19.5167, -12.0222, { animate: true });
+                isZoomedIn = false;
+            }
+        }
+
         function setupPanzoom(svg) {
-            console.log('🎮 Setting up panzoom controls with double-tap zoom...');
+            console.log('🎮 Setting up panzoom controls with correct initial view...');
             
-            // Calculate default view to fit within the map container
+            // Get the actual SVG viewBox dimensions
+            const viewBox = svg.viewBox.baseVal;
+            const svgWidth = viewBox.width || 8830;  // Use hardcoded values as fallback
+            const svgHeight = viewBox.height || 6238;
+            
+            console.log('📐 SVG ViewBox dimensions:', { width: svgWidth, height: svgHeight });
+            
+            // Get the container (viewport) dimensions
             const container = document.getElementById('svg-container');
-            const containerRect = container.getBoundingClientRect();
-            const svgRect = svg.getBoundingClientRect();
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
             
-            // Calculate scale to fit SVG in container with some margin
-            const scaleX = (containerRect.width * 0.95) / svgRect.width;
-            const scaleY = (containerRect.height * 0.95) / svgRect.height;
-            const scale = Math.min(scaleX, scaleY, 1);
+            console.log('📐 Container dimensions:', { width: containerWidth, height: containerHeight });
             
-            // Calculate center position
-            const centerX = (containerRect.width - svgRect.width * scale) / 2;
-            const centerY = (containerRect.height - svgRect.height * scale) / 2;
+            // Calculate aspect ratios
+            const svgAspectRatio = svgWidth / svgHeight;
+            const containerAspectRatio = containerWidth / containerHeight;
             
-            // Store default view state
+            console.log('📐 Aspect ratios:', { svg: svgAspectRatio, container: containerAspectRatio });
+            
+            // Calculate the scale factor to fit the entire SVG within the container (contain effect)
+            let scale;
+            if (containerAspectRatio > svgAspectRatio) {
+                // Container is wider relative to its height than SVG
+                // Scale based on height
+                scale = containerHeight / svgHeight;
+            } else {
+                // Container is taller relative to its width than SVG  
+                // Scale based on width
+                scale = containerWidth / svgWidth;
+            }
+            
+            // Apply 5% padding by reducing scale
+            scale *= 0.95;
+            
+            console.log('📐 Calculated base scale:', scale);
+            
+            // Calculate the scaled dimensions
+            const scaledWidth = svgWidth * scale;
+            const scaledHeight = svgHeight * scale;
+            
+            // Calculate translation to center the scaled SVG
+            const translateX = (containerWidth - scaledWidth) / 2;
+            const translateY = (containerHeight - scaledHeight) / 2;
+            
+            // Store default view state - using your preferred transform values
             defaultViewState = {
-                scale: scale,
-                x: centerX,
-                y: centerY
+                scale: 1.81959,
+                x: -19.4451,
+                y: 2.24891
             };
             
-            console.log('📐 Default view calculated:', defaultViewState);
+            console.log('📐 Default view state calculated:', defaultViewState);
+            console.log('📐 Scaled dimensions:', { width: scaledWidth, height: scaledHeight });
+            console.log('📐 Translation:', { x: translateX, y: translateY });
             
-            // Initialize panzoom with contained mode for the fixed height container
+            // Initialize panzoom with correct initial values
             panzoomInstance = Panzoom(svg, {
-                maxScale: 3,
-                minScale: 0.2,
-                initialZoom: defaultViewState.scale,
-                initialX: defaultViewState.x,
-                initialY: defaultViewState.y,
-                contain: 'inside',
+                maxScale: Math.max(3, defaultViewState.scale * 4), // Ensure max scale is at least 3x or 4x default
+                minScale: 1.81959, // Set to your desired maximum zoom out level
+                contain: 'outside', // Allow panning beyond container
                 cursor: 'grab',
                 animate: true,
                 duration: 300,
-                easing: 'ease-in-out'
+                easing: 'ease-in-out',
+                // Set initial transform to your preferred values
+                startScale: defaultViewState.scale,
+                startX: defaultViewState.x,
+                startY: defaultViewState.y
             });
             
             // Add wheel zoom support
             container.addEventListener('wheel', panzoomInstance.zoomWithWheel);
             
-            // Listen for zoom changes to track state
+            // Listen for zoom changes to track state for double-tap
             svg.addEventListener('panzoomchange', (e) => {
                 const currentScale = panzoomInstance.getScale();
-                isZoomedIn = currentScale > (defaultViewState.scale * 1.5);
+                // Consider zoomed in if scale is significantly higher than minimum scale (1.81959)
+                isZoomedIn = currentScale > (1.81959 * 1.2); // 20% buffer above minimum
+                console.log('📏 Current scale:', currentScale, 'Zoomed in:', isZoomedIn);
             });
             
             // Setup double-tap zoom functionality
             setupDoubleTapZoom(svg);
             
-            // Apply initial transform
-            setTimeout(() => {
+            // Apply initial transform immediately after setup
+            requestAnimationFrame(() => {
+                console.log('🎯 Applying your preferred initial transform...');
+                console.log('🎯 Transform values:', defaultViewState);
                 panzoomInstance.zoom(defaultViewState.scale, { animate: false });
                 panzoomInstance.pan(defaultViewState.x, defaultViewState.y, { animate: false });
                 isZoomedIn = false;
-            }, 100);
+                console.log('✅ Initial transform applied with your preferred values');
+            });
             
-            console.log('✅ Panzoom setup complete with double-tap zoom');
+            console.log('✅ Panzoom setup complete with correct initial view');
         }
 
         function setupDoubleTapZoom(svg) {
@@ -1040,20 +1089,26 @@
             console.log('🔍 Double-tap detected, current zoom state:', isZoomedIn);
             
             if (!isZoomedIn) {
-                // Zoom to maximum level (3x)
-                console.log('🔍 Zooming to maximum level...');
-                panzoomInstance.zoom(3, { 
+                // Calculate focal point from touch/click coordinates
+                const containerRect = document.getElementById('svg-container').getBoundingClientRect();
+                const focalX = (e.clientX || (e.touches && e.touches[0].clientX) || containerRect.left + containerRect.width / 2) - containerRect.left;
+                const focalY = (e.clientY || (e.touches && e.touches[0].clientY) || containerRect.top + containerRect.height / 2) - containerRect.top;
+                
+                // Zoom to detail level (3x the default scale for room details)
+                const targetScale = defaultViewState.scale * 3;
+                
+                console.log('🔍 Zooming to detail level:', targetScale);
+                console.log('🔍 Focal point:', { x: focalX, y: focalY });
+                
+                panzoomInstance.zoom(targetScale, { 
                     animate: true,
-                    focal: {
-                        x: e.clientX || (e.touches && e.touches[0].clientX) || window.innerWidth / 2,
-                        y: e.clientY || (e.touches && e.touches[0].clientY) || window.innerHeight / 2
-                    }
+                    focal: { x: focalX, y: focalY }
                 });
                 isZoomedIn = true;
             } else {
-                // Reset to default view
-                console.log('🔍 Resetting to default view...');
-                recenterMap();
+                // Reset to maximum zoom out level (your specified transform)
+                console.log('🔍 Resetting to maximum zoom out...');
+                setMaxZoomOut();
                 isZoomedIn = false;
             }
         }
