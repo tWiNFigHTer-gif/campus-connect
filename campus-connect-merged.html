@@ -2305,74 +2305,7 @@
             }
         }
 
-        function addZoomControls(svg) {
-            let scale = 1;
-            let translateX = 0;
-            let translateY = 0;
-            const minScale = 0.5;
-            const maxScale = 3;
 
-            function updateTransform() {
-                svg.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
-            }
-
-            const zoomInBtn = document.getElementById('zoomIn');
-            const zoomOutBtn = document.getElementById('zoomOut');
-            const zoomResetBtn = document.getElementById('zoomReset');
-
-            if (zoomInBtn) {
-                zoomInBtn.addEventListener('click', () => {
-                    scale = Math.min(scale * 1.2, maxScale);
-                    updateTransform();
-                });
-            }
-
-            if (zoomOutBtn) {
-                zoomOutBtn.addEventListener('click', () => {
-                    scale = Math.max(scale / 1.2, minScale);
-                    updateTransform();
-                });
-            }
-
-            if (zoomResetBtn) {
-                zoomResetBtn.addEventListener('click', () => {
-                    scale = 1;
-                    translateX = 0;
-                    translateY = 0;
-                    updateTransform();
-                });
-            }
-
-            // Touch and mouse panning
-            let isDragging = false;
-            let lastX = 0;
-            let lastY = 0;
-
-            svg.addEventListener('mousedown', (e) => {
-                isDragging = true;
-                lastX = e.clientX;
-                lastY = e.clientY;
-            });
-
-            document.addEventListener('mousemove', (e) => {
-                if (!isDragging) return;
-                
-                const deltaX = (e.clientX - lastX) / scale;
-                const deltaY = (e.clientY - lastY) / scale;
-                
-                translateX += deltaX;
-                translateY += deltaY;
-                
-                updateTransform();
-                
-                lastX = e.clientX;
-                lastY = e.clientY;
-            });
-
-            document.addEventListener('mouseup', () => {
-                isDragging = false;
-            });
-        }
     </script>
 </body>
 </html>
