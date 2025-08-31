@@ -163,6 +163,7 @@
 
         /* Search Bar */
         .search-bar {
+            position: relative;
             display: flex;
             width: max-content;
             align-items: center;
@@ -608,16 +609,67 @@
         /* Zone Info Box */
         #zone-info-box {
             position: fixed;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            max-width: 280px;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 320px;
+            min-width: 280px;
             display: none;
             z-index: 1000;
             font-family: Arial, sans-serif;
+            animation: infoBoxSlideIn 0.3s ease-out;
+        }
+
+        @keyframes infoBoxSlideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        /* Zone Info Box Button Hover Effects */
+        #zone-info-box button {
+            transition: all 0.2s ease;
+        }
+
+        #zone-info-box button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        #zone-info-box #navigate-to-btn:hover {
+            background: #218838 !important;
+        }
+
+        #zone-info-box #set-destination-btn:hover {
+            background: #0056b3 !important;
+        }
+
+        #zone-info-box #set-start-btn:hover {
+            background: #138496 !important;
+        }
+
+        #zone-info-box #close-info-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+        }
+
+        @keyframes zoneHighlightPulse {
+            0%, 100% {
+                fill-opacity: 0.3;
+                stroke-opacity: 0.6;
+            }
+            50% {
+                fill-opacity: 0.8;
+                stroke-opacity: 1;
+            }
         }
 
         /* Error Display */
@@ -695,6 +747,14 @@
                 font-size: 12px;
                 margin-left: 4px;
             }
+            
+            #zone-info-box {
+                max-width: 90vw;
+                min-width: auto;
+                left: 5vw !important;
+                top: 50% !important;
+                transform: translateY(-50%) !important;
+            }
         }
         /* Animations */
         @keyframes zoneHighlight {
@@ -717,6 +777,34 @@
                 opacity: 0.8; 
                 box-shadow: 0 0 0 10px rgba(0, 255, 0, 0);
             }
+        }
+
+        @keyframes navigation-pulse {
+            0%, 100% { 
+                opacity: 0.3;
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 0.6;
+                transform: scale(1.2);
+            }
+        }
+
+        @keyframes path-draw {
+            0% { 
+                stroke-dasharray: 0 1000;
+            }
+            100% { 
+                stroke-dasharray: 1000 0;
+            }
+        }
+
+        .navigation-icon {
+            transition: transform 0.3s ease-out;
+        }
+
+        .path-segment {
+            animation: path-draw 0.5s ease-out forwards;
         }
 
         .start-node-pulse {
@@ -931,15 +1019,111 @@
             const facultiesBtn = document.querySelector('.faculties');
 
             if (classBtn) {
-                classBtn.addEventListener('click', () => filterByCategory('classroom'));
+                classBtn.addEventListener('click', () => {
+                    filterByCategory('classroom');
+                    highlightClassroomAreas();
+                });
             }
             
             if (deptBtn) {
-                deptBtn.addEventListener('click', () => filterByCategory('department'));
+                deptBtn.addEventListener('click', () => {
+                    removeClassroomHighlights();
+                    filterByCategory('department');
+                });
             }
             
             if (facultiesBtn) {
-                facultiesBtn.addEventListener('click', () => filterByCategory('staff'));
+                facultiesBtn.addEventListener('click', () => {
+                    removeClassroomHighlights();
+                    filterByCategory('staff');
+                });
+            }
+        }
+
+        // Function to highlight all classroom areas with FFD6D4 color
+        function highlightClassroomAreas() {
+            console.log('🏫 Highlighting classroom areas...');
+            
+            // Find the SVG container and the actual SVG element inside it
+            const svgContainer = document.getElementById('svg-container');
+            if (!svgContainer) {
+                console.error('❌ SVG container not found');
+                return;
+            }
+
+            const svgElement = svgContainer.querySelector('svg');
+            if (!svgElement) {
+                console.error('❌ SVG element not found inside container');
+                return;
+            }
+
+            console.log('✅ Found SVG container and element');
+
+            // First, remove any existing classroom highlights
+            removeClassroomHighlights();
+            
+            // Find all path elements with FFD6D4 fill or stroke
+            const pathElements = svgElement.querySelectorAll('path[fill="#FFD6D4"], path[stroke="#FFD6D4"]');
+            
+            console.log(`🎯 Found ${pathElements.length} classroom area elements to highlight`);
+            
+            pathElements.forEach((element, index) => {
+                // Add a highlighting class for easy removal later
+                element.classList.add('classroom-highlight');
+                
+                // Create a pulsing highlight effect
+                const originalFill = element.getAttribute('fill');
+                const originalStroke = element.getAttribute('stroke');
+                const originalStrokeWidth = element.getAttribute('stroke-width') || '1';
+                
+                // Apply highlight styling
+                element.style.filter = 'drop-shadow(0 0 8px rgba(255, 214, 212, 0.8))';
+                element.style.strokeWidth = (parseFloat(originalStrokeWidth) + 2).toString();
+                element.style.stroke = '#FF6B6B';
+                element.style.animation = 'classroom-pulse 2s ease-in-out infinite';
+                
+                console.log(`✅ Highlighted classroom area element ${index + 1}`);
+            });
+
+            // Add CSS animation if it doesn't exist
+            addClassroomHighlightCSS();
+        }
+
+        // Function to remove classroom area highlights
+        function removeClassroomHighlights() {
+            const highlightedElements = document.querySelectorAll('.classroom-highlight');
+            highlightedElements.forEach(element => {
+                element.classList.remove('classroom-highlight');
+                element.style.filter = '';
+                element.style.strokeWidth = '';
+                element.style.stroke = '';
+                element.style.animation = '';
+            });
+            console.log(`🧹 Removed highlights from ${highlightedElements.length} elements`);
+        }
+
+        // Function to add CSS for classroom highlighting animation
+        function addClassroomHighlightCSS() {
+            if (!document.getElementById('classroom-highlight-styles')) {
+                const style = document.createElement('style');
+                style.id = 'classroom-highlight-styles';
+                style.textContent = `
+                    @keyframes classroom-pulse {
+                        0%, 100% { 
+                            filter: drop-shadow(0 0 8px rgba(255, 214, 212, 0.8));
+                            transform: scale(1);
+                        }
+                        50% { 
+                            filter: drop-shadow(0 0 15px rgba(255, 107, 107, 1));
+                            transform: scale(1.02);
+                        }
+                    }
+                    .classroom-highlight {
+                        transform-origin: center;
+                        transition: all 0.3s ease;
+                    }
+                `;
+                document.head.appendChild(style);
             }
         }
 
@@ -1156,6 +1340,7 @@
             searchField.addEventListener('input', handleSearchInput);
             searchField.addEventListener('keydown', handleSearchKeydown);
             searchField.addEventListener('focus', handleSearchFocus);
+            searchField.addEventListener('click', handleSearchClick);
             
             // Close dropdown when clicking outside
             document.addEventListener('click', (e) => {
@@ -1207,6 +1392,19 @@
                     e.preventDefault();
                     if (selectedSuggestionIndex >= 0 && suggestions[selectedSuggestionIndex]) {
                         selectSuggestion(suggestions[selectedSuggestionIndex].dataset.nodeId);
+                    } else {
+                        // Handle direct search when no suggestion is selected
+                        const query = e.target.value.toLowerCase();
+                        if (query.length > 0) {
+                            const matchingNode = campusNodes.find(node => 
+                                node.searchable && 
+                                node.label && 
+                                node.label.toLowerCase().includes(query)
+                            );
+                            if (matchingNode) {
+                                selectSuggestion(matchingNode.id);
+                            }
+                        }
                     }
                     break;
                 
@@ -1221,6 +1419,16 @@
             if (e.target.value.trim()) {
                 handleSearchInput(e);
             }
+        }
+
+        function handleSearchClick(e) {
+            // Show all searchable nodes when search field is clicked
+            const dropdown = document.getElementById('suggestionsDropdown');
+            const allSuggestions = campusNodes
+                .filter(node => node.searchable && node.label)
+                .slice(0, 15); // Show top 15 suggestions
+
+            displaySuggestions(allSuggestions, dropdown);
         }
 
         function displaySuggestions(suggestions, dropdown) {
@@ -1259,19 +1467,27 @@
         }
 
         function selectSuggestion(nodeId) {
+            console.log('🔍 selectSuggestion called with nodeId:', nodeId);
             const node = campusNodes.find(n => n.id === nodeId);
-            if (!node) return;
+            console.log('🔍 Found node:', node);
+            
+            if (!node) {
+                console.error('❌ Node not found:', nodeId);
+                return;
+            }
 
-            // Set as destination and close dropdown
+            // Set search field value and close dropdown
             document.getElementById('searchField').value = node.label;
             document.getElementById('suggestionsDropdown').style.display = 'none';
             
-            // Set as destination and zoom to node
-            setDestinationNode(nodeId);
+            // Zoom to the selected node for better visibility
+            console.log('🔍 Zooming to node...');
             zoomToNode(nodeId);
             
-            // Highlight corresponding zone
+            // Highlight corresponding zone and show info box (main feature)
+            console.log('🔍 Highlighting zone and showing info box...');
             highlightCorrespondingZone(node);
+            showInfoBoxForNode(node);
         }
 
         function getNodeIcon(nodeType) {
@@ -1289,28 +1505,32 @@
             // Find zone that contains this node
             if (window.zoneData && window.zoneData.length > 0) {
                 const correspondingZone = window.zoneData.find(zone => {
-                    // Check if node coordinates are inside zone polygon
-                    return isPointInPolygon(node.x, node.y, zone.coordinates);
+                    // Check if node coordinates are inside zone polygon using points array
+                    return isPointInPolygonPoints(node.x, node.y, zone.points);
                 });
 
                 if (correspondingZone) {
                     const zoneElement = document.querySelector(`[data-zone-id="${correspondingZone.id}"]`);
                     if (zoneElement) {
-                        // Add blinking animation
+                        // Clear any existing animations
                         zoneElement.style.animation = 'none';
-                        setTimeout(() => {
-                            zoneElement.style.animation = 'zoneHighlight 2s ease-in-out 3';
-                        }, 10);
-
-                        // Temporary highlight
+                        
+                        // Store original styling
                         const originalFill = zoneElement.getAttribute('fill');
+                        const originalFillOpacity = zoneElement.getAttribute('fill-opacity');
+                        const originalStrokeOpacity = zoneElement.getAttribute('stroke-opacity');
+                        
+                        // Apply highlight styling
                         zoneElement.setAttribute('fill', '#ffcc00');
-                        zoneElement.setAttribute('fill-opacity', '0.8');
-
+                        zoneElement.style.animation = 'zoneHighlightPulse 1.5s ease-in-out 3';
+                        
+                        // Reset after animation
                         setTimeout(() => {
                             zoneElement.setAttribute('fill', originalFill || 'rgba(0, 123, 255, 0.3)');
-                            zoneElement.setAttribute('fill-opacity', '0.3');
-                        }, 3000);
+                            zoneElement.setAttribute('fill-opacity', originalFillOpacity || '0.3');
+                            zoneElement.setAttribute('stroke-opacity', originalStrokeOpacity || '0.6');
+                            zoneElement.style.animation = '';
+                        }, 4500); // 1.5s * 3 repetitions
                     }
                 }
             }
@@ -1330,6 +1550,320 @@
                 }
             }
             return inside;
+        }
+
+        // New function to handle points array format from zone data
+        function isPointInPolygonPoints(x, y, points) {
+            let inside = false;
+            for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+                const xi = points[i][0], yi = points[i][1];
+                const xj = points[j][0], yj = points[j][1];
+                
+                if (((yi > y) !== (yj > y)) &&
+                    (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
+                    inside = !inside;
+                }
+            }
+            return inside;
+        }
+
+        function showInfoBoxForNode(node) {
+            console.log('🔍 showInfoBoxForNode called with node:', node);
+            console.log('🔍 Zone data available:', !!window.zoneData, window.zoneData?.length);
+            
+            // Find the zone that contains this node
+            if (window.zoneData && window.zoneData.length > 0) {
+                const correspondingZone = window.zoneData.find(zone => {
+                    const result = isPointInPolygonPoints(node.x, node.y, zone.points);
+                    console.log(`🔍 Checking zone ${zone.id}: point in polygon = ${result}`);
+                    return result;
+                });
+
+                console.log('🔍 Found corresponding zone:', correspondingZone);
+
+                if (correspondingZone) {
+                    // Show info box near the highlighted zone
+                    const infoBox = document.getElementById('zone-info-box');
+                    console.log('🔍 Info box element:', !!infoBox);
+                    
+                    if (infoBox) {
+                        let displayName = correspondingZone.id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        console.log('🔍 Setting info box content...');
+                        
+                        infoBox.innerHTML = `
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 style="margin: 0; color: #333; font-size: 18px;">${node.label}</h3>
+                                <button id="close-info-btn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">×</button>
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <p style="margin: 4px 0; color: #666; font-size: 14px;">
+                                    <span style="font-weight: 500;">Location:</span> ${displayName}
+                                </p>
+                                <p style="margin: 4px 0; color: #666; font-size: 14px;">
+                                    <span style="font-weight: 500;">Category:</span> ${correspondingZone.category}
+                                </p>
+                                <p style="margin: 4px 0; color: #666; font-size: 14px;">
+                                    <span style="font-weight: 500;">Type:</span> ${node.type || 'Location'}
+                                </p>
+                            </div>
+                            <div style="display: flex; gap: 8px; flex-direction: column;">
+                                <button id="navigate-to-btn" style="width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: background-color 0.2s;">
+                                    📍 Navigate Here
+                                </button>
+                                <button id="set-destination-btn" style="width: 100%; padding: 12px; background: #007BFF; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: background-color 0.2s;">
+                                    🎯 Set as Destination
+                                </button>
+                                <button id="set-start-btn" style="width: 100%; padding: 12px; background: #17a2b8; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: background-color 0.2s;">
+                                    🚀 Set as Start Point
+                                </button>
+                            </div>
+                        `;
+                        
+                        // Position the info box near the center-right of the screen for better visibility
+                        infoBox.style.left = '60%';
+                        infoBox.style.top = '30%';
+                        infoBox.style.transform = 'translate(-50%, -50%)';
+                        infoBox.style.display = 'block';
+                        infoBox.style.zIndex = '1002';
+                        
+                        console.log('🔍 Info box displayed, adding event listeners...');
+                        
+                        // Add event listeners
+                        document.getElementById('close-info-btn').addEventListener('click', () => {
+                            console.log('🔍 Close button clicked');
+                            infoBox.style.display = 'none';
+                        });
+                        
+                        document.getElementById('navigate-to-btn').addEventListener('click', () => {
+                            console.log('🔍 Navigate button clicked');
+                            openDirectionsPanel();
+                            setDestinationNode(node.id);
+                            infoBox.style.display = 'none';
+                        });
+                        
+                        document.getElementById('set-destination-btn').addEventListener('click', () => {
+                            console.log('🔍 Set destination button clicked');
+                            setDestinationNode(node.id);
+                            
+                            // Open the directions panel and populate the destination field
+                            openDirectionsPanel();
+                            setTimeout(() => {
+                                const toInput = document.getElementById('toInput');
+                                if (toInput) {
+                                    toInput.value = node.label;
+                                }
+                            }, 100);
+                            
+                            document.getElementById('status').textContent = `Destination set: ${node.label}`;
+                            infoBox.style.display = 'none';
+                        });
+                        
+                        document.getElementById('set-start-btn').addEventListener('click', () => {
+                            console.log('🔍 Set start button clicked');
+                            setStartNode(node.id);
+                            
+                            // Open the directions panel and populate the start field
+                            openDirectionsPanel();
+                            setTimeout(() => {
+                                const fromInput = document.getElementById('fromInput');
+                                if (fromInput) {
+                                    fromInput.value = node.label;
+                                }
+                                // Focus on destination field since start is already set
+                                const toInput = document.getElementById('toInput');
+                                if (toInput) {
+                                    toInput.focus();
+                                }
+                            }, 100);
+                            
+                            document.getElementById('status').textContent = `Start point set: ${node.label}`;
+                            infoBox.style.display = 'none';
+                        });
+                    }
+                } else {
+                    console.log('🔍 No zone found, showing simple info box...');
+                    // If no zone found, show a simpler info box
+                    const infoBox = document.getElementById('zone-info-box');
+                    if (infoBox) {
+                        infoBox.innerHTML = `
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 style="margin: 0; color: #333; font-size: 18px;">${node.label}</h3>
+                                <button id="close-info-btn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">×</button>
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <p style="margin: 4px 0; color: #666; font-size: 14px;">
+                                    <span style="font-weight: 500;">Type:</span> ${node.type || 'Location'}
+                                </p>
+                                <p style="margin: 4px 0; color: #999; font-size: 12px; font-style: italic;">
+                                    Zone information not available
+                                </p>
+                            </div>
+                            <div style="display: flex; gap: 8px; flex-direction: column;">
+                                <button id="navigate-to-btn" style="width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                                    📍 Navigate Here
+                                </button>
+                                <button id="set-destination-btn" style="width: 100%; padding: 12px; background: #007BFF; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                                    🎯 Set as Destination
+                                </button>
+                                <button id="set-start-btn" style="width: 100%; padding: 12px; background: #17a2b8; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                                    🚀 Set as Start Point
+                                </button>
+                            </div>
+                        `;
+                        
+                        // Position and show the info box
+                        infoBox.style.left = '60%';
+                        infoBox.style.top = '30%';
+                        infoBox.style.transform = 'translate(-50%, -50%)';
+                        infoBox.style.display = 'block';
+                        infoBox.style.zIndex = '1002';
+                        
+                        console.log('🔍 Simple info box displayed, adding event listeners...');
+                        
+                        // Add event listeners
+                        document.getElementById('close-info-btn').addEventListener('click', () => {
+                            infoBox.style.display = 'none';
+                        });
+                        
+                        document.getElementById('navigate-to-btn').addEventListener('click', () => {
+                            openDirectionsPanel();
+                            setDestinationNode(node.id);
+                            infoBox.style.display = 'none';
+                        });
+                        
+                        document.getElementById('set-destination-btn').addEventListener('click', () => {
+                            setDestinationNode(node.id);
+                            
+                            // Open the directions panel and populate the destination field
+                            openDirectionsPanel();
+                            setTimeout(() => {
+                                const toInput = document.getElementById('toInput');
+                                if (toInput) {
+                                    toInput.value = node.label;
+                                }
+                            }, 100);
+                            
+                            document.getElementById('status').textContent = `Destination set: ${node.label}`;
+                            infoBox.style.display = 'none';
+                        });
+                        
+                        document.getElementById('set-start-btn').addEventListener('click', () => {
+                            setStartNode(node.id);
+                            
+                            // Open the directions panel and populate the start field
+                            openDirectionsPanel();
+                            setTimeout(() => {
+                                const fromInput = document.getElementById('fromInput');
+                                if (fromInput) {
+                                    fromInput.value = node.label;
+                                }
+                                // Focus on destination field since start is already set
+                                const toInput = document.getElementById('toInput');
+                                if (toInput) {
+                                    toInput.focus();
+                                }
+                            }, 100);
+                            
+                            document.getElementById('status').textContent = `Start point set: ${node.label}`;
+                            infoBox.style.display = 'none';
+                        });
+                    }
+                }
+            } else {
+                console.log('🔍 Zone data not available, showing basic info box...');
+                // Show basic info box even without zone data
+                const infoBox = document.getElementById('zone-info-box');
+                if (infoBox) {
+                    infoBox.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h3 style="margin: 0; color: #333; font-size: 18px;">${node.label}</h3>
+                            <button id="close-info-btn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">×</button>
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <p style="margin: 4px 0; color: #666; font-size: 14px;">
+                                <span style="font-weight: 500;">Type:</span> ${node.type || 'Location'}
+                            </p>
+                        </div>
+                        <div style="display: flex; gap: 8px; flex-direction: column;">
+                            <button id="navigate-to-btn" style="width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                                📍 Navigate Here
+                            </button>
+                            <button id="set-destination-btn" style="width: 100%; padding: 12px; background: #007BFF; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                                🎯 Set as Destination
+                            </button>
+                            <button id="set-start-btn" style="width: 100%; padding: 12px; background: #17a2b8; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                                🚀 Set as Start Point
+                            </button>
+                        </div>
+                    `;
+                    
+                    infoBox.style.left = '60%';
+                    infoBox.style.top = '30%';
+                    infoBox.style.transform = 'translate(-50%, -50%)';
+                    infoBox.style.display = 'block';
+                    infoBox.style.zIndex = '1002';
+                    
+                    console.log('🔍 Basic info box displayed');
+                    
+                    // Add event listeners
+                    document.getElementById('close-info-btn').addEventListener('click', () => {
+                        infoBox.style.display = 'none';
+                    });
+                    
+                    document.getElementById('navigate-to-btn').addEventListener('click', () => {
+                        openDirectionsPanel();
+                        setDestinationNode(node.id);
+                        infoBox.style.display = 'none';
+                    });
+                    
+                    document.getElementById('set-destination-btn').addEventListener('click', () => {
+                        setDestinationNode(node.id);
+                        
+                        // Open the directions panel and populate the destination field
+                        openDirectionsPanel();
+                        setTimeout(() => {
+                            const toInput = document.getElementById('toInput');
+                            if (toInput) {
+                                toInput.value = node.label;
+                            }
+                        }, 100);
+                        
+                        document.getElementById('status').textContent = `Destination set: ${node.label}`;
+                        infoBox.style.display = 'none';
+                    });
+                    
+                    document.getElementById('set-start-btn').addEventListener('click', () => {
+                        setStartNode(node.id);
+                        
+                        // Open the directions panel and populate the start field
+                        openDirectionsPanel();
+                        setTimeout(() => {
+                            const fromInput = document.getElementById('fromInput');
+                            if (fromInput) {
+                                fromInput.value = node.label;
+                            }
+                            // Focus on destination field since start is already set
+                            const toInput = document.getElementById('toInput');
+                            if (toInput) {
+                                toInput.focus();
+                            }
+                        }, 100);
+                        
+                        document.getElementById('status').textContent = `Start point set: ${node.label}`;
+                        infoBox.style.display = 'none';
+                    });
+                }
+            }
+        }
+
+        function openDirectionsPanel() {
+            const panel = document.getElementById('directionsPanel');
+            panel.classList.add('open');
+            
+            // Focus on the from input for user to enter start location
+            setTimeout(() => {
+                document.getElementById('fromInput').focus();
+            }, 300);
         }
 
         // Panel inputs setup with same search functionality
@@ -1568,6 +2102,13 @@
             const node = campusNodes.find(n => n.id === nodeId);
             const status = document.getElementById('status');
             status.textContent = `Destination set: ${node?.label || nodeId}. Tap to select start location.`;
+        }
+
+        function setStartNode(nodeId) {
+            startNode = nodeId;
+            const node = campusNodes.find(n => n.id === nodeId);
+            const status = document.getElementById('status');
+            status.textContent = `Start point set: ${node?.label || nodeId}. Tap to select destination.`;
         }
 
         function zoomToNode(nodeId) {
@@ -1824,10 +2365,30 @@
 
         // Keep all your existing pathfinding and visualization functions
         function findPath() {
+            console.log('🔍 FindPath called with:', { startNode, destinationNode });
+            
             if (!startNode || !destinationNode) {
+                console.error('❌ Missing nodes:', { startNode, destinationNode });
                 alert('Please select both starting point and destination');
                 return;
             }
+
+            if (!campusGraph) {
+                console.error('❌ Campus graph not loaded');
+                alert('Campus map data not loaded yet. Please wait and try again.');
+                return;
+            }
+
+            if (!campusNodes) {
+                console.error('❌ Campus nodes not loaded');
+                alert('Campus node data not loaded yet. Please wait and try again.');
+                return;
+            }
+
+            console.log('🔍 Graph has nodes:', Object.keys(campusGraph).length);
+            console.log('🔍 Node data count:', campusNodes.length);
+            console.log('🔍 Start node in graph:', startNode in campusGraph);
+            console.log('🔍 Destination node in graph:', destinationNode in campusGraph);
 
             const path = astarPath(campusGraph, campusNodes, startNode, destinationNode);
             if (path && path.length > 0) {
@@ -1841,6 +2402,12 @@
                 status.textContent = `Route: ${startNodeData?.label || startNode} → ${endNodeData?.label || destinationNode} (${path.length - 1} steps)`;
             } else {
                 console.error('❌ No path found');
+                console.log('🔍 Debugging info:', {
+                    startExists: campusNodes.find(n => n.id === startNode),
+                    endExists: campusNodes.find(n => n.id === destinationNode),
+                    startInGraph: startNode in campusGraph,
+                    endInGraph: destinationNode in campusGraph
+                });
                 alert('No path found between selected locations');
             }
         }
@@ -1870,14 +2437,24 @@
             const startCoords = getNodeCoordinates(nodes, start);
             
             if (!endCoords || !startCoords) {
-                console.error('❌ Could not find coordinates');
+                console.error('❌ Could not find coordinates:', { 
+                    start, startCoords, 
+                    end, endCoords 
+                });
                 return null;
             }
 
             if (!graph[start] || !graph[end]) {
-                console.error('❌ Node not found in graph');
+                console.error('❌ Node not found in graph:', { 
+                    start: start in graph, 
+                    end: end in graph,
+                    startConnections: graph[start] ? Object.keys(graph[start]).length : 0,
+                    endConnections: graph[end] ? Object.keys(graph[end]).length : 0
+                });
                 return null;
             }
+
+            console.log('✅ Starting A* with valid nodes and coordinates');
 
             const gScore = {};
             const fScore = {};
@@ -1939,6 +2516,12 @@
                 path.unshift(current);
                 current = previous[current];
             }
+
+            console.log('🛤️ A* result:', {
+                pathLength: path.length,
+                pathValid: path.length > 1 && path[0] === start,
+                path: path
+            });
 
             return path.length > 1 && path[0] === start ? path : null;
         }
@@ -2051,23 +2634,57 @@
                 return null;
             }
 
-            const icon = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            icon.setAttribute('r', '12');
-            icon.setAttribute('fill', '#ffcc00');
-            icon.setAttribute('stroke', '#ff6600');
-            icon.setAttribute('stroke-width', '3');
-            icon.setAttribute('class', 'traveling-icon');
-            icon.style.filter = 'drop-shadow(0 0 8px rgba(255, 204, 0, 0.8))';
+            // Create a group for the navigation icon
+            const iconGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            iconGroup.setAttribute('class', 'navigation-icon');
+            
+            // Create the main marker body (teardrop shape)
+            const marker = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            marker.setAttribute('d', 'M0,-20 C-10,-20 -15,-10 -15,0 C-15,10 0,20 0,20 C0,20 15,10 15,0 C15,-10 10,-20 0,-20 Z');
+            marker.setAttribute('fill', '#2196F3');
+            marker.setAttribute('stroke', '#1976D2');
+            marker.setAttribute('stroke-width', '2');
+            marker.style.filter = 'drop-shadow(0 2px 8px rgba(33, 150, 243, 0.4))';
+            
+            // Create inner circle (person/avatar)
+            const avatar = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            avatar.setAttribute('cx', '0');
+            avatar.setAttribute('cy', '-8');
+            avatar.setAttribute('r', '6');
+            avatar.setAttribute('fill', '#ffffff');
+            avatar.setAttribute('stroke', '#1976D2');
+            avatar.setAttribute('stroke-width', '1');
+            
+            // Create direction indicator (small triangle)
+            const direction = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            direction.setAttribute('d', 'M0,-12 L-3,-6 L3,-6 Z');
+            direction.setAttribute('fill', '#1976D2');
+            
+            // Add pulsing outer ring
+            const pulseRing = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            pulseRing.setAttribute('cx', '0');
+            pulseRing.setAttribute('cy', '0');
+            pulseRing.setAttribute('r', '25');
+            pulseRing.setAttribute('fill', 'none');
+            pulseRing.setAttribute('stroke', '#2196F3');
+            pulseRing.setAttribute('stroke-width', '2');
+            pulseRing.setAttribute('opacity', '0.3');
+            pulseRing.style.animation = 'navigation-pulse 2s ease-in-out infinite';
+            
+            // Assemble the icon
+            iconGroup.appendChild(pulseRing);
+            iconGroup.appendChild(marker);
+            iconGroup.appendChild(avatar);
+            iconGroup.appendChild(direction);
             
             // Position at start
             const startNode = campusNodes.find(n => n.id === path[0]);
             if (startNode) {
-                icon.setAttribute('cx', startNode.x);
-                icon.setAttribute('cy', startNode.y);
+                iconGroup.setAttribute('transform', `translate(${startNode.x}, ${startNode.y})`);
             }
             
-            console.log('✅ Traveling icon created');
-            return icon;
+            console.log('✅ Enhanced navigation icon created');
+            return iconGroup;
         }
 
         function animateTrainStyle(pathElement, icon, path) {
@@ -2076,16 +2693,23 @@
                 return;
             }
 
-            console.log('🚂 Starting train animation');
+            console.log('🚂 Starting slow navigation animation');
             
             let currentIndex = 0;
-            const animationDuration = 500; // milliseconds per segment
+            const animationDuration = 1200; // Slower animation: 1200ms per segment
+            
+            // Initially hide the path line
+            pathElement.style.strokeDasharray = '10 10';
+            pathElement.style.strokeDashoffset = '20';
+            pathElement.style.opacity = '0.3';
 
             function moveToNext() {
                 if (currentIndex >= path.length - 1) {
-                    console.log('🏁 Train animation completed');
-                    // Add completion pulse
-                    icon.style.animation = 'pulse 0.5s ease-in-out 3';
+                    console.log('🏁 Navigation animation completed');
+                    // Final completion effect
+                    icon.style.animation = 'navigation-pulse 0.8s ease-in-out 3';
+                    pathElement.style.opacity = '0.8';
+                    pathElement.style.strokeDasharray = '0';
                     return;
                 }
 
@@ -2099,35 +2723,40 @@
                     return;
                 }
 
-                console.log(`🚂 Moving from ${currentNode.id} to ${nextNode.id}`);
+                console.log(`� Walking from ${currentNode.id} to ${nextNode.id}`);
 
-                // Animate to next position
-                icon.style.transition = `cx ${animationDuration}ms ease-in-out, cy ${animationDuration}ms ease-in-out`;
-                icon.setAttribute('cx', nextNode.x);
-                icon.setAttribute('cy', nextNode.y);
+                // Smooth animation to next position using transform for the group
+                icon.style.transition = `transform ${animationDuration}ms cubic-bezier(0.4, 0.0, 0.2, 1)`;
+                icon.setAttribute('transform', `translate(${nextNode.x}, ${nextNode.y}) scale(1.1)`);
+                
+                // Return to normal scale after half animation  
+                setTimeout(() => {
+                    icon.setAttribute('transform', `translate(${nextNode.x}, ${nextNode.y}) scale(1.0)`);
+                }, animationDuration / 2);
 
-                // Highlight current segment
+                // Progressive path revelation - draw the segment as icon moves
                 const segment = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                 segment.setAttribute('x1', currentNode.x);
                 segment.setAttribute('y1', currentNode.y);
-                segment.setAttribute('x2', nextNode.x);
-                segment.setAttribute('y2', nextNode.y);
-                segment.setAttribute('stroke', '#ffcc00');
-                segment.setAttribute('stroke-width', '8');
+                segment.setAttribute('x2', currentNode.x); // Start at same point
+                segment.setAttribute('y2', currentNode.y);
+                segment.setAttribute('stroke', '#4CAF50');
+                segment.setAttribute('stroke-width', '6');
                 segment.setAttribute('stroke-linecap', 'round');
-                segment.style.opacity = '0.8';
-                segment.style.filter = 'drop-shadow(0 0 10px rgba(255, 204, 0, 0.6))';
+                segment.setAttribute('class', 'path-segment');
+                segment.style.opacity = '0.9';
+                segment.style.filter = 'drop-shadow(0 0 8px rgba(76, 175, 80, 0.5))';
 
                 const pathLayer = document.getElementById('path-layer');
                 if (pathLayer) {
                     pathLayer.appendChild(segment);
                     
-                    // Remove segment after animation
+                    // Animate the segment drawing
                     setTimeout(() => {
-                        if (segment.parentNode) {
-                            segment.parentNode.removeChild(segment);
-                        }
-                    }, animationDuration + 200);
+                        segment.style.transition = `x2 ${animationDuration}ms ease-out, y2 ${animationDuration}ms ease-out`;
+                        segment.setAttribute('x2', nextNode.x);
+                        segment.setAttribute('y2', nextNode.y);
+                    }, 100);
                 }
 
                 currentIndex++;
@@ -2142,6 +2771,10 @@
             try {
                 const response = await fetch('./svg_zones_8830x6238.json');
                 const zonesData = await response.json();
+                
+                // Store zone data globally for use by other functions
+                window.zoneData = zonesData;
+                console.log('✅ Zone data loaded and stored globally:', zonesData.length, 'zones');
                 
                 const zonesLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
                 zonesLayer.id = 'interactive-zones';
@@ -2158,6 +2791,7 @@
                 
             } catch (error) {
                 console.error('❌ Error loading zones:', error);
+                window.zoneData = null;
             }
         }
 

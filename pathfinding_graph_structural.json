@@ -535,7 +535,8 @@
     "intersection_1": {
       "stairway_2": 173.5064840286956,
       "class_7": 110.7892142764809,
-      "invisible_6": 664.0007530116212
+      "invisible_6": 664.0007530116212,
+      "class_21": 1282.0
     },
     "intersection_2": {
       "stairway_1": 106.55749621683123,
@@ -601,6 +602,9 @@
     },
     "stairway_4": {
       "intersection_4": 236.5005285406356
+    },
+    "class_21": {
+      "intersection_1": 1282.0
     }
   }
 }
