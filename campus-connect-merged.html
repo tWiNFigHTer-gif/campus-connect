@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CampusConnect - 2nd Floor Navigation</title>
+    <title>CampusConnect - Multi-Floor Navigation</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=close" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
     <script src="https://unpkg.com/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
@@ -954,6 +954,9 @@
 
         // Setup navigation (floor links and mobile menu)
         function setupNavigation() {
+            // Global floor state
+            window.currentFloor = 'second'; // Default to second floor
+            
             // Mobile menu toggle
             const menuToggle = document.getElementById('menuToggle');
             const sidebar = document.querySelector('.sidebar');
@@ -979,7 +982,18 @@
                     e.preventDefault();
                     const floor = link.getAttribute('data-floor');
                     console.log(`Floor ${floor} selected`);
-                    showFloorMessage(`Floor ${floor}`, 'Floor navigation coming soon!');
+                    
+                    // Handle floor 2 and 3 with actual functionality
+                    if (floor === '2') {
+                        window.currentFloor = 'second';
+                        loadApplication(); // Reload with second floor
+                    } else if (floor === '3') {
+                        window.currentFloor = 'third';
+                        loadApplication(); // Reload with third floor
+                    } else {
+                        showFloorMessage(`Floor ${floor}`, 'Floor navigation coming soon!');
+                    }
+                    
                     // Close sidebar if open
                     if (sidebar) {
                         sidebar.style.display = 'none';
@@ -1001,13 +1015,23 @@
             
             if (nextBtn) {
                 nextBtn.addEventListener('click', () => {
-                    showFloorMessage('Next Floor', 'Moving to next floor...');
+                    if (window.currentFloor === 'second') {
+                        window.currentFloor = 'third';
+                        loadApplication();
+                    } else {
+                        showFloorMessage('Next Floor', 'Already at top floor');
+                    }
                 });
             }
             
             if (prevBtn) {
                 prevBtn.addEventListener('click', () => {
-                    showFloorMessage('Previous Floor', 'Moving to previous floor...');
+                    if (window.currentFloor === 'third') {
+                        window.currentFloor = 'second';
+                        loadApplication();
+                    } else {
+                        showFloorMessage('Previous Floor', 'Already at bottom floor');
+                    }
                 });
             }
         }
@@ -1147,14 +1171,16 @@
         }
 
         function setupPanzoom(svg) {
-            console.log('🎮 Setting up panzoom controls with correct initial view...');
+            console.log('🎮 Setting up panzoom controls...');
             
-            // Get the actual SVG viewBox dimensions
-            const viewBox = svg.viewBox.baseVal;
-            const svgWidth = viewBox.width || 8830;  // Use hardcoded values as fallback
-            const svgHeight = viewBox.height || 6238;
+            const currentFloor = window.currentFloor || 'second';
             
-            console.log('📐 SVG ViewBox dimensions:', { width: svgWidth, height: svgHeight });
+            // Get the actual SVG viewBox dimensions based on current floor
+            const dimensions = currentFloor === 'third' 
+                ? { width: 4259, height: 2952 }
+                : { width: 8830, height: 6238 };
+            
+            console.log(`📐 Using ${currentFloor} floor SVG dimensions:`, dimensions);
             
             // Get the container (viewport) dimensions
             const container = document.getElementById('svg-container');
@@ -1164,57 +1190,40 @@
             console.log('📐 Container dimensions:', { width: containerWidth, height: containerHeight });
             
             // Calculate aspect ratios
-            const svgAspectRatio = svgWidth / svgHeight;
+            const svgAspectRatio = dimensions.width / dimensions.height;
             const containerAspectRatio = containerWidth / containerHeight;
             
             console.log('📐 Aspect ratios:', { svg: svgAspectRatio, container: containerAspectRatio });
             
-            // Calculate the scale factor to fit the entire SVG within the container (contain effect)
+            // Calculate the scale factor to fit the entire SVG within the container
             let scale;
             if (containerAspectRatio > svgAspectRatio) {
-                // Container is wider relative to its height than SVG
-                // Scale based on height
-                scale = containerHeight / svgHeight;
+                scale = containerHeight / dimensions.height;
             } else {
-                // Container is taller relative to its width than SVG  
-                // Scale based on width
-                scale = containerWidth / svgWidth;
+                scale = containerWidth / dimensions.width;
             }
             
-            // Apply 5% padding by reducing scale
+            // Apply padding by reducing scale
             scale *= 0.95;
             
             console.log('📐 Calculated base scale:', scale);
             
-            // Calculate the scaled dimensions
-            const scaledWidth = svgWidth * scale;
-            const scaledHeight = svgHeight * scale;
+            // Store default view state with floor-specific values
+            defaultViewState = currentFloor === 'third' 
+                ? { scale: scale, x: 0, y: 0 }  // Centered for third floor
+                : { scale: 1.81959, x: -19.4451, y: 2.24891 };  // Your preferred second floor view
             
-            // Calculate translation to center the scaled SVG
-            const translateX = (containerWidth - scaledWidth) / 2;
-            const translateY = (containerHeight - scaledHeight) / 2;
+            console.log('📐 Default view state:', defaultViewState);
             
-            // Store default view state - using your preferred transform values
-            defaultViewState = {
-                scale: 1.81959,
-                x: -19.4451,
-                y: 2.24891
-            };
-            
-            console.log('📐 Default view state calculated:', defaultViewState);
-            console.log('📐 Scaled dimensions:', { width: scaledWidth, height: scaledHeight });
-            console.log('📐 Translation:', { x: translateX, y: translateY });
-            
-            // Initialize panzoom with correct initial values
+            // Initialize panzoom
             panzoomInstance = Panzoom(svg, {
-                maxScale: Math.max(3, defaultViewState.scale * 4), // Ensure max scale is at least 3x or 4x default
-                minScale: 1.81959, // Set to your desired maximum zoom out level
-                contain: 'outside', // Allow panning beyond container
+                maxScale: Math.max(3, defaultViewState.scale * 4),
+                minScale: defaultViewState.scale * 0.5,
+                contain: 'outside',
                 cursor: 'grab',
                 animate: true,
                 duration: 300,
                 easing: 'ease-in-out',
-                // Set initial transform to your preferred values
                 startScale: defaultViewState.scale,
                 startX: defaultViewState.x,
                 startY: defaultViewState.y
@@ -1223,28 +1232,26 @@
             // Add wheel zoom support
             container.addEventListener('wheel', panzoomInstance.zoomWithWheel);
             
-            // Listen for zoom changes to track state for double-tap
+            // Listen for zoom changes
             svg.addEventListener('panzoomchange', (e) => {
                 const currentScale = panzoomInstance.getScale();
-                // Consider zoomed in if scale is significantly higher than minimum scale (1.81959)
-                isZoomedIn = currentScale > (1.81959 * 1.2); // 20% buffer above minimum
-                console.log('📏 Current scale:', currentScale, 'Zoomed in:', isZoomedIn);
+                isZoomedIn = currentScale > (defaultViewState.scale * 1.2);
+                console.log(`📏 Current scale: ${currentScale}, Zoomed in: ${isZoomedIn}`);
             });
             
-            // Setup double-tap zoom functionality
+            // Setup double-tap zoom
             setupDoubleTapZoom(svg);
             
-            // Apply initial transform immediately after setup
+            // Apply initial transform
             requestAnimationFrame(() => {
-                console.log('🎯 Applying your preferred initial transform...');
-                console.log('🎯 Transform values:', defaultViewState);
+                console.log('🎯 Applying initial transform for', currentFloor, 'floor');
                 panzoomInstance.zoom(defaultViewState.scale, { animate: false });
                 panzoomInstance.pan(defaultViewState.x, defaultViewState.y, { animate: false });
                 isZoomedIn = false;
-                console.log('✅ Initial transform applied with your preferred values');
+                console.log('✅ Initial transform applied');
             });
             
-            console.log('✅ Panzoom setup complete with correct initial view');
+            console.log('✅ Panzoom setup complete');
         }
 
         function setupDoubleTapZoom(svg) {
@@ -2161,21 +2168,34 @@
             const status = document.getElementById('status');
 
             try {
-                // Step 1: Load SVG
+                // Step 1: Load SVG based on current floor
                 console.log('📂 Loading SVG...');
                 status.textContent = 'Loading map...';
                 
-                const svgResponse = await fetch('2nd-floor-final.svg');
+                // Determine which floor to load
+                const currentFloor = window.currentFloor || 'second';
+                const svgPath = currentFloor === 'third' ? 'floors/third-floor.svg' : 'floors/second-floor.svg';
+                const zonesPath = currentFloor === 'third' ? './data/third_floor_zones.json' : './data/svg_zones_8830x6238.json';
+                const nodesPath = currentFloor === 'third' ? './data/third_floor_nodes.json' : 'pathfinding_graph_structural.json';
+                
+                console.log(`📂 Loading ${currentFloor} floor:`);
+                console.log(`  SVG: ${svgPath}`);
+                console.log(`  Zones: ${zonesPath}`);
+                console.log(`  Nodes: ${nodesPath}`);
+                
+                const svgResponse = await fetch(svgPath);
+                console.log('📂 SVG Response:', svgResponse.ok, svgResponse.status);
+                
                 if (!svgResponse.ok) {
                     throw new Error(`SVG fetch failed: ${svgResponse.status}`);
                 }
                 
                 const svgContent = await svgResponse.text();
-                console.log('✅ SVG loaded successfully');
+                console.log('✅ SVG loaded successfully, length:', svgContent.length);
 
                 // Step 2: Load graph data
                 status.textContent = 'Loading navigation data...';
-                const graphResponse = await fetch('pathfinding_graph_structural.json');
+                const graphResponse = await fetch(nodesPath);
                 
                 if (!graphResponse.ok) {
                     throw new Error(`Graph fetch failed: ${graphResponse.status}`);
@@ -2196,8 +2216,8 @@
                     // Setup panzoom for gesture control
                     setupPanzoom(svg);
                     
-                    // Add interactive zones
-                    await addInteractiveZones(svg);
+                    // Add interactive zones with correct path
+                    await addInteractiveZonesForFloor(svg, zonesPath);
                 }
 
                 // Store data
@@ -2228,8 +2248,14 @@
         // Keep all existing functions from your current implementation
         function transformCoordinatesForRotatedSVG(originalData) {
             console.log('🔄 Starting coordinate transformation...');
-            const SVG_WIDTH = 8830;
-            const SVG_HEIGHT = 6238;
+            const currentFloor = window.currentFloor || 'second';
+            
+            // Use appropriate dimensions for each floor
+            const dimensions = currentFloor === 'third' 
+                ? { width: 4259, height: 2952 }
+                : { width: 8830, height: 6238 };
+            
+            console.log(`🔄 Using ${currentFloor} floor dimensions: ${dimensions.width}x${dimensions.height}`);
 
             const transformedData = {
                 nodes: [],
@@ -2240,8 +2266,8 @@
                 transformedData.nodes = originalData.nodes.map(node => {
                     return {
                         ...node,
-                        x: SVG_WIDTH - node.x,
-                        y: SVG_HEIGHT - node.y
+                        x: dimensions.width - node.x,
+                        y: dimensions.height - node.y
                     };
                 });
             }
@@ -2250,7 +2276,7 @@
                 transformedData.graph = { ...originalData.graph };
             }
 
-            console.log('✅ Coordinate transformation completed');
+            console.log(`✅ Coordinate transformation completed for ${currentFloor} floor`);
             return transformedData;
         }
 
@@ -2766,10 +2792,17 @@
             moveToNext();
         }
         async function addInteractiveZones(svg) {
-            console.log('🎯 Loading interactive zones...');
+            return addInteractiveZonesForFloor(svg, './data/svg_zones_8830x6238.json');
+        }
+
+        async function addInteractiveZonesForFloor(svg, zonesPath) {
+            console.log('🎯 Loading interactive zones from:', zonesPath);
             
             try {
-                const response = await fetch('./svg_zones_8830x6238.json');
+                const response = await fetch(zonesPath);
+                if (!response.ok) {
+                    throw new Error(`Failed to load zones: ${response.status}`);
+                }
                 const zonesData = await response.json();
                 
                 // Store zone data globally for use by other functions
