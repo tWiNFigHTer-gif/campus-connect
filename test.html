@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Connect Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-item {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 4px solid #ddd;
+        }
+        .test-item.success {
+            border-left-color: #4caf50;
+            background: #f1f8e9;
+        }
+        .test-item.error {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+        #svg-test {
+            width: 100%;
+            height: 200px;
+            border: 1px solid #ddd;
+            background: white;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Campus Connect Diagnostic Test</h1>
+        
+        <div id="results"></div>
+        
+        <h3>SVG Loading Test</h3>
+        <div id="svg-test"></div>
+        
+        <h3>Files Test</h3>
+        <ul id="file-tests"></ul>
+        
+        <h3>Console Output</h3>
+        <div id="console-output" style="background: #f0f0f0; padding: 10px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto;"></div>
+    </div>
+
+    <script>
+        const results = document.getElementById('results');
+        const svgTest = document.getElementById('svg-test');
+        const fileTests = document.getElementById('file-tests');
+        const consoleOutput = document.getElementById('console-output');
+        
+        // Capture console output
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            consoleOutput.textContent += 'LOG: ' + args.join(' ') + '\n';
+            originalLog.apply(console, args);
+        };
+        
+        console.error = function(...args) {
+            consoleOutput.textContent += 'ERROR: ' + args.join(' ') + '\n';
+            originalError.apply(console, args);
+        };
+        
+        function addResult(message, success = true) {
+            const div = document.createElement('div');
+            div.className = `test-item ${success ? 'success' : 'error'}`;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+        
+        function addFileTest(filename, success, message) {
+            const li = document.createElement('li');
+            li.innerHTML = `<strong>${filename}</strong>: ${success ? '✅' : '❌'} ${message}`;
+            fileTests.appendChild(li);
+        }
+        
+        async function runTests() {
+            console.log('🔍 Starting Campus Connect diagnostic tests...');
+            
+            // Test 1: Basic JavaScript
+            try {
+                addResult('✅ JavaScript execution working');
+            } catch (e) {
+                addResult('❌ JavaScript execution failed: ' + e.message, false);
+            }
+            
+            // Test 2: Fetch API
+            try {
+                const testResponse = await fetch('test.html');
+                if (testResponse.ok) {
+                    addResult('✅ Fetch API working');
+                } else {
+                    addResult('❌ Fetch API error: ' + testResponse.status, false);
+                }
+            } catch (e) {
+                addResult('❌ Fetch API failed: ' + e.message, false);
+            }
+            
+            // Test 3: File availability tests
+            const filesToTest = [
+                'campus-connect-merged.html',
+                'floors/second-floor.svg',
+                'floors/third-floor.svg',
+                'pathfinding_graph_structural.json',
+                'data/svg_zones_8830x6238.json',
+                'data/third_floor_nodes.json',
+                'data/third_floor_zones.json',
+                'assets/class.png',
+                'assets/department.png',
+                'assets/faculties.png'
+            ];
+            
+            for (const file of filesToTest) {
+                try {
+                    const response = await fetch(file);
+                    if (response.ok) {
+                        const size = response.headers.get('content-length') || 'unknown';
+                        addFileTest(file, true, `OK (${size} bytes)`);
+                    } else {
+                        addFileTest(file, false, `HTTP ${response.status}`);
+                    }
+                } catch (e) {
+                    addFileTest(file, false, `Failed: ${e.message}`);
+                }
+            }
+            
+            // Test 4: SVG Loading
+            try {
+                console.log('🔍 Testing SVG loading...');
+                const svgResponse = await fetch('floors/second-floor.svg');
+                if (svgResponse.ok) {
+                    const svgContent = await svgResponse.text();
+                    svgTest.innerHTML = svgContent;
+                    
+                    const svgElement = svgTest.querySelector('svg');
+                    if (svgElement) {
+                        svgElement.style.width = '100%';
+                        svgElement.style.height = '100%';
+                        addResult('✅ SVG loaded and rendered successfully');
+                        console.log('✅ SVG element found and styled');
+                    } else {
+                        addResult('❌ SVG content loaded but no SVG element found', false);
+                    }
+                } else {
+                    addResult('❌ SVG loading failed: HTTP ' + svgResponse.status, false);
+                }
+            } catch (e) {
+                addResult('❌ SVG test failed: ' + e.message, false);
+                console.error('SVG test error:', e);
+            }
+            
+            // Test 5: JSON Data Loading
+            try {
+                console.log('🔍 Testing JSON data loading...');
+                const graphResponse = await fetch('pathfinding_graph_structural.json');
+                if (graphResponse.ok) {
+                    const graphData = await graphResponse.json();
+                    if (graphData.nodes && graphData.graph) {
+                        addResult(`✅ Graph data loaded: ${graphData.nodes.length} nodes, ${Object.keys(graphData.graph).length} graph entries`);
+                    } else {
+                        addResult('❌ Graph data structure invalid', false);
+                    }
+                } else {
+                    addResult('❌ Graph data loading failed: HTTP ' + graphResponse.status, false);
+                }
+            } catch (e) {
+                addResult('❌ JSON test failed: ' + e.message, false);
+            }
+            
+            // Test 6: External Libraries
+            try {
+                if (typeof Panzoom !== 'undefined') {
+                    addResult('❌ Panzoom library not loaded in test page', false);
+                } else {
+                    // Try to load it
+                    const script = document.createElement('script');
+                    script.src = 'https://unpkg.com/@panzoom/panzoom@4.5.1/dist/panzoom.min.js';
+                    script.onload = () => {
+                        if (typeof Panzoom !== 'undefined') {
+                            addResult('✅ Panzoom library loaded successfully');
+                        }
+                    };
+                    script.onerror = () => {
+                        addResult('❌ Panzoom library failed to load', false);
+                    };
+                    document.head.appendChild(script);
+                }
+            } catch (e) {
+                addResult('❌ Library test failed: ' + e.message, false);
+            }
+            
+            console.log('🎉 Diagnostic tests completed');
+        }
+        
+        // Run tests when page loads
+        window.addEventListener('load', runTests);
+    </script>
+</body>
+</html>

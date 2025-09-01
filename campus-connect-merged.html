@@ -1164,8 +1164,8 @@
             if (panzoomInstance) {
                 console.log('🔍 Setting to maximum zoom out level...');
                 // Use the specific transform values you provided
-                panzoomInstance.zoom(1.81959, { animate: true });
-                panzoomInstance.pan(-19.5167, -12.0222, { animate: true });
+                panzoomInstance.zoom(1.79482, { animate: true });
+                panzoomInstance.pan(-22.302, -8.25484, { animate: true });
                 isZoomedIn = false;
             }
         }
@@ -1211,26 +1211,31 @@
             // Store default view state with floor-specific values
             defaultViewState = currentFloor === 'third' 
                 ? { scale: scale, x: 0, y: 0 }  // Centered for third floor
-                : { scale: 1.81959, x: -19.4451, y: 2.24891 };  // Your preferred second floor view
+                : { scale: 1.79482, x: -22.302, y: -8.25484 };  // Your preferred second floor view
             
             console.log('📐 Default view state:', defaultViewState);
             
             // Initialize panzoom
             panzoomInstance = Panzoom(svg, {
-                maxScale: Math.max(3, defaultViewState.scale * 4),
-                minScale: defaultViewState.scale * 0.5,
+                maxScale: currentFloor === 'third' ? Math.max(3, defaultViewState.scale * 4) : 3.61433,
+                minScale: currentFloor === 'third' ? defaultViewState.scale * 0.5 : 1.79482,
                 contain: 'outside',
-                cursor: 'grab',
+                cursor: 'default',
                 animate: true,
                 duration: 300,
                 easing: 'ease-in-out',
                 startScale: defaultViewState.scale,
                 startX: defaultViewState.x,
-                startY: defaultViewState.y
+                startY: defaultViewState.y,
+                disablePan: true,  // Disable default panning
+                disableZoom: true  // Disable default zooming
             });
             
-            // Add wheel zoom support
-            container.addEventListener('wheel', panzoomInstance.zoomWithWheel);
+            // Remove default wheel zoom - only allow 2-finger gestures
+            // container.addEventListener('wheel', panzoomInstance.zoomWithWheel);
+            
+            // Add custom 2-finger touch handling
+            setupTwoFingerGestures(container, svg);
             
             // Listen for zoom changes
             svg.addEventListener('panzoomchange', (e) => {
@@ -1252,6 +1257,99 @@
             });
             
             console.log('✅ Panzoom setup complete');
+        }
+
+        function setupTwoFingerGestures(container, svg) {
+            let initialDistance = 0;
+            let initialScale = 1;
+            let initialCenter = { x: 0, y: 0 };
+            let touches = [];
+
+            container.addEventListener('touchstart', (e) => {
+                touches = Array.from(e.touches);
+                
+                if (touches.length === 2) {
+                    e.preventDefault();
+                    
+                    // Calculate initial distance between fingers
+                    const touch1 = touches[0];
+                    const touch2 = touches[1];
+                    
+                    initialDistance = Math.sqrt(
+                        Math.pow(touch2.clientX - touch1.clientX, 2) + 
+                        Math.pow(touch2.clientY - touch1.clientY, 2)
+                    );
+                    
+                    // Calculate center point between fingers
+                    initialCenter = {
+                        x: (touch1.clientX + touch2.clientX) / 2,
+                        y: (touch1.clientY + touch2.clientY) / 2
+                    };
+                    
+                    // Get current scale
+                    initialScale = panzoomInstance.getScale();
+                    
+                    console.log('🤞 Two-finger gesture started', { initialDistance, initialScale, initialCenter });
+                }
+            });
+
+            container.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 2) {
+                    e.preventDefault();
+                    
+                    const touch1 = e.touches[0];
+                    const touch2 = e.touches[1];
+                    
+                    // Calculate current distance
+                    const currentDistance = Math.sqrt(
+                        Math.pow(touch2.clientX - touch1.clientX, 2) + 
+                        Math.pow(touch2.clientY - touch1.clientY, 2)
+                    );
+                    
+                    // Calculate current center
+                    const currentCenter = {
+                        x: (touch1.clientX + touch2.clientX) / 2,
+                        y: (touch1.clientY + touch2.clientY) / 2
+                    };
+                    
+                    // Calculate scale change
+                    const scaleChange = currentDistance / initialDistance;
+                    const newScale = Math.max(
+                        panzoomInstance.getOptions().minScale,
+                        Math.min(panzoomInstance.getOptions().maxScale, initialScale * scaleChange)
+                    );
+                    
+                    // Calculate pan change
+                    const panX = currentCenter.x - initialCenter.x;
+                    const panY = currentCenter.y - initialCenter.y;
+                    
+                    // Apply zoom to focal point
+                    const containerRect = container.getBoundingClientRect();
+                    const focalX = currentCenter.x - containerRect.left;
+                    const focalY = currentCenter.y - containerRect.top;
+                    
+                    panzoomInstance.zoomToPoint(newScale, { clientX: focalX, clientY: focalY }, { animate: false });
+                }
+            });
+
+            container.addEventListener('touchend', (e) => {
+                if (touches.length === 2) {
+                    console.log('🤞 Two-finger gesture ended');
+                }
+                touches = Array.from(e.touches);
+            });
+
+            // Disable mouse wheel zoom completely
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                console.log('🚫 Mouse wheel zoom disabled - use two fingers');
+            });
+
+            // Disable single-finger pan by overriding panzoom mouse events
+            container.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                console.log('🚫 Single-finger/mouse pan disabled - use two fingers');
+            });
         }
 
         function setupDoubleTapZoom(svg) {
