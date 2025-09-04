@@ -2282,14 +2282,16 @@
                 console.log(`  Nodes: ${nodesPath}`);
                 
                 const svgResponse = await fetch(svgPath);
-                console.log('📂 SVG Response:', svgResponse.ok, svgResponse.status);
+                console.log('📂 SVG Response:', svgResponse.ok, svgResponse.status, svgResponse.url);
                 
                 if (!svgResponse.ok) {
+                    console.error(`❌ SVG fetch failed: ${svgResponse.status} for ${svgPath}`);
                     throw new Error(`SVG fetch failed: ${svgResponse.status}`);
                 }
                 
                 const svgContent = await svgResponse.text();
                 console.log('✅ SVG loaded successfully, length:', svgContent.length);
+                console.log('📐 SVG viewBox check:', svgContent.substring(0, 200));
 
                 // Step 2: Load graph data
                 status.textContent = 'Loading navigation data...';
@@ -2330,11 +2332,15 @@
 
             } catch (error) {
                 console.error('❌ Error loading application:', error);
+                console.error('❌ Current floor:', window.currentFloor);
+                console.error('❌ SVG Path attempted:', svgPath);
+                console.error('❌ Error stack:', error.stack);
                 status.textContent = 'Error loading map';
                 loading.innerHTML = `
                     <div style="text-align: center; color: #e74c3c;">
                         <h3>Loading Error</h3>
                         <p>Failed to load campus map: ${error.message}</p>
+                        <p>Floor: ${window.currentFloor || 'second'}</p>
                         <button onclick="location.reload()" style="padding: 10px 20px; background: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer;">
                             Retry
                         </button>
