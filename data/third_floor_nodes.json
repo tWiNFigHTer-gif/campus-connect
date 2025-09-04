@@ -2,8 +2,8 @@
   "nodes": [
     {
       "id": "stairway_1",
-      "x": 5297.1,
-      "y": 1138.0,
+      "x": 3406.8,
+      "y": 718.2,
       "label": "3F Stairway A",
       "type": "stairway",
       "searchable": true,
@@ -11,8 +11,8 @@
     },
     {
       "id": "stairway_2",
-      "x": 2534.9,
-      "y": 3762.8,
+      "x": 1630.0,
+      "y": 2374.8,
       "label": "3F Stairway B",
       "type": "stairway",
       "searchable": true,
@@ -20,8 +20,8 @@
     },
     {
       "id": "stairway_3",
-      "x": 4710.9,
-      "y": 2333.3,
+      "x": 3029.7,
+      "y": 1472.8,
       "label": "3F Stairway C",
       "type": "stairway",
       "searchable": true,
@@ -29,8 +29,8 @@
     },
     {
       "id": "stairway_4",
-      "x": 3722.2,
-      "y": 3070.1,
+      "x": 2394.1,
+      "y": 1938.1,
       "label": "3F Stairway D",
       "type": "stairway",
       "searchable": true,
@@ -38,8 +38,8 @@
     },
     {
       "id": "invisible_1",
-      "x": 3108.4,
-      "y": 2776.6,
+      "x": 1999.5,
+      "y": 1751.9,
       "label": "3F Corridor Point 1",
       "type": "invisible",
       "searchable": false,
@@ -47,8 +47,8 @@
     },
     {
       "id": "invisible_2",
-      "x": 3103.8,
-      "y": 3687.5,
+      "x": 1996.5,
+      "y": 2327.2,
       "label": "3F Corridor Point 2",
       "type": "invisible",
       "searchable": false,
@@ -56,8 +56,8 @@
     },
     {
       "id": "intersection_1",
-      "x": 5175.8,
-      "y": 1138.0,
+      "x": 3329.0,
+      "y": 718.2,
       "label": "3F Main Hub 1",
       "type": "intersection",
       "searchable": false,
@@ -65,8 +65,8 @@
     },
     {
       "id": "intersection_2",
-      "x": 2534.9,
-      "y": 3681.9,
+      "x": 1630.0,
+      "y": 2323.4,
       "label": "3F Main Hub 2",
       "type": "intersection",
       "searchable": false,
@@ -74,8 +74,8 @@
     },
     {
       "id": "intersection_3",
-      "x": 3562.0,
-      "y": 3223.9,
+      "x": 2291.1,
+      "y": 2034.6,
       "label": "3F Main Hub 3",
       "type": "intersection",
       "searchable": false,
@@ -83,8 +83,8 @@
     },
     {
       "id": "intersection_4",
-      "x": 4710.9,
-      "y": 2090.6,
+      "x": 3029.7,
+      "y": 1319.4,
       "label": "3F Main Hub 4",
       "type": "intersection",
       "searchable": false,
@@ -92,8 +92,8 @@
     },
     {
       "id": "class_1",
-      "x": 2534.9,
-      "y": 3607.0,
+      "x": 1630.0,
+      "y": 2276.2,
       "label": "3F Classroom 301",
       "type": "class",
       "searchable": true,
@@ -101,8 +101,8 @@
     },
     {
       "id": "class_2",
-      "x": 2624.6,
-      "y": 3683.1,
+      "x": 1687.7,
+      "y": 2324.4,
       "label": "3F Classroom 302",
       "type": "class",
       "searchable": true,
@@ -110,8 +110,8 @@
     },
     {
       "id": "class_3",
-      "x": 2476.0,
-      "y": 3765.8,
+      "x": 1591.8,
+      "y": 2376.9,
       "label": "3F Classroom 303",
       "type": "class",
       "searchable": true,
@@ -119,8 +119,8 @@
     },
     {
       "id": "class_4",
-      "x": 4262.2,
-      "y": 1057.2,
+      "x": 2741.3,
+      "y": 667.2,
       "label": "3F Classroom 304",
       "type": "class",
       "searchable": true,
@@ -128,8 +128,8 @@
     },
     {
       "id": "class_5",
-      "x": 4341.5,
-      "y": 1054.0,
+      "x": 2792.4,
+      "y": 665.2,
       "label": "3F Classroom 305",
       "type": "class",
       "searchable": true,
@@ -137,8 +137,8 @@
     },
     {
       "id": "class_6",
-      "x": 5173.3,
-      "y": 1057.2,
+      "x": 3327.4,
+      "y": 667.2,
       "label": "3F Classroom 306",
       "type": "class",
       "searchable": true,
@@ -146,8 +146,8 @@
     },
     {
       "id": "class_7",
-      "x": 2476.0,
-      "y": 3681.9,
+      "x": 1591.8,
+      "y": 2323.4,
       "label": "3F Classroom 307",
       "type": "class",
       "searchable": true,
@@ -155,8 +155,8 @@
     },
     {
       "id": "class_8",
-      "x": 3033.5,
-      "y": 2775.8,
+      "x": 1951.0,
+      "y": 1751.4,
       "label": "3F Classroom 308",
       "type": "class",
       "searchable": true,
@@ -164,8 +164,8 @@
     },
     {
       "id": "class_9",
-      "x": 2621.9,
-      "y": 2775.8,
+      "x": 1686.2,
+      "y": 1751.4,
       "label": "3F Classroom 309",
       "type": "class",
       "searchable": true,
@@ -173,8 +173,8 @@
     },
     {
       "id": "class_10",
-      "x": 2534.9,
-      "y": 2777.4,
+      "x": 1630.0,
+      "y": 1752.4,
       "label": "3F Classroom 310",
       "type": "class",
       "searchable": true,
@@ -182,8 +182,8 @@
     },
     {
       "id": "class_11",
-      "x": 2533.3,
-      "y": 2852.0,
+      "x": 1629.0,
+      "y": 1799.5,
       "label": "3F Classroom 311",
       "type": "class",
       "searchable": true,
@@ -191,8 +191,8 @@
     },
     {
       "id": "class_12",
-      "x": 3154.3,
-      "y": 3637.8,
+      "x": 2029.3,
+      "y": 2295.8,
       "label": "3F Classroom 312",
       "type": "class",
       "searchable": true,
@@ -200,8 +200,8 @@
     },
     {
       "id": "class_13",
-      "x": 3235.2,
-      "y": 3560.0,
+      "x": 2081.3,
+      "y": 2246.7,
       "label": "3F Classroom 313",
       "type": "class",
       "searchable": true,
@@ -209,8 +209,8 @@
     },
     {
       "id": "class_14",
-      "x": 4080.1,
-      "y": 2723.0,
+      "x": 2624.0,
+      "y": 1719.0,
       "label": "3F Classroom 314",
       "type": "class",
       "searchable": true,
@@ -218,8 +218,8 @@
     },
     {
       "id": "class_15",
-      "x": 4461.5,
-      "y": 1836.8,
+      "x": 2869.3,
+      "y": 1159.3,
       "label": "3F Classroom 315",
       "type": "class",
       "searchable": true,
@@ -227,8 +227,8 @@
     },
     {
       "id": "class_16",
-      "x": 4270.6,
-      "y": 1646.8,
+      "x": 2746.6,
+      "y": 1039.4,
       "label": "3F Classroom 316",
       "type": "class",
       "searchable": true,
@@ -236,8 +236,8 @@
     },
     {
       "id": "class_17",
-      "x": 4261.3,
-      "y": 1282.3,
+      "x": 2741.0,
+      "y": 809.2,
       "label": "3F Classroom 317",
       "type": "class",
       "searchable": true,
@@ -245,8 +245,8 @@
     },
     {
       "id": "class_18",
-      "x": 4261.3,
-      "y": 1204.6,
+      "x": 2741.0,
+      "y": 760.2,
       "label": "3F Classroom 318",
       "type": "class",
       "searchable": true,
@@ -254,8 +254,8 @@
     },
     {
       "id": "class_19",
-      "x": 5175.8,
-      "y": 1414.0,
+      "x": 3329.0,
+      "y": 892.5,
       "label": "3F Classroom 319",
       "type": "class",
       "searchable": true,
@@ -263,8 +263,8 @@
     },
     {
       "id": "class_20",
-      "x": 5164.9,
-      "y": 1642.1,
+      "x": 3322.0,
+      "y": 1036.0,
       "label": "3F Classroom 320",
       "type": "class",
       "searchable": true,
@@ -272,8 +272,8 @@
     },
     {
       "id": "class_21",
-      "x": 5061.0,
-      "y": 1745.1,
+      "x": 3255.4,
+      "y": 1101.4,
       "label": "3F Classroom 321",
       "type": "class",
       "searchable": true,
@@ -282,148 +282,148 @@
   ],
   "graph": {
     "stairway_1": {
-      "intersection_1": 121.3
+      "intersection_1": 78.0
     },
     "stairway_2": {
-      "intersection_2": 80.9,
-      "class_3": 84.0
+      "intersection_2": 51.0,
+      "class_3": 53.0
     },
     "stairway_3": {
-      "intersection_4": 242.7
+      "intersection_4": 153.0
     },
     "stairway_4": {
-      "intersection_3": 231.4
+      "intersection_3": 146.0
     },
     "invisible_1": {
-      "class_8": 75.4,
-      "class_9": 486.5,
-      "intersection_3": 910.3
+      "class_8": 48.5,
+      "class_9": 313.5,
+      "intersection_3": 574.0
     },
     "invisible_2": {
-      "intersection_2": 569.2,
-      "class_12": 103.1,
-      "intersection_3": 593.0
+      "intersection_2": 366.5,
+      "class_12": 65.0,
+      "intersection_3": 374.0
     },
     "intersection_1": {
-      "stairway_1": 121.3,
-      "class_6": 80.8,
-      "class_19": 276.0
+      "stairway_1": 78.0,
+      "class_6": 51.0,
+      "class_19": 174.0
     },
     "intersection_2": {
-      "stairway_2": 80.9,
-      "class_1": 74.9,
-      "class_2": 89.7,
-      "class_7": 60.2,
-      "invisible_2": 569.2
+      "stairway_2": 51.0,
+      "class_1": 47.0,
+      "class_2": 58.0,
+      "class_7": 38.0,
+      "invisible_2": 366.5
     },
     "intersection_3": {
-      "stairway_4": 231.4,
-      "invisible_1": 910.3,
-      "invisible_2": 593.0,
-      "class_12": 413.8,
-      "class_13": 333.0
+      "stairway_4": 146.0,
+      "invisible_1": 574.0,
+      "invisible_2": 374.0,
+      "class_12": 261.0,
+      "class_13": 210.0
     },
     "intersection_4": {
-      "stairway_3": 242.7,
-      "class_15": 317.0,
-      "class_16": 501.4,
-      "class_21": 436.3
+      "stairway_3": 153.0,
+      "class_15": 200.0,
+      "class_16": 316.0,
+      "class_21": 275.0
     },
     "class_1": {
-      "intersection_2": 74.9,
-      "class_10": 830.4,
-      "class_11": 756.8
+      "intersection_2": 47.0,
+      "class_10": 524.0,
+      "class_11": 477.0
     },
     "class_2": {
-      "intersection_2": 89.7,
-      "class_7": 152.3
+      "intersection_2": 58.0,
+      "class_7": 96.0
     },
     "class_3": {
-      "stairway_2": 84.0,
-      "class_7": 87.2
+      "stairway_2": 53.0,
+      "class_7": 55.0
     },
     "class_4": {
-      "class_5": 79.3,
-      "class_17": 225.1,
-      "class_18": 147.4
+      "class_5": 51.0,
+      "class_17": 142.0,
+      "class_18": 93.0
     },
     "class_5": {
-      "class_4": 79.3,
-      "class_6": 831.8
+      "class_4": 51.0,
+      "class_6": 535.0
     },
     "class_6": {
-      "intersection_1": 80.8,
-      "class_5": 831.8,
-      "class_19": 357.0
+      "intersection_1": 51.0,
+      "class_5": 535.0,
+      "class_19": 225.0
     },
     "class_7": {
-      "intersection_2": 60.2,
-      "class_2": 152.3,
-      "class_3": 87.2
+      "intersection_2": 38.0,
+      "class_2": 96.0,
+      "class_3": 55.0
     },
     "class_8": {
-      "invisible_1": 75.4,
-      "class_9": 411.6,
-      "class_10": 498.6
+      "invisible_1": 48.5,
+      "class_9": 265.0,
+      "class_10": 321.0
     },
     "class_9": {
-      "invisible_1": 486.5,
-      "class_8": 411.6,
-      "class_10": 87.0
+      "invisible_1": 313.5,
+      "class_8": 265.0,
+      "class_10": 56.0
     },
     "class_10": {
-      "class_1": 830.4,
-      "class_8": 498.6,
-      "class_9": 87.0,
-      "class_11": 74.6
+      "class_1": 524.0,
+      "class_8": 321.0,
+      "class_9": 56.0,
+      "class_11": 47.0
     },
     "class_11": {
-      "class_1": 756.8,
-      "class_10": 74.6
+      "class_1": 477.0,
+      "class_10": 47.0
     },
     "class_12": {
-      "invisible_2": 103.1,
-      "intersection_3": 413.8,
-      "class_13": 111.0
+      "invisible_2": 65.0,
+      "intersection_3": 261.0,
+      "class_13": 70.0
     },
     "class_13": {
-      "intersection_3": 333.0,
-      "class_12": 111.0
+      "intersection_3": 210.0,
+      "class_12": 70.0
     },
     "class_14": {
-      "class_15": 886.0
+      "class_15": 559.0
     },
     "class_15": {
-      "intersection_4": 317.0,
-      "class_14": 886.0,
-      "class_16": 230.0
+      "intersection_4": 200.0,
+      "class_14": 559.0,
+      "class_16": 145.0
     },
     "class_16": {
-      "intersection_4": 501.4,
-      "class_15": 230.0,
-      "class_17": 364.5
+      "intersection_4": 316.0,
+      "class_15": 145.0,
+      "class_17": 230.0
     },
     "class_17": {
-      "class_4": 225.1,
-      "class_16": 364.5,
-      "class_18": 77.7
+      "class_4": 142.0,
+      "class_16": 230.0,
+      "class_18": 49.0
     },
     "class_18": {
-      "class_4": 147.4,
-      "class_17": 77.7
+      "class_4": 93.0,
+      "class_17": 49.0
     },
     "class_19": {
-      "intersection_1": 276.0,
-      "class_6": 357.0,
-      "class_20": 228.1
+      "intersection_1": 174.0,
+      "class_6": 225.0,
+      "class_20": 144.0
     },
     "class_20": {
-      "class_19": 228.1,
-      "class_21": 134.8
+      "class_19": 144.0,
+      "class_21": 85.0
     },
     "class_21": {
-      "intersection_4": 436.3,
-      "class_20": 134.8
+      "intersection_4": 275.0,
+      "class_20": 85.0
     }
   }
 }
