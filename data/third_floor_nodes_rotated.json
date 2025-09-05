@@ -297,13 +297,11 @@
       "class_308": 48.5,
       "class_309": 313.5,
       "class_310": 369.5,
-      "class_311": 416.0,
       "intersection_3": 291.5
     },
     "invisible_2": {
       "class_302": 309.0,
       "class_303": 405.0,
-      "class_312": 198.0,
       "intersection_2": 366.5
     },
     "intersection_1": {
@@ -312,8 +310,6 @@
       "class_305": 713.0,
       "class_306": 2.0,
       "class_319": 174.0,
-      "class_320": 317.8,
-      "class_321": 382.8,
       "intersection_4": 601.0
     },
     "intersection_2": {
@@ -328,130 +324,16 @@
       "stairway_4": 103.0,
       "class_312": 262.0,
       "class_313": 210.0,
-      "class_314": 168.0,
       "invisible_1": 291.5,
       "intersection_2": 661.0,
       "intersection_4": 739.0
     },
     "intersection_4": {
       "stairway_3": 153.0,
-      "class_314": 414.8,
       "class_315": 161.0,
       "class_316": 284.0,
-      "class_317": 439.0,
-      "class_318": 488.0,
       "intersection_1": 601.0,
       "intersection_3": 739.0
-    },
-    "class_301": {
-      "intersection_2": 47.0,
-      "class_302": 96.0,
-      "class_307": 85.0
-    },
-    "class_302": {
-      "intersection_2": 58.0,
-      "invisible_2": 309.0,
-      "class_301": 96.0,
-      "class_303": 96.0
-    },
-    "class_303": {
-      "invisible_2": 405.0,
-      "class_302": 96.0,
-      "class_312": 309.0
-    },
-    "class_304": {
-      "intersection_1": 664.0,
-      "class_305": 49.0,
-      "class_306": 666.0
-    },
-    "class_305": {
-      "intersection_1": 713.0,
-      "class_304": 49.0,
-      "class_306": 715.0
-    },
-    "class_306": {
-      "intersection_1": 2.0,
-      "class_304": 666.0,
-      "class_305": 715.0
-    },
-    "class_307": {
-      "intersection_2": 38.0,
-      "class_301": 85.0
-    },
-    "class_308": {
-      "invisible_1": 48.5,
-      "class_309": 735.0,
-      "class_310": 1.0,
-      "class_311": 48.0
-    },
-    "class_309": {
-      "invisible_1": 313.5,
-      "class_308": 735.0,
-      "class_310": 736.0,
-      "class_311": 783.0
-    },
-    "class_310": {
-      "invisible_1": 369.5,
-      "class_308": 1.0,
-      "class_309": 736.0,
-      "class_311": 47.0
-    },
-    "class_311": {
-      "invisible_1": 416.0,
-      "class_308": 48.0,
-      "class_309": 783.0,
-      "class_310": 47.0
-    },
-    "class_312": {
-      "intersection_3": 262.0,
-      "invisible_2": 198.0,
-      "class_303": 309.0,
-      "class_313": 52.0
-    },
-    "class_313": {
-      "intersection_3": 210.0,
-      "class_312": 52.0,
-      "class_314": 42.0
-    },
-    "class_314": {
-      "intersection_3": 168.0,
-      "intersection_4": 414.8,
-      "class_313": 42.0
-    },
-    "class_315": {
-      "intersection_4": 161.0,
-      "class_316": 123.0
-    },
-    "class_316": {
-      "intersection_4": 284.0,
-      "class_315": 123.0,
-      "class_317": 230.0,
-      "class_318": 279.0
-    },
-    "class_317": {
-      "intersection_4": 439.0,
-      "class_316": 230.0,
-      "class_318": 49.0
-    },
-    "class_318": {
-      "intersection_4": 488.0,
-      "class_316": 279.0,
-      "class_317": 49.0
-    },
-    "class_319": {
-      "intersection_1": 174.0,
-      "class_320": 144.0,
-      "class_321": 233.0
-    },
-    "class_320": {
-      "intersection_1": 317.8,
-      "class_319": 144.0,
-      "class_321": 89.0
-    },
-    "class_321": {
-      "intersection_1": 382.8,
-      "class_319": 233.0,
-      "class_320": 89.0
     }
   }
 }

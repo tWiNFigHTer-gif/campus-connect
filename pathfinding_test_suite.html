@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Connect - Pathfinding Test Suite</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .failure { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .warning { background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover { background: #0056b3; }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stat {
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .floor-switch {
+            margin: 10px 0;
+        }
+        select {
+            padding: 5px 10px;
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Campus Connect - Pathfinding Test Suite</h1>
+        
+        <div class="floor-switch">
+            <label>Current Floor:</label>
+            <select id="floorSelect">
+                <option value="second">Second Floor</option>
+                <option value="third">Third Floor</option>
+            </select>
+            <button onclick="loadFloorData()">Load Floor Data</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat">
+                <strong>Total Nodes:</strong>
+                <div id="totalNodes">0</div>
+            </div>
+            <div class="stat">
+                <strong>Searchable Nodes:</strong>
+                <div id="searchableNodes">0</div>
+            </div>
+            <div class="stat">
+                <strong>Graph Connections:</strong>
+                <div id="graphConnections">0</div>
+            </div>
+        </div>
+
+        <button onclick="runAllTests()">🚀 Run All Tests</button>
+        <button onclick="runConnectivityTests()">🔗 Test Connectivity</button>
+        <button onclick="runPathfindingTests()">🛤️ Test Pathfinding</button>
+        <button onclick="runPerformanceTests()">⚡ Performance Tests</button>
+        <button onclick="clearResults()">🧹 Clear Results</button>
+
+        <div id="results"></div>
+
+        <div class="test-section">
+            <h3>Manual Test Controls</h3>
+            <div>
+                <select id="startNodeSelect">
+                    <option value="">Select Start Node</option>
+                </select>
+                <select id="endNodeSelect">
+                    <option value="">Select End Node</option>
+                </select>
+                <button onclick="testSpecificPath()">Test Path</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let campusNodes = [];
+        let campusGraph = {};
+        let testResults = [];
+
+        // Load data for current floor
+        async function loadFloorData() {
+            const floor = document.getElementById('floorSelect').value;
+            const resultsDiv = document.getElementById('results');
+            
+            addResult('info', `Loading ${floor} floor data...`);
+            
+            try {
+                const nodesPath = floor === 'third' ? './data/third_floor_nodes.json' : 'pathfinding_graph_structural.json';
+                const response = await fetch(nodesPath);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                campusNodes = data.nodes || [];
+                campusGraph = data.graph || data.edges || {};
+                
+                updateStats();
+                populateNodeSelects();
+                addResult('success', `✅ Loaded ${campusNodes.length} nodes and ${Object.keys(campusGraph).length} graph connections`);
+                
+            } catch (error) {
+                addResult('failure', `❌ Error loading data: ${error.message}`);
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalNodes').textContent = campusNodes.length;
+            document.getElementById('searchableNodes').textContent = 
+                campusNodes.filter(n => n.searchable).length;
+            document.getElementById('graphConnections').textContent = 
+                Object.keys(campusGraph).length;
+        }
+
+        function populateNodeSelects() {
+            const startSelect = document.getElementById('startNodeSelect');
+            const endSelect = document.getElementById('endNodeSelect');
+            
+            // Clear existing options except first
+            startSelect.innerHTML = '<option value="">Select Start Node</option>';
+            endSelect.innerHTML = '<option value="">Select End Node</option>';
+            
+            campusNodes.forEach(node => {
+                const option1 = new Option(`${node.label} (${node.id})`, node.id);
+                const option2 = new Option(`${node.label} (${node.id})`, node.id);
+                startSelect.appendChild(option1);
+                endSelect.appendChild(option2);
+            });
+        }
+
+        function addResult(type, message) {
+            const resultsDiv = document.getElementById('results');
+            const result = document.createElement('div');
+            result.className = `test-result ${type}`;
+            result.innerHTML = `${new Date().toLocaleTimeString()}: ${message}`;
+            resultsDiv.appendChild(result);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            testResults = [];
+        }
+
+        // A* Pathfinding Algorithm (copied from main app)
+        function astarPath(graph, nodes, start, end) {
+            const endCoords = getNodeCoordinates(nodes, end);
+            const startCoords = getNodeCoordinates(nodes, start);
+            
+            if (!endCoords || !startCoords) {
+                return null;
+            }
+
+            if (!graph[start] || !graph[end]) {
+                return null;
+            }
+
+            const gScore = {};
+            const fScore = {};
+            const previous = {};
+            const openSet = new Set();
+            const closedSet = new Set();
+
+            for (const node in graph) {
+                gScore[node] = Infinity;
+                fScore[node] = Infinity;
+                previous[node] = null;
+            }
+
+            gScore[start] = 0;
+            fScore[start] = heuristicDistance(startCoords, endCoords);
+            openSet.add(start);
+
+            while (openSet.size > 0) {
+                let current = null;
+                let minFScore = Infinity;
+                for (const node of openSet) {
+                    if (fScore[node] < minFScore) {
+                        minFScore = fScore[node];
+                        current = node;
+                    }
+                }
+
+                if (current === null) break;
+                if (current === end) break;
+
+                openSet.delete(current);
+                closedSet.add(current);
+
+                for (const neighbor in graph[current] || {}) {
+                    if (closedSet.has(neighbor)) continue;
+                    
+                    const tentativeGScore = gScore[current] + graph[current][neighbor];
+                    
+                    if (!openSet.has(neighbor)) {
+                        openSet.add(neighbor);
+                    } else if (tentativeGScore >= gScore[neighbor]) {
+                        continue;
+                    }
+
+                    previous[neighbor] = current;
+                    gScore[neighbor] = tentativeGScore;
+                    
+                    const neighborCoords = getNodeCoordinates(nodes, neighbor);
+                    if (neighborCoords) {
+                        const hScore = heuristicDistance(neighborCoords, endCoords);
+                        fScore[neighbor] = gScore[neighbor] + hScore;
+                    }
+                }
+            }
+
+            const path = [];
+            let current = end;
+            while (current !== null) {
+                path.unshift(current);
+                current = previous[current];
+            }
+
+            return path.length > 1 && path[0] === start ? path : null;
+        }
+
+        function getNodeCoordinates(nodes, nodeId) {
+            for (const node of nodes) {
+                if (node.id === nodeId) {
+                    return { x: node.x, y: node.y };
+                }
+            }
+            return null;
+        }
+
+        function heuristicDistance(coord1, coord2) {
+            const dx = coord2.x - coord1.x;
+            const dy = coord2.y - coord1.y;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        // Test Functions
+        async function runAllTests() {
+            clearResults();
+            addResult('info', '🚀 Starting comprehensive test suite...');
+            
+            await runConnectivityTests();
+            await runPathfindingTests();
+            await runPerformanceTests();
+            
+            const summary = analyzeResults();
+            addResult('info', `📊 Test Suite Complete: ${summary}`);
+        }
+
+        function runConnectivityTests() {
+            addResult('info', '🔗 Testing node connectivity...');
+            
+            let isolatedNodes = [];
+            let totalConnections = 0;
+            
+            // Check each node has at least one connection
+            campusNodes.forEach(node => {
+                if (!campusGraph[node.id] || Object.keys(campusGraph[node.id]).length === 0) {
+                    isolatedNodes.push(node.id);
+                } else {
+                    totalConnections += Object.keys(campusGraph[node.id]).length;
+                }
+            });
+
+            if (isolatedNodes.length === 0) {
+                addResult('success', `✅ All ${campusNodes.length} nodes are connected to the graph`);
+            } else {
+                addResult('failure', `❌ Found ${isolatedNodes.length} isolated nodes: ${isolatedNodes.join(', ')}`);
+            }
+
+            // Check bidirectional connections
+            let unidirectionalConnections = 0;
+            Object.keys(campusGraph).forEach(nodeId => {
+                Object.keys(campusGraph[nodeId]).forEach(neighborId => {
+                    if (!campusGraph[neighborId] || !campusGraph[neighborId][nodeId]) {
+                        unidirectionalConnections++;
+                    }
+                });
+            });
+
+            if (unidirectionalConnections === 0) {
+                addResult('success', '✅ All graph connections are bidirectional');
+            } else {
+                addResult('warning', `⚠️ Found ${unidirectionalConnections} unidirectional connections`);
+            }
+
+            addResult('info', `📊 Total connections: ${totalConnections/2} (bidirectional pairs)`);
+        }
+
+        function runPathfindingTests() {
+            addResult('info', '🛤️ Testing pathfinding algorithm...');
+            
+            const searchableNodes = campusNodes.filter(n => n.searchable);
+            const stairwayNodes = campusNodes.filter(n => n.type === 'stairway');
+            const classNodes = campusNodes.filter(n => n.type === 'class');
+            
+            let successfulPaths = 0;
+            let failedPaths = 0;
+            let totalDistance = 0;
+            let pathsToTest = [];
+
+            // Test 1: All stairways should connect to each other
+            addResult('info', '🔼 Testing stairway-to-stairway paths...');
+            for (let i = 0; i < stairwayNodes.length; i++) {
+                for (let j = i + 1; j < stairwayNodes.length; j++) {
+                    pathsToTest.push({
+                        start: stairwayNodes[i].id,
+                        end: stairwayNodes[j].id,
+                        type: 'stairway-to-stairway'
+                    });
+                }
+            }
+
+            // Test 2: Sample of class-to-class paths
+            addResult('info', '🏫 Testing class-to-class paths...');
+            const classTestCount = Math.min(20, classNodes.length * (classNodes.length - 1) / 2);
+            for (let i = 0; i < classTestCount && i < classNodes.length; i++) {
+                for (let j = i + 1; j < classNodes.length && pathsToTest.length < classTestCount + stairwayNodes.length * (stairwayNodes.length - 1) / 2; j++) {
+                    pathsToTest.push({
+                        start: classNodes[i].id,
+                        end: classNodes[j].id,
+                        type: 'class-to-class'
+                    });
+                }
+            }
+
+            // Test 3: Stairway to class connections
+            addResult('info', '🔄 Testing stairway-to-class paths...');
+            stairwayNodes.forEach(stairway => {
+                classNodes.slice(0, 3).forEach(classroom => {
+                    pathsToTest.push({
+                        start: stairway.id,
+                        end: classroom.id,
+                        type: 'stairway-to-class'
+                    });
+                });
+            });
+
+            // Execute all path tests
+            const testStartTime = performance.now();
+            pathsToTest.forEach(test => {
+                const path = astarPath(campusGraph, campusNodes, test.start, test.end);
+                if (path && path.length > 1) {
+                    successfulPaths++;
+                    const distance = calculatePathDistance(path);
+                    totalDistance += distance;
+                } else {
+                    failedPaths++;
+                    addResult('failure', `❌ No path found: ${test.start} → ${test.end} (${test.type})`);
+                }
+            });
+            const testEndTime = performance.now();
+
+            // Results summary
+            const successRate = ((successfulPaths / pathsToTest.length) * 100).toFixed(1);
+            const avgDistance = totalDistance / successfulPaths;
+            
+            if (successRate > 95) {
+                addResult('success', `✅ Pathfinding Success Rate: ${successRate}% (${successfulPaths}/${pathsToTest.length})`);
+            } else if (successRate > 80) {
+                addResult('warning', `⚠️ Pathfinding Success Rate: ${successRate}% (${successfulPaths}/${pathsToTest.length})`);
+            } else {
+                addResult('failure', `❌ Pathfinding Success Rate: ${successRate}% (${successfulPaths}/${pathsToTest.length})`);
+            }
+            
+            addResult('info', `📊 Average path distance: ${avgDistance.toFixed(1)} units`);
+            addResult('info', `⏱️ Path testing completed in ${(testEndTime - testStartTime).toFixed(2)}ms`);
+        }
+
+        function calculatePathDistance(path) {
+            let distance = 0;
+            for (let i = 0; i < path.length - 1; i++) {
+                const currentNode = campusNodes.find(n => n.id === path[i]);
+                const nextNode = campusNodes.find(n => n.id === path[i + 1]);
+                if (currentNode && nextNode) {
+                    distance += Math.sqrt(
+                        Math.pow(nextNode.x - currentNode.x, 2) + 
+                        Math.pow(nextNode.y - currentNode.y, 2)
+                    );
+                }
+            }
+            return distance;
+        }
+
+        function runPerformanceTests() {
+            addResult('info', '⚡ Running performance tests...');
+            
+            const testCases = [
+                { iterations: 100, description: 'Short paths (nearby nodes)' },
+                { iterations: 50, description: 'Medium paths (cross-floor)' },
+                { iterations: 20, description: 'Long paths (far nodes)' }
+            ];
+
+            testCases.forEach(testCase => {
+                const startTime = performance.now();
+                let successfulRuns = 0;
+
+                for (let i = 0; i < testCase.iterations; i++) {
+                    const randomStart = campusNodes[Math.floor(Math.random() * campusNodes.length)];
+                    const randomEnd = campusNodes[Math.floor(Math.random() * campusNodes.length)];
+                    
+                    if (randomStart.id !== randomEnd.id) {
+                        const path = astarPath(campusGraph, campusNodes, randomStart.id, randomEnd.id);
+                        if (path && path.length > 1) {
+                            successfulRuns++;
+                        }
+                    }
+                }
+
+                const endTime = performance.now();
+                const avgTime = (endTime - startTime) / testCase.iterations;
+                const successRate = (successfulRuns / testCase.iterations * 100).toFixed(1);
+                
+                addResult('info', `🎯 ${testCase.description}: ${avgTime.toFixed(2)}ms avg, ${successRate}% success`);
+            });
+        }
+
+        function testSpecificPath() {
+            const startId = document.getElementById('startNodeSelect').value;
+            const endId = document.getElementById('endNodeSelect').value;
+            
+            if (!startId || !endId) {
+                addResult('warning', '⚠️ Please select both start and end nodes');
+                return;
+            }
+
+            if (startId === endId) {
+                addResult('warning', '⚠️ Start and end nodes cannot be the same');
+                return;
+            }
+
+            const startTime = performance.now();
+            const path = astarPath(campusGraph, campusNodes, startId, endId);
+            const endTime = performance.now();
+
+            const startNode = campusNodes.find(n => n.id === startId);
+            const endNode = campusNodes.find(n => n.id === endId);
+
+            if (path && path.length > 1) {
+                const distance = calculatePathDistance(path);
+                const directDistance = Math.sqrt(
+                    Math.pow(endNode.x - startNode.x, 2) + 
+                    Math.pow(endNode.y - startNode.y, 2)
+                );
+                const efficiency = (directDistance / distance * 100).toFixed(1);
+                
+                addResult('success', 
+                    `✅ Path found: ${startNode.label} → ${endNode.label}<br>` +
+                    `   Steps: ${path.length - 1} | Distance: ${distance.toFixed(1)} units<br>` +
+                    `   Efficiency: ${efficiency}% | Time: ${(endTime - startTime).toFixed(2)}ms<br>` +
+                    `   Route: ${path.join(' → ')}`
+                );
+            } else {
+                addResult('failure', 
+                    `❌ No path found: ${startNode.label} → ${endNode.label}<br>` +
+                    `   Time: ${(endTime - startTime).toFixed(2)}ms`
+                );
+            }
+        }
+
+        function analyzeResults() {
+            const results = document.querySelectorAll('.test-result');
+            let success = 0, failure = 0, warning = 0, info = 0;
+            
+            results.forEach(result => {
+                if (result.classList.contains('success')) success++;
+                else if (result.classList.contains('failure')) failure++;
+                else if (result.classList.contains('warning')) warning++;
+                else if (result.classList.contains('info')) info++;
+            });
+
+            return `✅ ${success} success, ❌ ${failure} failures, ⚠️ ${warning} warnings, ℹ️ ${info} info`;
+        }
+
+        // Load second floor by default
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFloorData();
+        });
+    </script>
+</body>
+</html>
