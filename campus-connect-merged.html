@@ -3141,5 +3141,36 @@
 
 
     </script>
+
+    <!-- Testing and Debugging Scripts -->
+    <script src="browser_diagnostics.js"></script>
+    <script src="browser_pathfinding_tests.js"></script>
+    <script src="complete_path_fix.js"></script>
+    <script src="pathfinding_tester.js"></script>
+    <script src="debug_310_305.js"></script>
+    <script src="debug_room_search.js"></script>
+    <script src="emergency_diagnostic.js"></script>
+    <script src="quick_diagnostic.js"></script>
+    <script src="manual_path_tests.js"></script>
+    
+    <script>
+        // Initialize testing and debugging tools after campus system loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('🧪 Testing and debugging tools loaded');
+                console.log('📊 Available tools:');
+                console.log('  - Browser Diagnostics: window.campusDiagnostics');
+                console.log('  - Pathfinding Tests: window.pathfindingTests');
+                console.log('  - Complete Path Fix: window.completePathFix');
+                console.log('  - Pathfinding Tester: window.pathfindingTester');
+                console.log('  - Room 310-305 Debug: window.debug310To305');
+                console.log('  - Room Search Debug: window.debugRoomSearch');
+                console.log('  - Emergency Diagnostic: window.EmergencyDiagnostic (Ctrl+Shift+E)');
+                console.log('  - Quick Diagnostic: window.QuickDiagnostic');
+                console.log('  - Manual Path Tests: window.manualPathTests');
+                console.log('🎯 Open pathfinding_test_suite.html for comprehensive testing interface');
+            }, 5000);
+        });
+    </script>
 </body>
 </html>
