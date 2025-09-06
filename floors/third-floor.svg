@@ -2350,6 +2350,46 @@
 <path d="M2855.62 1189.93L2854.33 1188.88L2856.69 1186.56L2857.76 1187.62" stroke="#FF0000" stroke-width="0.36" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="M3357 839H3567" stroke="#808080"/>
 <line x1="3531.5" y1="839" x2="3531.5" y2="783" stroke="#808080"/>
+
+<!-- Navigation Nodes -->
+<!-- Stairway nodes (#FFAE00) - only for navigating if mentioned, not for interconnection -->
+<circle cx="852.5" cy="718.0" r="8" fill="#FFAE00" stroke="#FFAE00" stroke-width="2" class="stairway-node" data-type="stairway" data-id="stair-1"/>
+<circle cx="1629.5" cy="2374.0" r="8" fill="#FFAE00" stroke="#FFAE00" stroke-width="2" class="stairway-node" data-type="stairway" data-id="stair-2"/>
+<circle cx="3029.5" cy="1472.0" r="8" fill="#FFAE00" stroke="#FFAE00" stroke-width="2" class="stairway-node" data-type="stairway" data-id="stair-3"/>
+<circle cx="1865.5" cy="1937.0" r="8" fill="#FFAE00" stroke="#FFAE00" stroke-width="2" class="stairway-node" data-type="stairway" data-id="stair-4"/>
+
+<!-- Invisible nodes (#33CA60) - for path definition, do not appear in search -->
+<circle cx="2260.0" cy="1751.5" r="6" fill="#33CA60" stroke="#33CA60" stroke-width="1" class="invisible-node" data-type="invisible" data-id="invisible-1" style="opacity:0.7"/>
+<circle cx="1996.0" cy="2326.5" r="6" fill="#33CA60" stroke="#33CA60" stroke-width="1" class="invisible-node" data-type="invisible" data-id="invisible-2" style="opacity:0.7"/>
+
+<!-- Intersection nodes (#3500C6) - parent nodes, do not appear in search bar -->
+<circle cx="930.5" cy="718.0" r="10" fill="#3500C6" stroke="#3500C6" stroke-width="3" class="intersection-node" data-type="intersection" data-id="intersection-1"/>
+<circle cx="1629.5" cy="2323.0" r="10" fill="#3500C6" stroke="#3500C6" stroke-width="3" class="intersection-node" data-type="intersection" data-id="intersection-2"/>
+<circle cx="1968.5" cy="2034.0" r="10" fill="#3500C6" stroke="#3500C6" stroke-width="3" class="intersection-node" data-type="intersection" data-id="intersection-3"/>
+<circle cx="1229.5" cy="1319.0" r="10" fill="#3500C6" stroke="#3500C6" stroke-width="3" class="intersection-node" data-type="intersection" data-id="intersection-4"/>
+
+<!-- Class nodes (#6C1B1C) - basic interconnecting nodes, start/end points for navigation -->
+<circle cx="1629.5" cy="2276.0" r="7" fill="#6C1B1C" stroke="#6C1B1C" stroke-width="2" class="class-node" data-type="class" data-id="class-1"/>
+<circle cx="1571.5" cy="2324.0" r="7" fill="#6C1B1C" stroke="#6C1B1C" stroke-width="2" class="class-node" data-type="class" data-id="class-2"/>
+<circle cx="1667.5" cy="2376.0" r="7" fill="#6C1B1C" stroke="#6C1B1C" stroke-width="2" class="class-node" data-type="class" data-id="class-3"/>
+<circle cx="1518.5" cy="667.0" r="7" fill="#6C1B1C" stroke="#6C1B1C" stroke-width="2" class="class-node" data-type="class" data-id="class-4"/>
+<circle cx="1467.5" cy="665.0" r="7" fill="#6C1B1C" stroke="#6C1B1C" stroke-width="2" class="class-node" data-type="class" data-id="class-5"/>
+<circle cx="932.5" cy="667.0" r="7" fill="#6C1B1C" stroke="#6C1B1C" stroke-width="2" class="class-node" data-type="class" data-id="class-6"/>
+<circle cx="1667.5" cy="2323.0" r="7" fill="#6C1B1C" stroke="#6C1B1C" stroke-width="2" class="class-node" data-type="class" data-id="class-7"/>
+<circle cx="2308.5" cy="1751.0" r="7" fill="#6C1B1C" stroke="#6C1B1C" stroke-width="2" class="class-node" data-type="class" data-id="class-8"/>
+<circle cx="1573.5" cy="1751.0" r="7" fill="#6C1B1C" stroke="#6C1B1C" stroke-width="2" class="class-node" data-type="class" data-id="class-9"/>
+<circle cx="1629.5" cy="1752.0" r="7" fill="#6C1B1C" stroke="#6C1B1C" stroke-width="2" class="class-node" data-type="class" data-id="class-10"/>
+<circle cx="1628.5" cy="1799.0" r="7" fill="#6C1B1C" stroke="#6C1B1C" stroke-width="2" class="class-node" data-type="class" data-id="class-11"/>
+<circle cx="2028.5" cy="2295.0" r="7" fill="#6C1B1C" stroke="#6C1B1C" stroke-width="2" class="class-node" data-type="class" data-id="class-12"/>
+<circle cx="2080.5" cy="2246.0" r="7" fill="#6C1B1C" stroke="#6C1B1C" stroke-width="2" class="class-node" data-type="class" data-id="class-13"/>
+<circle cx="1623.5" cy="1718.0" r="7" fill="#6C1B1C" stroke="#6C1B1C" stroke-width="2" class="class-node" data-type="class" data-id="class-14"/>
+<circle cx="1390.5" cy="1159.0" r="7" fill="#6C1B1C" stroke="#6C1B1C" stroke-width="2" class="class-node" data-type="class" data-id="class-15"/>
+<circle cx="1513.5" cy="1039.0" r="7" fill="#6C1B1C" stroke="#6C1B1C" stroke-width="2" class="class-node" data-type="class" data-id="class-16"/>
+<circle cx="1519.5" cy="809.0" r="7" fill="#6C1B1C" stroke="#6C1B1C" stroke-width="2" class="class-node" data-type="class" data-id="class-17"/>
+<circle cx="1519.5" cy="760.0" r="7" fill="#6C1B1C" stroke="#6C1B1C" stroke-width="2" class="class-node" data-type="class" data-id="class-18"/>
+<circle cx="930.5" cy="892.0" r="7" fill="#6C1B1C" stroke="#6C1B1C" stroke-width="2" class="class-node" data-type="class" data-id="class-19"/>
+<circle cx="937.5" cy="1036.0" r="7" fill="#6C1B1C" stroke="#6C1B1C" stroke-width="2" class="class-node" data-type="class" data-id="class-20"/>
+<circle cx="1004.5" cy="1101.0" r="7" fill="#6C1B1C" stroke="#6C1B1C" stroke-width="2" class="class-node" data-type="class" data-id="class-21"/>
 </g>
 <defs>
 <clipPath id="clip0_0_1">

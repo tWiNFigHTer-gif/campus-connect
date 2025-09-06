@@ -1473,6 +1473,26 @@
                 )
                 .slice(0, 15); // Increased from 8 to 15 suggestions
 
+            // If no results on current floor, search other floor
+            if (suggestions.length === 0 && query.match(/^\d{3}$/)) {
+                const currentFloor = window.currentFloor || 'second';
+                const otherFloor = currentFloor === 'third' ? 'second' : 'third';
+                
+                // Show helpful message about floor switching
+                dropdown.innerHTML = `
+                    <div class="suggestion-item no-results" style="padding: 15px; color: #666; text-align: center; border-bottom: 1px solid #eee;">
+                        <div style="margin-bottom: 8px;">
+                            🔍 No room "${query}" found on ${currentFloor} floor
+                        </div>
+                        <div style="font-size: 12px; color: #999;">
+                            Try switching to ${otherFloor} floor or search for a different room
+                        </div>
+                    </div>
+                `;
+                dropdown.style.display = 'block';
+                return;
+            }
+
             displaySuggestions(suggestions, dropdown);
         }
 
@@ -2064,6 +2084,26 @@
                 .slice(0, 15); // Same limit as main search
 
             console.log(`🔍 Panel suggestions found: ${suggestions.length}`);
+            
+            // If no results on current floor, show helpful message
+            if (suggestions.length === 0 && query.match(/^\d{3}$/)) {
+                const currentFloor = window.currentFloor || 'second';
+                const otherFloor = currentFloor === 'third' ? 'second' : 'third';
+                
+                dropdown.innerHTML = `
+                    <div class="suggestion-item no-results" style="padding: 15px; color: #666; text-align: center; border-bottom: 1px solid #eee;">
+                        <div style="margin-bottom: 8px;">
+                            🔍 No room "${query}" found on ${currentFloor} floor
+                        </div>
+                        <div style="font-size: 12px; color: #999;">
+                            Try switching to ${otherFloor} floor
+                        </div>
+                    </div>
+                `;
+                dropdown.style.display = 'block';
+                return;
+            }
+            
             displayPanelSuggestions(suggestions, dropdown, type);
         }
 
@@ -2166,8 +2206,11 @@
         function findPathFromPanel() {
             console.log('🔍 Finding path from panel...');
             console.log('Start:', startNode, 'Destination:', destinationNode);
+            console.log('Campus nodes available:', campusNodes?.length || 0);
+            console.log('Campus graph available:', Object.keys(campusGraph || {}).length);
             
             if (!startNode || !destinationNode) {
+                console.error('❌ Missing nodes:', { startNode, destinationNode });
                 alert('Please select both start location and destination');
                 return;
             }
@@ -2176,6 +2219,15 @@
                 alert('Start and destination cannot be the same');
                 return;
             }
+
+            // Debug: Check if nodes exist in data
+            const startNodeData = campusNodes.find(n => n.id === startNode);
+            const endNodeData = campusNodes.find(n => n.id === destinationNode);
+            
+            console.log('Start node data:', startNodeData);
+            console.log('End node data:', endNodeData);
+            console.log('Start in graph:', startNode in campusGraph);
+            console.log('End in graph:', destinationNode in campusGraph);
 
             console.log('📊 Graph nodes available:', Object.keys(campusGraph).length);
             console.log('🎯 Campus nodes available:', campusNodes.length);
@@ -2187,8 +2239,6 @@
                 drawPath(path);
                 currentPath = path;
                 
-                const startNodeData = campusNodes.find(n => n.id === startNode);
-                const endNodeData = campusNodes.find(n => n.id === destinationNode);
                 const status = document.getElementById('status');
                 status.textContent = `Route: ${startNodeData?.label || startNode} → ${endNodeData?.label || destinationNode} (${path.length - 1} steps)`;
                 
@@ -2198,7 +2248,13 @@
                 console.log('🎉 Pathfinding completed successfully');
             } else {
                 console.error('❌ No path found');
-                alert('No path found between selected locations');
+                console.log('🔍 Debugging info:', {
+                    startExists: campusNodes.find(n => n.id === startNode),
+                    endExists: campusNodes.find(n => n.id === destinationNode),
+                    startInGraph: startNode in campusGraph,
+                    endInGraph: destinationNode in campusGraph
+                });
+                alert('No path found between selected locations. Check console for details.');
             }
         }
 
@@ -2354,10 +2410,17 @@
             console.log('🔄 Starting coordinate transformation...');
             const currentFloor = window.currentFloor || 'second';
             
-            // Use appropriate dimensions for each floor
-            const dimensions = currentFloor === 'third' 
-                ? { width: 4259, height: 2952 }
-                : { width: 8830, height: 6238 };
+            // For third floor, coordinates are already rotated in the JSON file
+            if (currentFloor === 'third') {
+                console.log('✅ Third floor detected - using coordinates as-is (already rotated in JSON)');
+                return {
+                    nodes: originalData.nodes || [],
+                    graph: originalData.graph || originalData.edges || {}
+                };
+            }
+            
+            // Use appropriate dimensions for second floor
+            const dimensions = { width: 8830, height: 6238 };
             
             console.log(`🔄 Using ${currentFloor} floor dimensions: ${dimensions.width}x${dimensions.height}`);
 
@@ -3078,5 +3141,14 @@
 
 
     </script>
+    
+    <!-- Load pathfinding test functions -->
+    <script src="browser_pathfinding_tests.js"></script>
+    <script src="debug_room_search.js"></script>
+    <script src="fix_room_310_305.js"></script>
+    <script src="complete_path_fix.js"></script>
+    
+    <!-- Load diagnostic functions -->
+    <script src="browser_diagnostics.js"></script>
 </body>
 </html>
