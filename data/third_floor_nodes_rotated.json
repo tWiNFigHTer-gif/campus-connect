@@ -2,8 +2,8 @@
   "nodes": [
     {
       "id": "stairway_1",
-      "x": 852.2,
-      "y": 2233.8,
+      "x": 3406.8,
+      "y": 718.1999999999998,
       "label": "3F Stairway A",
       "type": "stairway",
       "searchable": true,
@@ -11,8 +11,8 @@
     },
     {
       "id": "stairway_2",
-      "x": 2629.0,
-      "y": 577.2,
+      "x": 1630.0,
+      "y": 2374.8,
       "label": "3F Stairway B",
       "type": "stairway",
       "searchable": true,
@@ -20,8 +20,8 @@
     },
     {
       "id": "stairway_3",
-      "x": 1229.3,
-      "y": 1479.2,
+      "x": 3029.7,
+      "y": 1472.8,
       "label": "3F Stairway C",
       "type": "stairway",
       "searchable": true,
@@ -29,8 +29,8 @@
     },
     {
       "id": "stairway_4",
-      "x": 1864.9,
-      "y": 1013.9,
+      "x": 2394.1,
+      "y": 1938.1,
       "label": "3F Stairway D",
       "type": "stairway",
       "searchable": true,
@@ -38,8 +38,8 @@
     },
     {
       "id": "invisible_1",
-      "x": 2259.5,
-      "y": 1200.1,
+      "x": 1999.5,
+      "y": 1751.9,
       "label": "3F Corridor Point 1",
       "type": "invisible",
       "searchable": false,
@@ -47,8 +47,8 @@
     },
     {
       "id": "invisible_2",
-      "x": 2262.5,
-      "y": 624.8,
+      "x": 1996.5,
+      "y": 2327.2,
       "label": "3F Corridor Point 2",
       "type": "invisible",
       "searchable": false,
@@ -56,8 +56,8 @@
     },
     {
       "id": "intersection_1",
-      "x": 930.0,
-      "y": 2233.8,
+      "x": 3329.0,
+      "y": 718.1999999999998,
       "label": "3F Main Hub 1",
       "type": "intersection",
       "searchable": false,
@@ -65,8 +65,8 @@
     },
     {
       "id": "intersection_2",
-      "x": 2629.0,
-      "y": 628.6,
+      "x": 1630.0,
+      "y": 2323.4,
       "label": "3F Main Hub 2",
       "type": "intersection",
       "searchable": false,
@@ -74,8 +74,8 @@
     },
     {
       "id": "intersection_3",
-      "x": 1967.9,
-      "y": 917.4,
+      "x": 2291.1,
+      "y": 2034.6,
       "label": "3F Main Hub 3",
       "type": "intersection",
       "searchable": false,
@@ -83,8 +83,8 @@
     },
     {
       "id": "intersection_4",
-      "x": 1229.5,
-      "y": 1319.0,
+      "x": 3029.5,
+      "y": 1633.0,
       "label": "3F Main Hub 4",
       "type": "intersection",
       "searchable": false,
@@ -92,8 +92,8 @@
     },
     {
       "id": "class_301",
-      "x": 2629.5,
-      "y": 676.0,
+      "x": 1629.5,
+      "y": 2276.0,
       "label": "Room 301",
       "type": "class",
       "searchable": true,
@@ -101,8 +101,8 @@
     },
     {
       "id": "class_302",
-      "x": 2571.5,
-      "y": 628.0,
+      "x": 1687.5,
+      "y": 2324.0,
       "label": "Room 302",
       "type": "class",
       "searchable": true,
@@ -110,8 +110,8 @@
     },
     {
       "id": "class_303",
-      "x": 2667.5,
-      "y": 576.0,
+      "x": 1591.5,
+      "y": 2376.0,
       "label": "Room 303",
       "type": "class",
       "searchable": true,
@@ -119,8 +119,8 @@
     },
     {
       "id": "class_304",
-      "x": 1518.5,
-      "y": 2285.0,
+      "x": 2740.5,
+      "y": 667.0,
       "label": "Room 304",
       "type": "class",
       "searchable": true,
@@ -128,8 +128,8 @@
     },
     {
       "id": "class_305",
-      "x": 1467.5,
-      "y": 2287.0,
+      "x": 2791.5,
+      "y": 665.0,
       "label": "Room 305",
       "type": "class",
       "searchable": true,
@@ -137,8 +137,8 @@
     },
     {
       "id": "class_306",
-      "x": 932.5,
-      "y": 2285.0,
+      "x": 3326.5,
+      "y": 667.0,
       "label": "Room 306",
       "type": "class",
       "searchable": true,
@@ -146,8 +146,8 @@
     },
     {
       "id": "class_307",
-      "x": 2667.5,
-      "y": 629.0,
+      "x": 1591.5,
+      "y": 2323.0,
       "label": "Room 307",
       "type": "class",
       "searchable": true,
@@ -155,8 +155,8 @@
     },
     {
       "id": "class_308",
-      "x": 2308.5,
-      "y": 1201.0,
+      "x": 1950.5,
+      "y": 1751.0,
       "label": "Room 308",
       "type": "class",
       "searchable": true,
@@ -164,8 +164,8 @@
     },
     {
       "id": "class_309",
-      "x": 1573.5,
-      "y": 1201.0,
+      "x": 2685.5,
+      "y": 1751.0,
       "label": "Room 309",
       "type": "class",
       "searchable": true,
@@ -173,8 +173,8 @@
     },
     {
       "id": "class_310",
-      "x": 1629.5,
-      "y": 1200.0,
+      "x": 2629.5,
+      "y": 1752.0,
       "label": "Room 310",
       "type": "class",
       "searchable": true,
@@ -182,8 +182,8 @@
     },
     {
       "id": "class_311",
-      "x": 1630.5,
-      "y": 1153.0,
+      "x": 2628.5,
+      "y": 1799.0,
       "label": "Room 311",
       "type": "class",
       "searchable": true,
@@ -191,8 +191,8 @@
     },
     {
       "id": "class_312",
-      "x": 2230.5,
-      "y": 657.0,
+      "x": 2028.5,
+      "y": 2295.0,
       "label": "Room 312",
       "type": "class",
       "searchable": true,
@@ -200,8 +200,8 @@
     },
     {
       "id": "class_313",
-      "x": 2178.5,
-      "y": 706.0,
+      "x": 2080.5,
+      "y": 2246.0,
       "label": "Room 313",
       "type": "class",
       "searchable": true,
@@ -209,8 +209,8 @@
     },
     {
       "id": "class_314",
-      "x": 1635.5,
-      "y": 1234.0,
+      "x": 2623.5,
+      "y": 1718.0,
       "label": "Room 314",
       "type": "class",
       "searchable": true,
@@ -218,8 +218,8 @@
     },
     {
       "id": "class_315",
-      "x": 1390.5,
-      "y": 1793.0,
+      "x": 2868.5,
+      "y": 1159.0,
       "label": "Room 315",
       "type": "class",
       "searchable": true,
@@ -227,8 +227,8 @@
     },
     {
       "id": "class_316",
-      "x": 1513.5,
-      "y": 1913.0,
+      "x": 2745.5,
+      "y": 1039.0,
       "label": "Room 316",
       "type": "class",
       "searchable": true,
@@ -236,8 +236,8 @@
     },
     {
       "id": "class_317",
-      "x": 1519.5,
-      "y": 2143.0,
+      "x": 2739.5,
+      "y": 809.0,
       "label": "Room 317",
       "type": "class",
       "searchable": true,
@@ -245,8 +245,8 @@
     },
     {
       "id": "class_318",
-      "x": 1519.5,
-      "y": 2192.0,
+      "x": 2739.5,
+      "y": 760.0,
       "label": "Room 318",
       "type": "class",
       "searchable": true,
@@ -254,8 +254,8 @@
     },
     {
       "id": "class_319",
-      "x": 930.5,
-      "y": 2060.0,
+      "x": 3328.5,
+      "y": 892.0,
       "label": "Room 319",
       "type": "class",
       "searchable": true,
@@ -263,8 +263,8 @@
     },
     {
       "id": "class_320",
-      "x": 937.5,
-      "y": 1916.0,
+      "x": 3321.5,
+      "y": 1036.0,
       "label": "Room 320",
       "type": "class",
       "searchable": true,
@@ -272,68 +272,12 @@
     },
     {
       "id": "class_321",
-      "x": 1004.5,
-      "y": 1851.0,
+      "x": 3254.5,
+      "y": 1101.0,
       "label": "Room 321",
       "type": "class",
       "searchable": true,
       "cluster_size": 1
     }
-  ],
-  "edges": {
-    "stairway_1": {
-      "intersection_1": 78.0
-    },
-    "stairway_2": {
-      "intersection_2": 51.0
-    },
-    "stairway_3": {
-      "intersection_4": 153.0
-    },
-    "stairway_4": {
-      "intersection_3": 103.0
-    },
-    "invisible_1": {
-      "class_308": 48.5,
-      "class_309": 313.5,
-      "class_310": 369.5,
-      "intersection_3": 291.5
-    },
-    "invisible_2": {
-      "class_302": 309.0,
-      "class_303": 405.0,
-      "intersection_2": 366.5
-    },
-    "intersection_1": {
-      "stairway_1": 78.0,
-      "class_304": 664.0,
-      "class_305": 713.0,
-      "class_306": 2.0,
-      "class_319": 174.0,
-      "intersection_4": 601.0
-    },
-    "intersection_2": {
-      "stairway_2": 51.0,
-      "class_301": 47.0,
-      "class_302": 58.0,
-      "class_307": 38.0,
-      "invisible_2": 366.5,
-      "intersection_3": 661.0
-    },
-    "intersection_3": {
-      "stairway_4": 103.0,
-      "class_312": 262.0,
-      "class_313": 210.0,
-      "invisible_1": 291.5,
-      "intersection_2": 661.0,
-      "intersection_4": 739.0
-    },
-    "intersection_4": {
-      "stairway_3": 153.0,
-      "class_315": 161.0,
-      "class_316": 284.0,
-      "intersection_1": 601.0,
-      "intersection_3": 739.0
-    }
-  }
+  ]
 }
