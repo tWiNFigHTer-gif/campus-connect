@@ -20,7 +20,7 @@
     },
     {
       "id": "stairway_3",
-      "x": 3029.7,
+      "x": 2785.0,
       "y": 1472.8,
       "label": "3F Stairway C",
       "type": "stairway",
@@ -38,7 +38,7 @@
     },
     {
       "id": "invisible_1",
-      "x": 1999.5,
+      "x": 2760.0,
       "y": 1751.9,
       "label": "3F Corridor Point 1",
       "type": "invisible",
@@ -50,6 +50,15 @@
       "x": 1996.5,
       "y": 2327.2,
       "label": "3F Corridor Point 2",
+      "type": "invisible",
+      "searchable": false,
+      "cluster_size": 1
+    },
+    {
+      "id": "invisible_3",
+      "x": 2785.0,
+      "y": 1580.0,
+      "label": "3F Corridor Point 3",
       "type": "invisible",
       "searchable": false,
       "cluster_size": 1
@@ -83,7 +92,7 @@
     },
     {
       "id": "intersection_4",
-      "x": 3029.5,
+      "x": 2785.0,
       "y": 1633.0,
       "label": "3F Main Hub 4",
       "type": "intersection",
@@ -164,8 +173,8 @@
     },
     {
       "id": "class_309",
-      "x": 2685.5,
-      "y": 1751.0,
+      "x": 2785.0,
+      "y": 1820.0,
       "label": "Room 309",
       "type": "class",
       "searchable": true,
@@ -173,8 +182,8 @@
     },
     {
       "id": "class_310",
-      "x": 2629.5,
-      "y": 1752.0,
+      "x": 2745.0,
+      "y": 1820.0,
       "label": "Room 310",
       "type": "class",
       "searchable": true,
@@ -182,8 +191,8 @@
     },
     {
       "id": "class_311",
-      "x": 2628.5,
-      "y": 1799.0,
+      "x": 2825.0,
+      "y": 1760.0,
       "label": "Room 311",
       "type": "class",
       "searchable": true,
@@ -209,8 +218,8 @@
     },
     {
       "id": "class_314",
-      "x": 2623.5,
-      "y": 1718.0,
+      "x": 2805.0,
+      "y": 1340.0,
       "label": "Room 314",
       "type": "class",
       "searchable": true,
