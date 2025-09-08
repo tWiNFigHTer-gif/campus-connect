@@ -2329,8 +2329,8 @@
                 // Determine which floor to load
                 const currentFloor = window.currentFloor || 'second';
                 const svgPath = currentFloor === 'third' ? 'floors/third-floor.svg' : 'floors/second-floor.svg';
-                const zonesPath = currentFloor === 'third' ? './data/third_floor_zones.json' : './data/svg_zones_8830x6238.json';
-                const nodesPath = currentFloor === 'third' ? './data/third_floor_nodes.json' : 'pathfinding_graph_structural.json';
+                const zonesPath = currentFloor === 'third' ? './data/third_floor_zones.json' : './data/second_floor_zones.json';
+                const nodesPath = currentFloor === 'third' ? './data/third_floor_nodes.json' : './data/second_floor_nodes.json';
                 
                 console.log(`📂 Loading ${currentFloor} floor:`);
                 console.log(`  SVG: ${svgPath}`);
@@ -2959,7 +2959,7 @@
             moveToNext();
         }
         async function addInteractiveZones(svg) {
-            return addInteractiveZonesForFloor(svg, './data/svg_zones_8830x6238.json');
+            return addInteractiveZonesForFloor(svg, './data/second_floor_zones.json');
         }
 
         async function addInteractiveZonesForFloor(svg, zonesPath) {
@@ -3141,14 +3141,5 @@
 
 
     </script>
-    
-    <!-- Load pathfinding test functions -->
-    <script src="browser_pathfinding_tests.js"></script>
-    <script src="debug_room_search.js"></script>
-    <script src="fix_room_310_305.js"></script>
-    <script src="complete_path_fix.js"></script>
-    
-    <!-- Load diagnostic functions -->
-    <script src="browser_diagnostics.js"></script>
 </body>
 </html>
