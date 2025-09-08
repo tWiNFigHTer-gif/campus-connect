@@ -237,7 +237,7 @@
     {
       "id": "stairway_2",
       "x": 1630.0,
-      "y": 2276.2,
+      "y": 2371.0,
       "label": "3F Stairway B",
       "type": "stairway",
       "searchable": true,
@@ -278,6 +278,15 @@
       "type": "invisible",
       "searchable": false,
       "cluster_size": 1
+    },
+    {
+      "id": "class_302b",
+      "x": 1630.0,
+      "y": 2276.2,
+      "label": "Room 302B",
+      "type": "class",
+      "searchable": true,
+      "cluster_size": 1
     }
   ],
   "graph": {
@@ -286,8 +295,8 @@
     },
     "class_302": {
       "intersection_2": 57.6105025147324,
-      "stairway_2": 75.29946878962686,
-      "invisible_2": 308.5093353530813
+      "invisible_2": 308.5093353530813,
+      "class_302b": 75.29946878962686
     },
     "class_303": {
       "intersection_2": 65.52991683193255,
@@ -324,7 +333,7 @@
     },
     "class_311": {
       "class_310": 47.01063709417264,
-      "stairway_2": 477.0020545029128
+      "class_302b": 477.0020545029128
     },
     "class_312": {
       "intersection_3": 369.8175225702534,
@@ -399,9 +408,7 @@
       "intersection_1": 78.20000000000027
     },
     "stairway_2": {
-      "intersection_2": 47.40000000000009,
-      "class_311": 477.0020545029128,
-      "class_302": 75.29946878962686
+      "intersection_2": 47.40000000000009
     },
     "stairway_3": {
       "intersection_4": 153.0
@@ -417,6 +424,10 @@
       "class_312": 45.19081765137699,
       "intersection_3": 415.00362649017893,
       "class_302": 308.5093353530813
+    },
+    "class_302b": {
+      "class_311": 477.0020545029128,
+      "class_302": 75.29946878962686
     }
   }
 }
