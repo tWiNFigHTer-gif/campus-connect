@@ -11,6 +11,15 @@ temp/
 *.tmp
 *.bak
 
+# Development/testing Python scripts
+test_*.py
+create_*.py
+fix_*.py
+rotate_*.py
+connect_*.py
+add_*.py
+update_*.py
+
 # IDE files
 .idea/
 *.suo
