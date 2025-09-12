@@ -2252,8 +2252,21 @@
                     startExists: campusNodes.find(n => n.id === startNode),
                     endExists: campusNodes.find(n => n.id === destinationNode),
                     startInGraph: startNode in campusGraph,
-                    endInGraph: destinationNode in campusGraph
+                    endInGraph: destinationNode in campusGraph,
+                    startConnections: campusGraph[startNode] ? Object.keys(campusGraph[startNode]).length : 0,
+                    endConnections: campusGraph[destinationNode] ? Object.keys(campusGraph[destinationNode]).length : 0,
+                    graphSize: Object.keys(campusGraph).length,
+                    nodesSize: campusNodes.length
                 });
+                
+                // Additional debugging for Room 309 and 314
+                if (startNode === 'class_309' || destinationNode === 'class_309' || 
+                    startNode === 'class_314' || destinationNode === 'class_314') {
+                    console.log('🔍 Room 309/314 specific debug:');
+                    console.log('Room 309 connections:', campusGraph['class_309']);
+                    console.log('Room 314 connections:', campusGraph['class_314']);
+                }
+                
                 alert('No path found between selected locations. Check console for details.');
             }
         }
@@ -2351,7 +2364,8 @@
 
                 // Step 2: Load graph data
                 status.textContent = 'Loading navigation data...';
-                const graphResponse = await fetch(nodesPath);
+                const cacheBuster = new Date().getTime();
+                const graphResponse = await fetch(`${nodesPath}?v=${cacheBuster}`);
                 
                 if (!graphResponse.ok) {
                     throw new Error(`Graph fetch failed: ${graphResponse.status}`);
@@ -2966,7 +2980,8 @@
             console.log('🎯 Loading interactive zones from:', zonesPath);
             
             try {
-                const response = await fetch(zonesPath);
+                const cacheBuster = new Date().getTime();
+                const response = await fetch(`${zonesPath}?v=${cacheBuster}`);
                 if (!response.ok) {
                     throw new Error(`Failed to load zones: ${response.status}`);
                 }
