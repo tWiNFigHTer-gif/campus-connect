@@ -1,87 +1,44 @@
-# Python SVG Node Finder
+# SVG Node Coordinate Extractor
 
-A Python tool for extracting coordinates of colored circle/ellipse nodes from SVG files.
+This repository contains tools to extract accurate coordinates of colored nodes from SVG files.
 
-## Overview
+## 📁 Files
 
-This project provides scripts to analyze SVG files and extract the coordinates of colored nodes based on specific fill colors. It's particularly useful for floor plan analysis or any SVG-based coordinate extraction tasks.
+### Core Scripts
+- **`svg_coordinate_extractor.py`** - **Main extractor** with the most accurate, verified coordinates
+- **`svg_color_finder.py`** - Simple version for basic extraction
 
-## Features
+### Data Files  
+- **`3rd floor swt (1).svg`** - Source SVG file
+- **`FINAL_coordinates.txt`** - Human-readable coordinate results
+- **`FINAL_coordinates.json`** - JSON format for programming
+- **`FINAL_coordinates.csv`** - Spreadsheet format
 
-- **Accurate Coordinate Extraction**: Handles both ellipse and path elements
-- **Multiple Color Support**: Extracts nodes by specific fill colors
-- **Multiple Output Formats**: TXT, CSV, and JSON formats
-- **Comprehensive Validation**: Includes bounds checking and error reporting
-- **Transform Handling**: Accounts for SVG transformations
+## 🚀 Usage
 
-## Target Colors
+**For most accurate coordinates:**
+```bash
+python svg_coordinate_extractor.py
+```
 
-The scripts are configured to find nodes with these specific colors:
-
-- **#FFAE00**: Stairway nodes (yellow)
-- **#33CA60**: Invisible nodes (green)
-- **#3500C6**: Intersection nodes (blue)
-- **#6C1B1C**: Class nodes (dark red)
-
-## Files
-
-### Scripts
-- **`svg_color_finder.py`**: Main coordinate extraction script
-- **`comprehensive_svg_extractor.py`**: Advanced extraction with detailed validation
-
-### Input
-- **`3rd floor swt (1).svg`**: Sample SVG file (4259 × 2952 pixels)
-
-### Output Files
-- **`colored_nodes_coordinates.txt`**: Basic output from main script
-- **`COMPREHENSIVE_coordinates.txt`**: Detailed report with validation
-- **`COMPREHENSIVE_coordinates.csv`**: Spreadsheet-compatible format
-- **`COMPREHENSIVE_coordinates.json`**: Structured data format
-
-## Usage
-
-### Basic Extraction
+**For simple extraction:**
 ```bash
 python svg_color_finder.py
 ```
 
-### Comprehensive Extraction
-```bash
-python comprehensive_svg_extractor.py
-```
+## 🎯 Coordinate Summary
 
-## Results
+- **31 total nodes** across 4 types
+- **Stairway nodes**: 4 (yellow #FFAE00)
+- **Class nodes**: 21 (red #6C1B1C) 
+- **Intersection nodes**: 4 (blue #3500C6)
+- **Invisible nodes**: 2 (green #33CA60)
 
-Current extraction from the sample SVG file finds **31 nodes**:
-- **21 Class nodes** (#6C1B1C)
-- **4 Stairway nodes** (#FFAE00)
-- **4 Intersection nodes** (#3500C6)
-- **2 Invisible nodes** (#33CA60)
+## ✅ Verified Accuracy
 
-## Coordinate System
+All coordinates have been manually verified and corrected for:
+- Proper node classification
+- Accurate coordinate extraction
+- Transformation handling
 
-All coordinates are extracted in the SVG coordinate system:
-- **Origin**: Top-left corner (0, 0)
-- **X-axis**: Left to right
-- **Y-axis**: Top to bottom
-- **Units**: SVG pixels
-
-## Technical Details
-
-### Ellipse Elements
-- Direct extraction from `cx` and `cy` attributes
-- Handles rotation transforms
-
-### Path Elements
-- Geometric center calculation from path coordinate bounds
-- Comprehensive coordinate pair extraction using regex
-- Bounding box center method for circular paths
-
-## Requirements
-
-- Python 3.x
-- Standard library modules: `xml.etree.ElementTree`, `re`, `json`, `csv`
-
-## License
-
-Open source - feel free to modify and use for your projects.
+The `svg_coordinate_extractor.py` contains the final, most accurate coordinate set.
