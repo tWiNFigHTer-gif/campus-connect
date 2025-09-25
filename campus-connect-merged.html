@@ -982,9 +982,10 @@
                     e.preventDefault();
                     const floor = link.getAttribute('data-floor');
                     console.log(`Floor ${floor} selected`);
-                    
-                    // Handle floor 2 and 3 with actual functionality
-                    if (floor === '2') {
+                    if (floor === '1') {
+                        window.currentFloor = 'first';
+                        loadApplication(); // Reload with first floor
+                    } else if (floor === '2') {
                         window.currentFloor = 'second';
                         loadApplication(); // Reload with second floor
                     } else if (floor === '3') {
@@ -993,8 +994,6 @@
                     } else {
                         showFloorMessage(`Floor ${floor}`, 'Floor navigation coming soon!');
                     }
-                    
-                    // Close sidebar if open
                     if (sidebar) {
                         sidebar.style.display = 'none';
                     }
@@ -1015,7 +1014,10 @@
             
             if (nextBtn) {
                 nextBtn.addEventListener('click', () => {
-                    if (window.currentFloor === 'second') {
+                    if (window.currentFloor === 'first') {
+                        window.currentFloor = 'second';
+                        loadApplication();
+                    } else if (window.currentFloor === 'second') {
                         window.currentFloor = 'third';
                         loadApplication();
                     } else {
@@ -1023,11 +1025,13 @@
                     }
                 });
             }
-            
             if (prevBtn) {
                 prevBtn.addEventListener('click', () => {
                     if (window.currentFloor === 'third') {
                         window.currentFloor = 'second';
+                        loadApplication();
+                    } else if (window.currentFloor === 'second') {
+                        window.currentFloor = 'first';
                         loadApplication();
                     } else {
                         showFloorMessage('Previous Floor', 'Already at bottom floor');
@@ -2341,10 +2345,20 @@
                 
                 // Determine which floor to load
                 const currentFloor = window.currentFloor || 'second';
-                const svgPath = currentFloor === 'third' ? 'floors/third-floor.svg' : 'floors/second-floor.svg';
-                const zonesPath = currentFloor === 'third' ? './data/third_floor_zones.json' : './data/second_floor_zones.json';
-                const nodesPath = currentFloor === 'third' ? './data/third_floor_nodes.json' : './data/second_floor_nodes.json';
-                
+                let svgPath, zonesPath, nodesPath;
+                if (currentFloor === 'first') {
+                    svgPath = 'floors/first-floor.svg';
+                    zonesPath = './data/first_floor_zones.json';
+                    nodesPath = './data/first_floor_nodes.json';
+                } else if (currentFloor === 'second') {
+                    svgPath = 'floors/second-floor.svg';
+                    zonesPath = './data/second_floor_zones.json';
+                    nodesPath = './data/second_floor_nodes.json';
+                } else if (currentFloor === 'third') {
+                    svgPath = 'floors/third-floor.svg';
+                    zonesPath = './data/third_floor_zones.json';
+                    nodesPath = './data/third_floor_nodes.json';
+                }
                 console.log(`📂 Loading ${currentFloor} floor:`);
                 console.log(`  SVG: ${svgPath}`);
                 console.log(`  Zones: ${zonesPath}`);
@@ -2366,27 +2380,30 @@
                 status.textContent = 'Loading navigation data...';
                 const cacheBuster = new Date().getTime();
                 const graphResponse = await fetch(`${nodesPath}?v=${cacheBuster}`);
-                
                 if (!graphResponse.ok) {
                     throw new Error(`Graph fetch failed: ${graphResponse.status}`);
                 }
-                
                 const originalGraphData = await graphResponse.json();
 
                 // Step 3: Transform coordinates
                 status.textContent = 'Processing data...';
-                const transformedGraphData = transformCoordinatesForRotatedSVG(originalGraphData);
+                let transformedGraphData;
+                if (currentFloor === 'first') {
+                    // For first floor, use coordinates as-is (no rotation needed)
+                    transformedGraphData = {
+                        nodes: originalGraphData.nodes || [],
+                        graph: originalGraphData.graph || originalGraphData.edges || {}
+                    };
+                } else {
+                    transformedGraphData = transformCoordinatesForRotatedSVG(originalGraphData);
+                }
 
                 // Step 4: Setup interface
                 container.innerHTML = svgContent;
                 const svg = container.querySelector('svg');
                 if (svg) {
                     svg.setAttribute('class', 'map-svg');
-                    
-                    // Setup panzoom for gesture control
                     setupPanzoom(svg);
-                    
-                    // Add interactive zones with correct path
                     await addInteractiveZonesForFloor(svg, zonesPath);
                 }
 
@@ -2396,7 +2413,7 @@
 
                 // Create nodes and setup
                 createNodes();
-                
+
                 status.textContent = 'Ready - Search or explore the campus!';
                 loading.style.display = 'none';
 

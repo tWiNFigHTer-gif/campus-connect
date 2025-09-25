@@ -1,0 +1,12 @@
+[
+  {
+    "id": "zone_1",
+    "name": "Main Hall",
+    "nodes": ["intersection_1", "intersection_2", "stairway_1", "stairway_2", "invisible_1", "invisible_2"]
+  },
+  {
+    "id": "zone_2",
+    "name": "Classrooms",
+    "nodes": ["class_101", "class_102", "class_103", "class_104", "class_105"]
+  }
+]

@@ -1,0 +1,28 @@
+{
+  "nodes": [
+    { "id": "class_101", "x": 300, "y": 400, "label": "Classroom 101", "type": "class", "searchable": true, "cluster_size": 1 },
+    { "id": "class_102", "x": 400, "y": 500, "label": "Classroom 102", "type": "class", "searchable": true, "cluster_size": 1 },
+    { "id": "class_103", "x": 500, "y": 600, "label": "Classroom 103", "type": "class", "searchable": true, "cluster_size": 1 },
+    { "id": "class_104", "x": 600, "y": 700, "label": "Classroom 104", "type": "class", "searchable": true, "cluster_size": 1 },
+    { "id": "class_105", "x": 700, "y": 800, "label": "Classroom 105", "type": "class", "searchable": true, "cluster_size": 1 },
+    { "id": "intersection_1", "x": 350, "y": 450, "label": "Main Hub 1", "type": "intersection", "searchable": false, "cluster_size": 1 },
+    { "id": "intersection_2", "x": 650, "y": 750, "label": "Main Hub 2", "type": "intersection", "searchable": false, "cluster_size": 1 },
+    { "id": "stairway_1", "x": 100, "y": 200, "label": "Stairway A", "type": "stairway", "searchable": true, "cluster_size": 1 },
+    { "id": "stairway_2", "x": 800, "y": 900, "label": "Stairway B", "type": "stairway", "searchable": true, "cluster_size": 1 },
+    { "id": "invisible_1", "x": 200, "y": 300, "label": "Corridor Point 1", "type": "invisible", "searchable": false, "cluster_size": 1 },
+    { "id": "invisible_2", "x": 600, "y": 600, "label": "Corridor Point 2", "type": "invisible", "searchable": false, "cluster_size": 1 }
+  ],
+  "graph": {
+    "class_101": { "intersection_1": 70 },
+    "class_102": { "intersection_1": 80 },
+    "class_103": { "intersection_1": 90 },
+    "class_104": { "intersection_2": 60 },
+    "class_105": { "intersection_2": 70 },
+    "intersection_1": { "stairway_1": 100, "invisible_1": 60, "intersection_2": 150 },
+    "intersection_2": { "stairway_2": 80, "invisible_2": 50, "intersection_1": 150 },
+    "stairway_1": { "intersection_1": 100 },
+    "stairway_2": { "intersection_2": 80 },
+    "invisible_1": { "intersection_1": 60 },
+    "invisible_2": { "intersection_2": 50 }
+  }
+}

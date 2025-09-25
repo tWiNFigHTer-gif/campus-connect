@@ -288,6 +288,15 @@
       "searchable": true,
       "cluster_size": 1
     }
+      ,{
+        "id": "class_mid_corridor_hub3",
+        "x": 2144.9,
+        "y": 1893.4,
+        "label": "3F Classroom (Mid Corridor-Hub3)",
+        "type": "class",
+        "searchable": true,
+        "cluster_size": 1
+      }
   ],
   "graph": {
     "class_301": {
